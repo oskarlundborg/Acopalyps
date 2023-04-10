@@ -19,6 +19,9 @@ class AAcopalypsCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	/** Timer handle for all timers*/
+	FTimerHandle TimerHandle;
+	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* Mesh1P;
@@ -41,14 +44,22 @@ class AAcopalypsCharacter : public ACharacter
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
+	UInputAction* MoveAction;
 
 	/** Kick Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* KickAction;
+	UInputAction* KickAction;
 
-	//TODO: Action i IMC, Kick-func, hideleg-func, channel, overlap-event add force, (när fiender finns: ragdoll)
+	/** Leg collision box*/
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Collision, meta=(AllowPrivateAccess = "true"))
+	//class UBoxComponent* LegCollisionBox;
 
+
+	/** Kick force to add on other object on kick-hitbox-overlap*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
+	FVector KickForce = FVector(0, 0, 5000);
+	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
+	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
 	
 public:
 	AAcopalypsCharacter();
@@ -60,7 +71,7 @@ public:
 		
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
+	UInputAction* LookAction;
 
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
@@ -74,12 +85,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
 
+	/** Triggered on collision hit event between leg hitbox and enemies*/
+	UFUNCTION()
+	void OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	/** Called for kicking input*/
+	void Kick();
+
+	/** Called after kicking timer ended*/
+	void HideLeg() const;
 
 protected:
 	// APawn interface
@@ -91,7 +112,5 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-
 };
 

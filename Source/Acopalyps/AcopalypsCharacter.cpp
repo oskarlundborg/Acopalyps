@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/BoxComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,9 +36,10 @@ AAcopalypsCharacter::AAcopalypsCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+
+	// Create a mesh component that will be used to kick
 	LegMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Leg"));
 	LegMesh->SetupAttachment(GetCapsuleComponent());
-
 }
 
 void AAcopalypsCharacter::BeginPlay()
@@ -45,7 +47,7 @@ void AAcopalypsCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	//Add Input Mapping Context
+	//      Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -53,7 +55,11 @@ void AAcopalypsCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
+	// method call to hide and disable leg mesh and leg hitbox
+	HideLeg();
+	
+	// Sets methods to be run when LegCollision hits enemies
+	LegMesh->OnComponentHit.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackHit);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -72,6 +78,9 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Look);
+
+		//Kicking
+		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Kick);
 	}
 }
 
@@ -102,6 +111,37 @@ void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void AAcopalypsCharacter::Kick()
+{
+	if (Controller != nullptr)
+	{
+		// makes leg mesh visible, and sets collision response of the leg mesh and box collider to collide
+		LegMesh->SetVisibility(true);
+		LegMesh->SetCollisionProfileName("Weapon");
+		LegMesh->SetNotifyRigidBodyCollision(true);
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &AAcopalypsCharacter::HideLeg, 1.f, false);
+	}
+}
+
+void AAcopalypsCharacter::HideLeg() const
+{
+	// makes leg mesh unvisible, and sets collision response to none on leg mesh and boxCollision-object
+	LegMesh->SetVisibility(false);
+	LegMesh->SetCollisionProfileName("NoCollision");
+	LegMesh->SetNotifyRigidBodyCollision(false);
+	
+}
+
+void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
+	if(OtherActor->IsRootComponentMovable() && OtherComp->GetCollisionProfileName() == "Enemy") {
+
+		UStaticMeshComponent* MeshRootComp = Cast<UStaticMeshComponent>(OtherActor->GetRootComponent());
+
+		MeshRootComp->AddForce(KickForce *10 * MeshRootComp->GetMass());
+	}
+}
 void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
