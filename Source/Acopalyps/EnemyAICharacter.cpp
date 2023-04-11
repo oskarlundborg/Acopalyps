@@ -2,8 +2,9 @@
 
 
 #include "EnemyAICharacter.h"
-#include "Gun.h"
 #include "AcopalypsPrototypeGameModeBase.h"
+#include "Algo/Rotate.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemyAICharacter::AEnemyAICharacter()
@@ -79,8 +80,21 @@ float AEnemyAICharacter::GetHealthPercent() const
 	return Health/MaxHealth;
 }
 
-void AEnemyAICharacter::Ragdoll()
+void AEnemyAICharacter::RagDoll()
 {
 	GetMesh()->SetSimulatePhysics(true);
-	GetMesh()->SetCollisionProfileName("Ragdoll");
+	GetMesh()->SetCollisionProfileName("RagDoll");
+	//GetMesh()->WakeAllRigidBodies();
+	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
+	LastPositionBeforeRagdoll = GetActorLocation();
+	LastRotationBeforeRagdoll = GetActorRotation();
+}
+
+void AEnemyAICharacter::UnRagDoll()
+{
+	GetMesh()->SetCollisionProfileName("Enemy");
+	GetMesh()->SetSimulatePhysics(false);
+	//GetMesh()->PutAllRigidBodiesToSleep();
+	SetActorRelativeLocation(LastPositionBeforeRagdoll);
+	SetActorRelativeRotation(LastRotationBeforeRagdoll);
 }

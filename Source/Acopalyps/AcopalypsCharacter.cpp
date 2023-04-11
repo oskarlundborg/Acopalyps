@@ -147,7 +147,7 @@ void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AAc
 		if(Enemy)
 		{
 			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
-			Enemy->Ragdoll();
+			Enemy->RagDoll();
 			Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
 		}
 	}
