@@ -23,11 +23,10 @@ void AEnemyAICharacter::BeginPlay()
 	
 
 	// Sets mesh for gun to socket on Character Mesh, and sets collision presets
-	/*
-	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunSocket"));
-	Gun->SetOwner(this);
-	*/
+	//Gun = GetWorld()->SpawnActor<AEnemyGun>(GunClass);
+	//Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunSocket"));
+	//Gun->SetOwner(this);
+	
 
 	Health = MaxHealth;
 }
@@ -74,6 +73,7 @@ bool AEnemyAICharacter::IsDead() const
 void AEnemyAICharacter::Shoot()
 {
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
+	//Gun->PullTrigger();
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {
@@ -85,9 +85,10 @@ void AEnemyAICharacter::RagDoll()
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName("RagDoll");
 	//GetMesh()->WakeAllRigidBodies();
-	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
 	LastPositionBeforeRagdoll = GetActorLocation();
 	LastRotationBeforeRagdoll = GetActorRotation();
+	//GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
+	
 }
 
 void AEnemyAICharacter::UnRagDoll()

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+//#include "EnemyGun.h"
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
@@ -14,11 +15,11 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 
 	/*
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AGun> GunClass;
+	TSubclassOf<AEnemyGun> GunClass;
 
 	/** Gun object to be attached to enemy character*/
 	//UPROPERTY()
-	//AGun* Gun;
+	//AEnemyGun* Gun;
 	
 		
 	/** Pawn mesh: 3st person view */
