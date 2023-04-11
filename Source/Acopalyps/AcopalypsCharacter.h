@@ -49,12 +49,7 @@ class AAcopalypsCharacter : public ACharacter
 	/** Kick Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
-
-	/** Leg collision box*/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Collision, meta=(AllowPrivateAccess = "true"))
-	//class UBoxComponent* LegCollisionBox;
-
-
+	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 	FVector KickForce = FVector(0, 0, 5000);
@@ -66,6 +61,12 @@ public:
 
 protected:
 	virtual void BeginPlay();
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxHealth = 100.f;
+
+	UPROPERTY(VisibleAnywhere)
+	float Health;
 
 public:
 		
@@ -88,6 +89,16 @@ public:
 	/** Triggered on collision hit event between leg hitbox and enemies*/
 	UFUNCTION()
 	void OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	/** Called upon when object channel weapon collider collides with enemy char */
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	/** Returns if charachter is dead*/
+	UFUNCTION(BlueprintPure)
+	bool IsDead() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetHealthPercent() const;
 
 protected:
 	/** Called for movement input */

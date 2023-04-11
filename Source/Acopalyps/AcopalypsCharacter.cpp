@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/BoxComponent.h"
+#include "AcopalypsPrototypeGameModeBase.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,6 +61,8 @@ void AAcopalypsCharacter::BeginPlay()
 	
 	// Sets methods to be run when LegCollision hits enemies
 	LegMesh->OnComponentHit.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackHit);
+
+	Health = MaxHealth;
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -141,6 +144,38 @@ void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AAc
 
 		MeshRootComp->AddForce(KickForce *10 * MeshRootComp->GetMass());
 	}
+}
+
+float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	DamageApplied = FMath::Min(Health, DamageApplied);
+	Health -= DamageApplied;
+	UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
+
+	
+	if(IsDead())
+	{
+		if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
+		{
+			PrototypeGameModeBase->PawnKilled(this);
+		}
+		DetachFromControllerPendingDestroy();
+		GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
+		HideLeg();
+		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
+	}
+	return DamageApplied;
+}
+
+bool AAcopalypsCharacter::IsDead() const
+{
+	return Health <= 0;
+}
+
+float AAcopalypsCharacter::GetHealthPercent() const
+{
+	return Health/MaxHealth;
 }
 void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 {
