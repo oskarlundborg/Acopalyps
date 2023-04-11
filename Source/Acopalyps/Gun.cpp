@@ -1,4 +1,3 @@
-{
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
@@ -9,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Engine/DamageEvents.h"
 
 UGun::UGun()
 {
@@ -171,11 +171,12 @@ void UGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
-		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,-1);
+		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
 		AActor* HitActor = Hit.GetActor();
-		if(HitActor == nullptr)
+		if(HitActor != nullptr)
 		{
-			//UE_LOG(LogTemp, Display, TEXT("HIT"));
+			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
 	}
 	
@@ -203,12 +204,13 @@ void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
-		DrawDebugSphere(GetWorld(),Hit.Location,30,10,FColor::Red,true,-1);
+		DrawDebugSphere(GetWorld(),Hit.Location,30,10,FColor::Red,true,5);
 		
 		AActor* HitActor = Hit.GetActor();
-		if(HitActor == nullptr)
+		if(HitActor != nullptr)
 		{
-			//UE_LOG(LogTemp, Display, TEXT("HIT"));
+			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
 	}
 
@@ -234,11 +236,12 @@ void UGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
-		DrawDebugSphere(GetWorld(),Hit.Location,30,10,FColor::Yellow,true,-1);
+		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Yellow,true,5);
 		AActor* HitActor = Hit.GetActor();
-		if(HitActor == nullptr)
+		if(HitActor != nullptr)
 		{
-			//UE_LOG(LogTemp, Display, TEXT("HIT"));
+			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
 	}
 
@@ -264,11 +267,12 @@ void UGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
-		DrawDebugSphere(GetWorld(),Hit.Location,30,10,FColor::Purple,true,-1);
+		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
 		AActor* HitActor = Hit.GetActor();
-		if(HitActor == nullptr)
+		if(HitActor != nullptr)
 		{
-			//UE_LOG(LogTemp, Display, TEXT("HIT"));
+			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
 	}
 

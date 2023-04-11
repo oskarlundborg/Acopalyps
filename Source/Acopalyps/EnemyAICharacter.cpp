@@ -60,7 +60,8 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			PrototypeGameModeBase->PawnKilled(this);
 		}
 		DetachFromControllerPendingDestroy();
-		CharacterMesh->SetCollisionProfileName("NoCollision");
+		//CharacterMesh->SetCollisionProfileName("NoCollision"); // Crashes the engine
+		RagDoll();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
 	return DamageApplied;
