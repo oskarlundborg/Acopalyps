@@ -11,17 +11,15 @@ AEnemyAICharacter::AEnemyAICharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Set mesh to enemy mesh, and sets collision presets
+	CharacterMesh = GetMesh();
 }
 
 // Called when the game starts or when spawned
 void AEnemyAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Set mesh to enemy mesh, and sets collision presets
-	CharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
-	CharacterMesh->SetupAttachment(RootComponent);
-	CharacterMesh->SetCollisionProfileName("Enemy");
+	
 
 	// Sets mesh for gun to socket on Character Mesh, and sets collision presets
 	/*
@@ -79,4 +77,10 @@ void AEnemyAICharacter::Shoot()
 float AEnemyAICharacter::GetHealthPercent() const
 {
 	return Health/MaxHealth;
+}
+
+void AEnemyAICharacter::Ragdoll()
+{
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName("Ragdoll");
 }

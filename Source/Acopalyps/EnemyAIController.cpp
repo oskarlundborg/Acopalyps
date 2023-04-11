@@ -9,12 +9,6 @@
 #include "Kismet/GameplayStatics.h"
 
 
-AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer)
-{
-	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
-	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTree Component"));
-}
-
 void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -23,7 +17,6 @@ void AEnemyAIController::BeginPlay()
 	//PlayerCharacter = Cast<AApocalypsCharacter>(PlayerPawn);
 	
 	if(BehaviorTree) RunBehaviorTree(BehaviorTree);
-	GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerStartLocation"), PlayerPawn->GetActorLocation());
 	GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), this->GetPawn()->GetActorLocation());
 }
 

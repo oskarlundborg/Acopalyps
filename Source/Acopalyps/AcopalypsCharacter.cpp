@@ -9,6 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/BoxComponent.h"
 #include "AcopalypsPrototypeGameModeBase.h"
+#include "EnemyAICharacter.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,11 +139,17 @@ void AAcopalypsCharacter::HideLeg() const
 void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
-	if(OtherActor->IsRootComponentMovable() && OtherComp->GetCollisionProfileName() == "Enemy") {
+	if(OtherActor->ActorHasTag(TEXT("Enemy"))) {
 
-		UStaticMeshComponent* MeshRootComp = Cast<UStaticMeshComponent>(OtherActor->GetRootComponent());
+		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
 
-		MeshRootComp->AddForce(KickForce *10 * MeshRootComp->GetMass());
+		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(OtherActor);
+		if(Enemy)
+		{
+			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
+			Enemy->Ragdoll();
+			Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
+		}
 	}
 }
 

@@ -16,7 +16,6 @@ class ACOPALYPS_API AEnemyAIController : public AAIController
 	GENERATED_BODY()
 
 public:
-	AEnemyAIController(const FObjectInitializer &ObjectInitializer);
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
@@ -30,10 +29,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* BehaviorTree;
-	
-	UPROPERTY(EditAnywhere)
-	class UBehaviorTreeComponent* BehaviorTreeComponent;
-	
-	UPROPERTY(EditAnywhere)
-	UBlackboardComponent* BlackboardComponent;
 };
