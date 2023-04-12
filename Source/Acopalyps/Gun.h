@@ -79,6 +79,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float MaxRange = 5000.0;
+	UPROPERTY(EditAnywhere, Category="Weapon Properties")
+	float Damage = 10.f;
 	
 	/** Shot Impact */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
