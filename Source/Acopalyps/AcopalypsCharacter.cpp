@@ -61,7 +61,8 @@ void AAcopalypsCharacter::BeginPlay()
 	HideLeg();
 	
 	// Sets methods to be run when LegCollision hits enemies
-	LegMesh->OnComponentHit.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackHit);
+	//LegMesh->OnComponentHit.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackHit);
+	LegMesh->OnComponentBeginOverlap.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackOverlap);
 
 	Health = MaxHealth;
 }
@@ -147,6 +148,23 @@ void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AAc
 		if(Enemy)
 		{
 			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
+			Enemy->RagDoll();
+			Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
+		}
+	}
+}
+
+void AAcopalypsCharacter::OnKickAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
+	if(OtherActor->ActorHasTag(TEXT("Enemy"))) {
+
+		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
+
+		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(OtherActor);
+		if(Enemy)
+		{
+			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
 			Enemy->RagDoll();
 			Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
 		}

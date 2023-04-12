@@ -60,7 +60,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			PrototypeGameModeBase->PawnKilled(this);
 		}
 		DetachFromControllerPendingDestroy();
-		//CharacterMesh->SetCollisionProfileName("NoCollision"); // Crashes the engine
+		GetCapsuleComponent()->SetCollisionProfileName("NoCollision"); // Crashes the engine
 		RagDoll();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
@@ -85,17 +85,18 @@ void AEnemyAICharacter::RagDoll()
 {
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName("RagDoll");
+	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
 	//GetMesh()->WakeAllRigidBodies();
-	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
+	//GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
 	LastPositionBeforeRagdoll = GetActorLocation();
 	LastRotationBeforeRagdoll = GetActorRotation();
 }
 
 void AEnemyAICharacter::UnRagDoll()
 {
-	GetMesh()->SetCollisionProfileName("Enemy");
+	//GetMesh()->SetCollisionProfileName("Enemy");
 	GetMesh()->SetSimulatePhysics(false);
 	//GetMesh()->PutAllRigidBodiesToSleep();
-	SetActorRelativeLocation(LastPositionBeforeRagdoll);
-	SetActorRelativeRotation(LastRotationBeforeRagdoll);
+	//SetActorRelativeLocation(LastPositionBeforeRagdoll);
+	//SetActorRelativeRotation(LastRotationBeforeRagdoll);
 }
