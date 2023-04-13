@@ -3,22 +3,24 @@
 
 #include "Gun.h"
 #include "AcopalypsCharacter.h"
-#include "AcopalypsProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/DamageEvents.h"
+#include "Engine/LocalPlayer.h"
+#include "Animation/AnimInstance.h"
 
 UGun::UGun()
 {
 	MuzzleOffset = FVector(100.0, 0.0, 10.0);
 	SetAmmoRegular();
+	SetAmmoExplosive();
 }
 
+/** Fire standard barrel of the gun */
 void UGun::Fire()
 {
-	
 	if (Character == nullptr || Character->GetController() == nullptr)
 	{
 		return;
@@ -26,39 +28,81 @@ void UGun::Fire()
 	
 	FHitResult Hit;
 	FVector ShotDirection;
-
 	switch (CurrentAmmoType)
 	{
 	case Regular:
-		FireRegular(Hit, ShotDirection);
-		break;
-	case Explosive:
-		FireExplosive(Hit, ShotDirection);
-		break;
-	case Flare:
-		FireFlare(Hit, ShotDirection);
+		if( *(Character->GetAmmoCountMap()->Find(Regular)) > 0 )
+		{
+			FireRegular(Hit, ShotDirection);
+			// Temp //
+			Character->GetAmmoCountMap()->Emplace(Regular, 1);
+			/////////
+		}
 		break;
 	case Piercing:
-		FirePiercing(Hit, ShotDirection);
+		if( *(Character->GetAmmoCountMap()->Find(Piercing)) > 0 )
+		{
+			FirePiercing(Hit, ShotDirection);
+			// Temp //
+			Character->GetAmmoCountMap()->Emplace(Piercing, 1);
+			/////////
+		}
 		break;
+	default:break;
 	}
 	AController* OwnerController = GetOwnerController();
 	if(OwnerController == nullptr)
 	{
-		
 		return;
 	}
-	UStaticMeshComponent* MeshComponent  = Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent());
-	if(MeshComponent && Hit.GetActor()->IsRootComponentMovable())
+	//UStaticMeshComponent* MeshComponent  = Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent());
+	//if(MeshComponent && Hit.GetActor()->IsRootComponentMovable())
+	//{
+	//	FVector Location;
+	//	FRotator Rotation;
+	//	OwnerController->GetPlayerViewPoint(Location, Rotation);
+	//	ShotDirection = Rotation.Vector();
+	//	MeshComponent->AddImpulse(ShotDirection * ImpulseForce * MeshComponent->GetMass());
+	//}
+}
+
+/** Fire alternate barrel of the gun */
+void UGun::AlternateFire()
+{
+	if (Character == nullptr || Character->GetController() == nullptr)
 	{
-		FVector Location;
-		FRotator Rotation;
-		OwnerController->GetPlayerViewPoint(Location, Rotation);
-		ShotDirection = Rotation.Vector();
-		MeshComponent->AddImpulse(ShotDirection * ImpulseForce * MeshComponent->GetMass());
+		return;
+	}
+
+	FHitResult Hit;
+	FVector ShotDirection;
+	switch (CurrentAlternateAmmoType)
+	{
+	case Explosive:
+		if( *(Character->GetAmmoCountMap()->Find(Explosive)) > 0 )
+		{
+			FireExplosive(Hit, ShotDirection);
+			
+			// Temp //
+			Character->GetAmmoCountMap()->Emplace(Explosive, 1);
+			/////////
+		}
+		break;
+	case Flare:
+		if( *(Character->GetAmmoCountMap()->Find(Flare)) > 0 )
+		{
+			FireFlare(Hit, ShotDirection);
+			
+			// Temp //
+			Character->GetAmmoCountMap()->Emplace(Flare, 1);
+			/////////
+		}
+		break;
+	default:break;
 	}
 }
 
+/** Snap weapon to player character 0 */
 void UGun::AttachWeapon(AAcopalypsCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
@@ -88,6 +132,10 @@ void UGun::AttachWeapon(AAcopalypsCharacter* TargetCharacter)
 		{
 			// Fire
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &UGun::Fire);
+			EnhancedInputComponent->BindAction(AlternativeFireAction, ETriggerEvent::Triggered, this, &UGun::AlternateFire);
+			// Reload
+			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UGun::Reload);
+			// Change ammo type
 			EnhancedInputComponent->BindAction(ChangeAmmoRegularAction, ETriggerEvent::Triggered, this, &UGun::SetAmmoRegular);
 			EnhancedInputComponent->BindAction(ChangeAmmoExplosiveAction, ETriggerEvent::Triggered, this, &UGun::SetAmmoExplosive);
 			EnhancedInputComponent->BindAction(ChangeAmmoFlareAction, ETriggerEvent::Triggered, this, &UGun::SetAmmoFlare);
@@ -96,9 +144,9 @@ void UGun::AttachWeapon(AAcopalypsCharacter* TargetCharacter)
 	}
 }
 
+/** Performs a ray casts, returns true if hit is registered */
 bool UGun::GunTrace(FHitResult& HitResult, FVector& ShotDirection)
 {
-	
 	AController* OwnerController = GetOwnerController();
 	if(OwnerController == nullptr)
 	{
@@ -129,7 +177,6 @@ AController* UGun::GetOwnerController() const
 	return OwnerPawn->GetController();
 }
 
-
 void UGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (Character == nullptr)
@@ -146,6 +193,11 @@ void UGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
+void UGun::Reload()
+{
+	Character->GetAmmoCountMap()->Emplace(CurrentAmmoType, MaxAmmo);
+}
+
 void UGun::SetAmmoRegular()
 {
 	CurrentAmmoType=AMMO_TYPES::Regular;
@@ -153,12 +205,12 @@ void UGun::SetAmmoRegular()
 
 void UGun::SetAmmoExplosive()
 {
-	CurrentAmmoType=AMMO_TYPES::Explosive;
+	CurrentAlternateAmmoType=AMMO_TYPES::Explosive;
 }
 
 void UGun::SetAmmoFlare()
 {
-	CurrentAmmoType=AMMO_TYPES::Flare;
+	CurrentAlternateAmmoType=AMMO_TYPES::Flare;
 }
 
 void UGun::SetAmmoPiercing()
@@ -168,9 +220,10 @@ void UGun::SetAmmoPiercing()
 
 void UGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 {
+	// Decrease ammo count by 1
+	Character->GetAmmoCountMap()->Emplace(Regular, *(Character->GetAmmoCountMap()->Find(Regular)) - 1);
 	if(GunTrace(Hit, ShotDirection))
 	{
-		
 		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
@@ -201,6 +254,7 @@ void UGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 
 void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 {
+	Character->GetAmmoCountMap()->Emplace(Explosive, *(Character->GetAmmoCountMap()->Find(Explosive)) - 1);
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
@@ -233,6 +287,7 @@ void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 
 void UGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 {
+	Character->GetAmmoCountMap()->Emplace(Flare, *(Character->GetAmmoCountMap()->Find(Flare)) - 1);
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
@@ -264,6 +319,7 @@ void UGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 
 void UGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 {
+	Character->GetAmmoCountMap()->Emplace(Piercing, *(Character->GetAmmoCountMap()->Find(Piercing)) - 1);
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
