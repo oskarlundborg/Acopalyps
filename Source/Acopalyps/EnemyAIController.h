@@ -17,6 +17,7 @@ class ACOPALYPS_API AEnemyAIController : public AAIController
 
 public:
 	virtual void Tick(float DeltaSeconds) override;
+	void SetIsRagdoll(bool val);
 
 protected:
 	void BeginPlay() override;
