@@ -92,30 +92,6 @@ public:
 	/** Change Ammo to Piercing Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoPiercingAction;
-
-	// Regular ammo impact sound and particle effect
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UNiagaraSystem* ImpactEffectRegularAmmo;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* ImpactSoundRegularAmmo;
-	
-	// Piercing ammo impact sound and particle effect
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UNiagaraSystem* ImpactEffectPiercingAmmo;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* ImpactSoundPiercingAmmo;
-	
-	// Explosive ammo impact sound and particle effect
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UNiagaraSystem* ImpactEffectExplosiveAmmo;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* ImpactSoundExplosiveAmmo;
-	
-	// Flare ammo impact sound and particle effect
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UNiagaraSystem* ImpactEffectFlareAmmo;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* ImpactSoundFlareAmmo;
 	
 	/** Sets default values for this component's properties */
 	UGun();
