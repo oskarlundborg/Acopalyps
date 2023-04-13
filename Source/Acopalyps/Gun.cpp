@@ -34,18 +34,12 @@ void UGun::Fire()
 		if( *(Character->GetAmmoCountMap()->Find(Regular)) > 0 )
 		{
 			FireRegular(Hit, ShotDirection);
-			// Temp //
-			Character->GetAmmoCountMap()->Emplace(Regular, 1);
-			/////////
 		}
 		break;
 	case Piercing:
 		if( *(Character->GetAmmoCountMap()->Find(Piercing)) > 0 )
 		{
 			FirePiercing(Hit, ShotDirection);
-			// Temp //
-			Character->GetAmmoCountMap()->Emplace(Piercing, 1);
-			/////////
 		}
 		break;
 	default:break;
