@@ -4,10 +4,7 @@
 #include "EnemyAICharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAIController.h"
-<<<<<<< HEAD
 #include "HealthComponent.h"
-=======
->>>>>>> Isabel_AIRefinement
 #include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
@@ -98,10 +95,7 @@ void AEnemyAICharacter::RagDoll()
 
 void AEnemyAICharacter::UnRagDoll()
 {
-<<<<<<< HEAD
 	if(IsDead()) return;
-=======
->>>>>>> Isabel_AIRefinement
 	GetMesh()->SetSimulatePhysics(false);
 	GetMesh()->SetCollisionProfileName("CharacterMesh");
 	GetCapsuleComponent()->SetCollisionProfileName("Enemy");
