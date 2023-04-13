@@ -18,6 +18,7 @@ void AEnemyAIController::BeginPlay()
 	
 	if(BehaviorTree) RunBehaviorTree(BehaviorTree);
 	GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), this->GetPawn()->GetActorLocation());
+	SetIsRagdoll(false);
 }
 
 void AEnemyAIController::Tick(float DeltaSeconds)
@@ -25,3 +26,7 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
+void AEnemyAIController::SetIsRagdoll(bool val)
+{
+	GetBlackboardComponent()->SetValueAsBool("IsRagdoll", val);
+}

@@ -3,6 +3,7 @@
 
 #include "EnemyAICharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
+#include "EnemyAIController.h"
 #include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
@@ -86,17 +87,18 @@ void AEnemyAICharacter::RagDoll()
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName("RagDoll");
 	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
-	//GetMesh()->WakeAllRigidBodies();
-	//GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
-	LastPositionBeforeRagdoll = GetActorLocation();
-	LastRotationBeforeRagdoll = GetActorRotation();
+	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
+	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
 }
 
 void AEnemyAICharacter::UnRagDoll()
 {
-	//GetMesh()->SetCollisionProfileName("Enemy");
 	GetMesh()->SetSimulatePhysics(false);
-	//GetMesh()->PutAllRigidBodiesToSleep();
-	//SetActorRelativeLocation(LastPositionBeforeRagdoll);
-	//SetActorRelativeRotation(LastRotationBeforeRagdoll);
+	GetMesh()->SetCollisionProfileName("CharacterMesh");
+	GetCapsuleComponent()->SetCollisionProfileName("Enemy");
+	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(false);
+	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
+	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
+	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
