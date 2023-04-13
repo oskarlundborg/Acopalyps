@@ -20,7 +20,6 @@ class ACOPALYPS_API UGun : public USkeletalMeshComponent
 {
 	GENERATED_BODY()
 public:
-
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
@@ -32,6 +31,34 @@ public:
 	/** Gun muzzle's offset from the characters location */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	FVector MuzzleOffset;
+
+	/** Gun muzzle's offset from the characters location */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UParticleSystem* MuzzleFlash;
+
+	// Regular ammo impact sound and particle effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UParticleSystem* ImpactEffectRegularAmmo;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	USoundBase* ImpactSoundRegularAmmo;
+	
+	// Piercing ammo impact sound and particle effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UParticleSystem* ImpactEffectPiercingAmmo;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	USoundBase* ImpactSoundPiercingAmmo;
+	
+	// Explosive ammo impact sound and particle effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UParticleSystem* ImpactEffectExplosiveAmmo;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	USoundBase* ImpactSoundExplosiveAmmo;
+	
+	// Flare ammo impact sound and particle effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UParticleSystem* ImpactEffectFlareAmmo;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	USoundBase* ImpactSoundFlareAmmo;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))

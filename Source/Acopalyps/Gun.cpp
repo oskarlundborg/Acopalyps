@@ -175,6 +175,14 @@ void UGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
 		{
+			if (ImpactSoundRegularAmmo != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundRegularAmmo, Hit.Location);
+			}
+			if (ImpactEffectRegularAmmo != nullptr)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectRegularAmmo, Hit.Location, ShotDirection.Rotation());
+			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
@@ -209,6 +217,14 @@ void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
 		{
+			if (ImpactSoundExplosiveAmmo != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundExplosiveAmmo, Hit.Location);
+			}
+			if (ImpactEffectExplosiveAmmo != nullptr)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
+			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
@@ -218,6 +234,7 @@ void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
 	}
+	
 	
 	// Try and play a firing animation if specified
 	if (FireAnimation != nullptr)
@@ -240,6 +257,14 @@ void UGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
 		{
+			if (ImpactSoundFlareAmmo != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundFlareAmmo, Hit.Location);
+			}
+			if (ImpactEffectFlareAmmo != nullptr)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectFlareAmmo, Hit.Location, ShotDirection.Rotation());
+			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
@@ -271,6 +296,14 @@ void UGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
 		{
+			if (ImpactSoundPiercingAmmo != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundPiercingAmmo, Hit.Location);
+			}
+			if (ImpactEffectPiercingAmmo != nullptr)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectPiercingAmmo, Hit.Location, ShotDirection.Rotation());
+			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
