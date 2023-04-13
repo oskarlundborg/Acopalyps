@@ -3,6 +3,11 @@
 
 #include "EnemyAICharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
+#include "EnemyAIController.h"
+<<<<<<< HEAD
+#include "HealthComponent.h"
+=======
+>>>>>>> Isabel_AIRefinement
 #include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
@@ -14,6 +19,8 @@ AEnemyAICharacter::AEnemyAICharacter()
 
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -28,8 +35,6 @@ void AEnemyAICharacter::BeginPlay()
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunSocket"));
 	Gun->SetOwner(this);
 	*/
-
-	Health = MaxHealth;
 }
 
 // Called every frame
@@ -48,9 +53,10 @@ void AEnemyAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	DamageApplied = FMath::Min(Health, DamageApplied);
-	Health -= DamageApplied;
-	UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
+	if(IsDead()) return DamageApplied;
+	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
+	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
+	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
 
 	
 	if(IsDead())
@@ -59,9 +65,9 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			PrototypeGameModeBase->PawnKilled(this);
 		}
-		DetachFromControllerPendingDestroy();
-		GetCapsuleComponent()->SetCollisionProfileName("NoCollision"); // Crashes the engine
+		//GetCapsuleComponent()->SetCollisionProfileName("NoCollision"); // Crashes the engine
 		RagDoll();
+		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
 	return DamageApplied;
@@ -69,7 +75,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 bool AEnemyAICharacter::IsDead() const
 {
-	return Health <= 0;
+	return HealthComponent->IsDead();
 }
 
 void AEnemyAICharacter::Shoot()
@@ -78,7 +84,7 @@ void AEnemyAICharacter::Shoot()
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {
-	return Health/MaxHealth;
+	return HealthComponent->GetHealthPercent();
 }
 
 void AEnemyAICharacter::RagDoll()
@@ -86,17 +92,22 @@ void AEnemyAICharacter::RagDoll()
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName("RagDoll");
 	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
-	//GetMesh()->WakeAllRigidBodies();
-	//GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
-	LastPositionBeforeRagdoll = GetActorLocation();
-	LastRotationBeforeRagdoll = GetActorRotation();
+	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
+	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
 }
 
 void AEnemyAICharacter::UnRagDoll()
 {
-	//GetMesh()->SetCollisionProfileName("Enemy");
+<<<<<<< HEAD
+	if(IsDead()) return;
+=======
+>>>>>>> Isabel_AIRefinement
 	GetMesh()->SetSimulatePhysics(false);
-	//GetMesh()->PutAllRigidBodiesToSleep();
-	//SetActorRelativeLocation(LastPositionBeforeRagdoll);
-	//SetActorRelativeRotation(LastRotationBeforeRagdoll);
+	GetMesh()->SetCollisionProfileName("CharacterMesh");
+	GetCapsuleComponent()->SetCollisionProfileName("Enemy");
+	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(false);
+	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
+	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
+	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
