@@ -261,28 +261,33 @@ void UGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-
 void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 {
 	Character->GetAmmoCountMap()->Emplace(Explosive, *(Character->GetAmmoCountMap()->Find(Explosive)) - 1);
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
-		DrawDebugSphere(GetWorld(),Hit.Location,30,10,FColor::Red,true,5);
+		DrawDebugSphere(GetWorld(),Hit.Location,120,10,FColor::Red,true,5);
 		
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
 		{
-			if (ImpactSoundExplosiveAmmo != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundExplosiveAmmo, Hit.Location);
-			}
-			if (ImpactEffectExplosiveAmmo != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
-			}
-			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				GetWorld(),
+				80.f,
+				20.f,
+				Hit.Location,
+				60.f,
+				120.f,
+				1.f,
+				nullptr,
+				{},
+				Character,
+				GetOwnerController(),
+				ECC_Visibility
+				);
+			//AddRadialForce(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
+			//AddRadialImpulse(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
 		}
 	}
 

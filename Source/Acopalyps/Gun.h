@@ -151,5 +151,6 @@ private:
 	void FirePiercing(FHitResult &Hit, FVector &ShotDirection);
 
 	/** Reloading */
+	UFUNCTION()
 	void Reload();
 };
