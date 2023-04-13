@@ -65,6 +65,15 @@ void AAcopalypsCharacter::BeginPlay()
 	LegMesh->OnComponentBeginOverlap.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackOverlap);
 
 	Health = MaxHealth;
+	AmmoCountMap.Add(Regular, 10);
+	AmmoCountMap.Add(Piercing, 10);
+	AmmoCountMap.Add(Explosive, 1);
+	AmmoCountMap.Add(Flare, 1);
+}
+
+TMap<AMMO_TYPES, int32>* AAcopalypsCharacter::GetAmmoCountMap()
+{
+	return &AmmoCountMap;
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -120,6 +129,10 @@ void AAcopalypsCharacter::Kick()
 {
 	if (Controller != nullptr)
 	{
+		for( auto& type : AmmoCountMap )
+		{
+			UE_LOG(LogTemp, Display, TEXT("Type: %d Ammo: %i"), type.Key, type.Value);
+		}
 		// makes leg mesh visible, and sets collision response of the leg mesh and box collider to collide
 		LegMesh->SetVisibility(true);
 		LegMesh->SetCollisionProfileName("Weapon");
