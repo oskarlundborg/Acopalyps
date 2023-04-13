@@ -4,6 +4,7 @@
 #include "EnemyAICharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAIController.h"
+#include "HealthComponent.h"
 #include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
@@ -15,6 +16,8 @@ AEnemyAICharacter::AEnemyAICharacter()
 
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -29,8 +32,6 @@ void AEnemyAICharacter::BeginPlay()
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunSocket"));
 	Gun->SetOwner(this);
 	*/
-
-	Health = MaxHealth;
 }
 
 // Called every frame
@@ -49,9 +50,10 @@ void AEnemyAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	DamageApplied = FMath::Min(Health, DamageApplied);
-	Health -= DamageApplied;
-	UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
+	if(IsDead()) return DamageApplied;
+	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
+	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
+	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
 
 	
 	if(IsDead())
@@ -60,9 +62,9 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			PrototypeGameModeBase->PawnKilled(this);
 		}
-		DetachFromControllerPendingDestroy();
-		GetCapsuleComponent()->SetCollisionProfileName("NoCollision"); // Crashes the engine
+		//GetCapsuleComponent()->SetCollisionProfileName("NoCollision"); // Crashes the engine
 		RagDoll();
+		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
 	return DamageApplied;
@@ -70,7 +72,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 bool AEnemyAICharacter::IsDead() const
 {
-	return Health <= 0;
+	return HealthComponent->IsDead();
 }
 
 void AEnemyAICharacter::Shoot()
@@ -79,7 +81,7 @@ void AEnemyAICharacter::Shoot()
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {
-	return Health/MaxHealth;
+	return HealthComponent->GetHealthPercent();
 }
 
 void AEnemyAICharacter::RagDoll()
@@ -93,6 +95,7 @@ void AEnemyAICharacter::RagDoll()
 
 void AEnemyAICharacter::UnRagDoll()
 {
+	if(IsDead()) return;
 	GetMesh()->SetSimulatePhysics(false);
 	GetMesh()->SetCollisionProfileName("CharacterMesh");
 	GetCapsuleComponent()->SetCollisionProfileName("Enemy");

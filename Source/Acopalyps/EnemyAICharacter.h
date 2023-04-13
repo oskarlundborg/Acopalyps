@@ -24,6 +24,9 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 	/** Pawn mesh: 3st person view */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* CharacterMesh;
+
+	UPROPERTY(VisibleAnywhere, Category=Health)
+	class UHealthComponent* HealthComponent;
 	
 public:
 	// Sets default values for this character's properties
@@ -32,12 +35,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditDefaultsOnly)
-	float MaxHealth = 50.f;
-
-	UPROPERTY(VisibleAnywhere)
-	float Health;
 
 	FTimerHandle RagDollTimerHandle;
 
