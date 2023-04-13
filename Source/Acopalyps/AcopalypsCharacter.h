@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Gun.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "AcopalypsCharacter.generated.h"
@@ -126,5 +127,9 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	// Map of Ammo types and their current amount
+	TMap<AMMO_TYPES, int32>* GetAmmoCountMap();
+	TMap<AMMO_TYPES, int32> AmmoCountMap;
 };
 

@@ -8,7 +8,7 @@
 #include "Gun.generated.h"
 
 UENUM()
-enum AMMO_TYPES{Regular, Explosive, Flare, Piercing};
+enum AMMO_TYPES{Regular, Piercing, Explosive, Flare};
 
 class AAcopalypsCharacter;
 class UNiagaraSystem;
@@ -69,6 +69,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* FireAction;
 	
+	/** Alternate Fire Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* AlternativeFireAction;
+	
+	/** Relaod Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* ReloadAction;
+	
 	/** Change Ammo to Regular Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoRegularAction;
@@ -92,10 +100,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void AttachWeapon(AAcopalypsCharacter* TargetCharacter);
 
-	/** Make the weapon Fire a Projectile */
+	/** Make the weapon Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
 
+	/** Make the weapon Alternate Fire */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void AlternateFire();
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
@@ -105,8 +116,10 @@ private:
 	/** The Character holding this weapon*/
 	AAcopalypsCharacter* Character;
 
+	/** Weapon Max Range */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float MaxRange = 5000.0;
+	/** Damage Variable */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float Damage = 10.f;
 	
@@ -114,11 +127,16 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float ImpulseForce = 500.f;
 
+	/** Ammo variables **/
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxAmmo = 12;
+
 	bool GunTrace(FHitResult &HitResult, FVector &ShootDirection);
 	AController* GetOwnerController() const;
 
 	/** Equiped Ammo Type */
 	AMMO_TYPES CurrentAmmoType;
+	AMMO_TYPES CurrentAlternateAmmoType;
 
 	/** Ammo Setter Functions */
 	void SetAmmoRegular();
@@ -131,4 +149,7 @@ private:
 	void FireExplosive(FHitResult &Hit, FVector &ShotDirection);
 	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
 	void FirePiercing(FHitResult &Hit, FVector &ShotDirection);
+
+	/** Reloading */
+	void Reload();
 };
