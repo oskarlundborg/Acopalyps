@@ -11,6 +11,7 @@ UENUM()
 enum AMMO_TYPES{Regular, Explosive, Flare, Piercing};
 
 class AAcopalypsCharacter;
+class UNiagaraSystem;
 
 /**
  * 
@@ -34,29 +35,29 @@ public:
 
 	/** Gun muzzle's offset from the characters location */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UParticleSystem* MuzzleFlash;
+	UNiagaraSystem* MuzzleFlash;
 
 	// Regular ammo impact sound and particle effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UParticleSystem* ImpactEffectRegularAmmo;
+	UNiagaraSystem* ImpactEffectRegularAmmo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* ImpactSoundRegularAmmo;
 	
 	// Piercing ammo impact sound and particle effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UParticleSystem* ImpactEffectPiercingAmmo;
+	UNiagaraSystem* ImpactEffectPiercingAmmo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* ImpactSoundPiercingAmmo;
 	
 	// Explosive ammo impact sound and particle effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UParticleSystem* ImpactEffectExplosiveAmmo;
+	UNiagaraSystem* ImpactEffectExplosiveAmmo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* ImpactSoundExplosiveAmmo;
 	
 	// Flare ammo impact sound and particle effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UParticleSystem* ImpactEffectFlareAmmo;
+	UNiagaraSystem* ImpactEffectFlareAmmo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* ImpactSoundFlareAmmo;
 

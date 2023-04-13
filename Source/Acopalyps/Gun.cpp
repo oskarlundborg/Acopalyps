@@ -9,6 +9,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/DamageEvents.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 UGun::UGun()
 {
@@ -181,7 +183,7 @@ void UGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 			}
 			if (ImpactEffectRegularAmmo != nullptr)
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectRegularAmmo, Hit.Location, ShotDirection.Rotation());
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectRegularAmmo, Hit.Location, ShotDirection.Rotation());
 			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
@@ -223,7 +225,7 @@ void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 			}
 			if (ImpactEffectExplosiveAmmo != nullptr)
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
 			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
@@ -263,7 +265,7 @@ void UGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 			}
 			if (ImpactEffectFlareAmmo != nullptr)
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectFlareAmmo, Hit.Location, ShotDirection.Rotation());
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectFlareAmmo, Hit.Location, ShotDirection.Rotation());
 			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
@@ -302,7 +304,7 @@ void UGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 			}
 			if (ImpactEffectPiercingAmmo != nullptr)
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectPiercingAmmo, Hit.Location, ShotDirection.Rotation());
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectPiercingAmmo, Hit.Location, ShotDirection.Rotation());
 			}
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
