@@ -100,7 +100,7 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetCollisionProfileName("CharacterMesh");
 	GetCapsuleComponent()->SetCollisionProfileName("Enemy");
 	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(false);
-	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation(), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
