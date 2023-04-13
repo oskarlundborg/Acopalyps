@@ -11,7 +11,6 @@
 #include "Engine/LocalPlayer.h"
 #include "Animation/AnimInstance.h"
 #include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 
 UGun::UGun()
 {
