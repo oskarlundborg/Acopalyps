@@ -11,7 +11,6 @@
 #include "Engine/LocalPlayer.h"
 #include "Animation/AnimInstance.h"
 #include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 
 UGun::UGun()
 {
@@ -266,6 +265,14 @@ void UGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
 		{
+			if (ImpactSoundExplosiveAmmo != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundExplosiveAmmo, Hit.Location);
+			}
+			if (ImpactEffectExplosiveAmmo != nullptr)
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
+			}
 			UGameplayStatics::ApplyRadialDamageWithFalloff(
 				GetWorld(),
 				80.f,
