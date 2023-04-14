@@ -134,6 +134,15 @@ public:
 	TEnumAsByte<AMMO_TYPES> CurrentAmmoType;
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType;
+	
+	UPROPERTY(BlueprintReadOnly)
+	int32 RegularMag = 12;
+	UPROPERTY(BlueprintReadOnly)
+	int32 PiercingMag = 12;
+	UPROPERTY(BlueprintReadOnly)
+	int32 ExplosiveMag = 1;
+	UPROPERTY(BlueprintReadOnly)
+	int32 FlareMag = 1;
 
 protected:
 	/** Ends gameplay for this component. */
@@ -161,11 +170,6 @@ private:
 
 	bool GunTrace(FHitResult &HitResult, FVector &ShootDirection);
 	AController* GetOwnerController() const;
-	
-	int32 RegularMag = 12;
-	int32 PiercingMag = 12;
-	int32 ExplosiveMag = 1;
-	int32 FlareMag = 1;
 
 	/** Ammo Setter Functions */
 	void SetAmmoRegular();
