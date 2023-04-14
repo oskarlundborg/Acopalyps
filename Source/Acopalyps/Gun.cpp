@@ -19,6 +19,14 @@ AGun::AGun()
 	SetAmmoExplosive();
 }
 
+void AGun::BeginPlay()
+{
+	Super::BeginPlay();
+
+	//Root = CreateDefaultSubobject<USceneComponent>();
+}
+
+
 /** Fire standard barrel of the gun */
 void AGun::Fire()
 {
@@ -78,9 +86,6 @@ void AGun::AlternateFire()
 		{
 			FireExplosive(Hit, ShotDirection);
 			AlternateReload();
-			// Temp //
-			//Character->GetAmmoCountMap()->Emplace(Explosive, 1);
-			/////////
 		}
 		break;
 	case Flare:
@@ -88,9 +93,6 @@ void AGun::AlternateFire()
 		{
 			FireFlare(Hit, ShotDirection);
 			AlternateReload();
-			// Temp //
-			//Character->GetAmmoCountMap()->Emplace(Flare, 1);
-			/////////
 		}
 		break;
 	default:break;
@@ -181,11 +183,6 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
-	UE_LOG(LogTemp, Display, TEXT("########### BEFORE ##################"));
-	for( auto& t : *(Character->GetAmmoCountMap()) )
-	{
-		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
-	}
 	int32 Total;
 	switch (CurrentAmmoType)
 	{
@@ -216,21 +213,10 @@ void AGun::Reload()
 		break;
 	default:break;
 	}
-	UE_LOG(LogTemp, Display, TEXT("########### AFTER ##################"));
-	for( auto& t : *(Character->GetAmmoCountMap()) )
-	{
-		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
-	}
-	UE_LOG(LogTemp, Display, TEXT("#################################################"));
 }
 
 void AGun::AlternateReload()
 {
-	UE_LOG(LogTemp, Display, TEXT("########### BEFORE ##################"));
-	for( auto& t : *(Character->GetAmmoCountMap()) )
-	{
-		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
-	}
 	// Load alternate ammo
 	int32 Total;
 	switch (CurrentAlternateAmmoType)
@@ -240,7 +226,7 @@ void AGun::AlternateReload()
 		if( Total <= 1 )
 		{
 			Character->GetAmmoCountMap()->Emplace(Explosive,0);
-			SetExplosiveMag(*(Character->GetAmmoCountMap()->Find(Explosive)));
+			SetExplosiveMag(Total);
 		} else
 		{
 			Character->GetAmmoCountMap()->Emplace(Explosive,Total - 1);
@@ -252,7 +238,7 @@ void AGun::AlternateReload()
 		if( Total <= 1 )
 		{
 			Character->GetAmmoCountMap()->Emplace(Flare,0);
-			SetFlareMag(*(Character->GetAmmoCountMap()->Find(Flare)));
+			SetFlareMag(Total);
 		} else
 		{
 			Character->GetAmmoCountMap()->Emplace(Flare,Total - 1);
@@ -261,12 +247,6 @@ void AGun::AlternateReload()
 		break;
 	default:break;
 	}
-	UE_LOG(LogTemp, Display, TEXT("########### AFTER ##################"));
-	for( auto& t : *(Character->GetAmmoCountMap()) )
-	{
-		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
-	}
-	UE_LOG(LogTemp, Display, TEXT("#################################################"));
 }
 
 void AGun::SetRegularMag(int32 Size)
