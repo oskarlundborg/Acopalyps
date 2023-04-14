@@ -144,6 +144,8 @@ public:
 	int32 FlareMag = 1;
 
 protected:
+	UFUNCTION()
+	virtual void BeginPlay() override;
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
