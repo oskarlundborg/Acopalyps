@@ -62,7 +62,6 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			PrototypeGameModeBase->PawnKilled(this);
 		}
-		//GetCapsuleComponent()->SetCollisionProfileName("NoCollision"); // Crashes the engine
 		RagDoll();
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
@@ -90,8 +89,15 @@ void AEnemyAICharacter::RagDoll()
 	GetMesh()->SetCollisionProfileName("RagDoll");
 	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
 	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
-	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 1.5f, false, 1.f);
+	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
+
+void AEnemyAICharacter::RagDoll(FVector ForceDirection)
+{
+	RagDoll();
+	GetMesh()->AddForceToAllBodiesBelow(ForceDirection, TEXT("pelvis"), true);
+}
+
 
 void AEnemyAICharacter::UnRagDoll()
 {
@@ -100,7 +106,7 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetCollisionProfileName("CharacterMesh");
 	GetCapsuleComponent()->SetCollisionProfileName("Enemy");
 	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(false);
-	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation(), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);

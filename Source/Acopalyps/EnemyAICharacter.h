@@ -61,6 +61,8 @@ public:
 
 	void RagDoll();
 
+	void RagDoll(FVector ForceDirection);
+
 	void UnRagDoll();
 
 };
