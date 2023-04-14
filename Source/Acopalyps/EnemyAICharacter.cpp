@@ -5,6 +5,8 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAIController.h"
 #include "HealthComponent.h"
+
+#include "AcopalypsProjectile.h"
 #include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
@@ -25,13 +27,6 @@ void AEnemyAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
-	// Sets mesh for gun to socket on Character Mesh, and sets collision presets
-	/*
-	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunSocket"));
-	Gun->SetOwner(this);
-	*/
 }
 
 // Called every frame
@@ -85,17 +80,18 @@ float AEnemyAICharacter::GetHealthPercent() const
 
 void AEnemyAICharacter::RagDoll()
 {
-	GetMesh()->SetSimulatePhysics(true);
-	GetMesh()->SetCollisionProfileName("RagDoll");
-	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
-	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
-	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
+	RagDoll(FVector::ZeroVector);
 }
+
 
 void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 {
-	RagDoll();
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName("RagDoll");
 	GetMesh()->AddForceToAllBodiesBelow(ForceDirection, TEXT("pelvis"), true);
+	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
+	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
+	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
 
 
@@ -111,3 +107,4 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
+

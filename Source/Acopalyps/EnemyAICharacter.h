@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Gun.h"
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
@@ -19,7 +20,7 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 	/** Gun object to be attached to enemy character*/
 	//UPROPERTY()
 	//AGun* Gun;
-	
+	void UnRagDoll();
 		
 	/** Pawn mesh: 3st person view */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
@@ -27,10 +28,14 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category=Health)
 	class UHealthComponent* HealthComponent;
+
+	
 	
 public:
 	// Sets default values for this character's properties
 	AEnemyAICharacter();
+
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,7 +67,5 @@ public:
 	void RagDoll();
 
 	void RagDoll(FVector ForceDirection);
-
-	void UnRagDoll();
 
 };
