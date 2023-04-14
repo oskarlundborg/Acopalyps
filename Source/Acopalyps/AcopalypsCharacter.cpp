@@ -10,6 +10,7 @@
 #include "Components/BoxComponent.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,13 +66,34 @@ void AAcopalypsCharacter::BeginPlay()
 	LegMesh->OnComponentBeginOverlap.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackOverlap);
 
 	Health = MaxHealth;
-	AmmoCountMap.Add(Regular, 10);
-	AmmoCountMap.Add(Piercing, 10);
-	AmmoCountMap.Add(Explosive, 1);
-	AmmoCountMap.Add(Flare, 1);
+
+	if( GunClass != nullptr )
+	{
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		Gun->AttachToComponent(
+			Mesh1P,
+			AttachmentRules,
+			FName(TEXT("GripPoint"))
+			);
+		SetHasRifle(true);
+		Gun->SetOwner(this);
+		Gun->AttachWeaponInputs(this);
+	}
+
+	// Add start ammo
+	AmmoCountMap.Add(Regular, 50);
+	AmmoCountMap.Add(Piercing, 50);
+	AmmoCountMap.Add(Explosive, 10);
+	AmmoCountMap.Add(Flare, 10);
+	
+	for( auto& t : AmmoCountMap )
+	{
+		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
+	}
 }
 
-TMap<AMMO_TYPES, int32>* AAcopalypsCharacter::GetAmmoCountMap()
+TMap<TEnumAsByte<AMMO_TYPES>, int32>* AAcopalypsCharacter::GetAmmoCountMap()
 {
 	return &AmmoCountMap;
 }
