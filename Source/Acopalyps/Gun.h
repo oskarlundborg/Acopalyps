@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NavigationSystemTypes.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Gun.generated.h"
 
