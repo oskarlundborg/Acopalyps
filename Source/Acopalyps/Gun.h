@@ -17,7 +17,7 @@ class UNiagaraSystem;
  * 
  */
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ACOPALYPS_API UGun : public USkeletalMeshComponent
+class ACOPALYPS_API AGun : public AActor
 {
 	GENERATED_BODY()
 public:
@@ -94,11 +94,11 @@ public:
 	class UInputAction* ChangeAmmoPiercingAction;
 	
 	/** Sets default values for this component's properties */
-	UGun();
+	AGun();
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void AttachWeapon(AAcopalypsCharacter* TargetCharacter);
+	void AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter);
 
 	/** Make the weapon Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
@@ -107,6 +107,9 @@ public:
 	/** Make the weapon Alternate Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void AlternateFire();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection);
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()

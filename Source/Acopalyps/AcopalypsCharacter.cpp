@@ -65,6 +65,21 @@ void AAcopalypsCharacter::BeginPlay()
 	LegMesh->OnComponentBeginOverlap.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackOverlap);
 
 	Health = MaxHealth;
+
+	if( GunClass != nullptr )
+	{
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		Gun->AttachToComponent(
+			Mesh1P,
+			AttachmentRules,
+			FName(TEXT("GripPoint"))
+			);
+		SetHasRifle(true);
+		Gun->SetOwner(this);
+		Gun->AttachWeaponInputs(this);
+	}
+	
 	AmmoCountMap.Add(Regular, 10);
 	AmmoCountMap.Add(Piercing, 10);
 	AmmoCountMap.Add(Explosive, 1);

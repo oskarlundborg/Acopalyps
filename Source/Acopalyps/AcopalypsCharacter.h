@@ -127,6 +127,10 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AGun> GunClass;
+	AGun* Gun;
 
 	// Map of Ammo types and their current amount
 	TMap<AMMO_TYPES, int32>* GetAmmoCountMap();
