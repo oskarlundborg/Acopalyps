@@ -183,8 +183,7 @@ void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AAc
 		if(Enemy)
 		{
 			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
-			Enemy->RagDoll();
-			Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
+			Enemy->RagDoll(GetActorForwardVector() * 50000 + FVector(0, 0, 4000));
 		}
 	}
 }
@@ -200,8 +199,8 @@ void AAcopalypsCharacter::OnKickAttackOverlap(UPrimitiveComponent* OverlappedCom
 		if(Enemy)
 		{
 			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
-			Enemy->RagDoll();
-			Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
+			Enemy->RagDoll(GetActorForwardVector() * 50000 + FVector(0, 0, 4000));
+			//Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
 		}
 	}
 }
