@@ -32,13 +32,13 @@ void AGun::Fire()
 	switch (CurrentAmmoType)
 	{
 	case Regular:
-		if( *(Character->GetAmmoCountMap()->Find(Regular)) > 0 )
+		if( RegularMag > 0 )
 		{
 			FireRegular(Hit, ShotDirection);
 		}
 		break;
 	case Piercing:
-		if( *(Character->GetAmmoCountMap()->Find(Piercing)) > 0 )
+		if( PiercingMag > 0 )
 		{
 			FirePiercing(Hit, ShotDirection);
 		}
@@ -74,22 +74,22 @@ void AGun::AlternateFire()
 	switch (CurrentAlternateAmmoType)
 	{
 	case Explosive:
-		if( *(Character->GetAmmoCountMap()->Find(Explosive)) > 0 )
+		if( ExplosiveMag > 0 )
 		{
 			FireExplosive(Hit, ShotDirection);
-			
+			AlternateReload();
 			// Temp //
-			Character->GetAmmoCountMap()->Emplace(Explosive, 1);
+			//Character->GetAmmoCountMap()->Emplace(Explosive, 1);
 			/////////
 		}
 		break;
 	case Flare:
-		if( *(Character->GetAmmoCountMap()->Find(Flare)) > 0 )
+		if( FlareMag > 0 )
 		{
 			FireFlare(Hit, ShotDirection);
-			
+			AlternateReload();
 			// Temp //
-			Character->GetAmmoCountMap()->Emplace(Flare, 1);
+			//Character->GetAmmoCountMap()->Emplace(Flare, 1);
 			/////////
 		}
 		break;
@@ -181,7 +181,109 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
-	Character->GetAmmoCountMap()->Emplace(CurrentAmmoType, MaxAmmo);
+	UE_LOG(LogTemp, Display, TEXT("########### BEFORE ##################"));
+	for( auto& t : *(Character->GetAmmoCountMap()) )
+	{
+		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
+	}
+	int32 Total;
+	switch (CurrentAmmoType)
+	{
+	case Regular:
+		// Load regular ammo if has
+		Total = *(Character->GetAmmoCountMap()->Find(Regular));
+		if( Total <= 12 )
+		{
+			Character->GetAmmoCountMap()->Emplace(Regular, 0);
+			SetRegularMag(Total);
+		} else
+		{
+			Character->GetAmmoCountMap()->Emplace(Regular,(Total - 12) + RegularMag);
+			SetRegularMag(12);
+		}
+		break;
+	case Piercing:
+		Total = *(Character->GetAmmoCountMap()->Find(Piercing));
+		if( Total <= 12 )
+		{
+			Character->GetAmmoCountMap()->Emplace(Piercing, 0);
+			SetPiercingMag(Total);
+		} else
+		{
+			Character->GetAmmoCountMap()->Emplace(Piercing,(Total - 12) + PiercingMag);
+			SetPiercingMag(12);
+		}
+		break;
+	default:break;
+	}
+	UE_LOG(LogTemp, Display, TEXT("########### AFTER ##################"));
+	for( auto& t : *(Character->GetAmmoCountMap()) )
+	{
+		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
+	}
+	UE_LOG(LogTemp, Display, TEXT("#################################################"));
+}
+
+void AGun::AlternateReload()
+{
+	UE_LOG(LogTemp, Display, TEXT("########### BEFORE ##################"));
+	for( auto& t : *(Character->GetAmmoCountMap()) )
+	{
+		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
+	}
+	// Load alternate ammo
+	int32 Total;
+	switch (CurrentAlternateAmmoType)
+	{
+	case Explosive:
+		Total = *(Character->GetAmmoCountMap()->Find(Explosive));
+		if( Total <= 1 )
+		{
+			Character->GetAmmoCountMap()->Emplace(Explosive,0);
+			SetExplosiveMag(*(Character->GetAmmoCountMap()->Find(Explosive)));
+		} else
+		{
+			Character->GetAmmoCountMap()->Emplace(Explosive,Total - 1);
+			SetExplosiveMag(1);
+		}
+		break;
+	case Flare:
+		Total = *(Character->GetAmmoCountMap()->Find(Flare));
+		if( Total <= 1 )
+		{
+			Character->GetAmmoCountMap()->Emplace(Flare,0);
+			SetFlareMag(*(Character->GetAmmoCountMap()->Find(Flare)));
+		} else
+		{
+			Character->GetAmmoCountMap()->Emplace(Flare,Total - 1);
+			SetFlareMag(1);
+		}
+		break;
+	default:break;
+	}
+	UE_LOG(LogTemp, Display, TEXT("########### AFTER ##################"));
+	for( auto& t : *(Character->GetAmmoCountMap()) )
+	{
+		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
+	}
+	UE_LOG(LogTemp, Display, TEXT("#################################################"));
+}
+
+void AGun::SetRegularMag(int32 Size)
+{
+	RegularMag = Size;
+}
+void AGun::SetPiercingMag(int32 Size)
+{
+	PiercingMag = Size;
+}
+void AGun::SetExplosiveMag(int32 Size)
+{
+	ExplosiveMag = Size;
+}
+void AGun::SetFlareMag(int32 Size)
+{
+	FlareMag = Size;
 }
 
 void AGun::SetAmmoRegular()
@@ -204,10 +306,21 @@ void AGun::SetAmmoPiercing()
 	CurrentAmmoType=AMMO_TYPES::Piercing;
 }
 
+AMMO_TYPES AGun::GetCurrentAmmoType()
+{
+	return CurrentAmmoType;
+}
+
+AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
+{
+	return CurrentAlternateAmmoType;
+}
+
 void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 {
 	// Decrease ammo count by 1
-	Character->GetAmmoCountMap()->Emplace(Regular, *(Character->GetAmmoCountMap()->Find(Regular)) - 1);
+	//Character->GetAmmoCountMap()->Emplace(Regular, *(Character->GetAmmoCountMap()->Find(Regular)) - 1);
+	RegularMag--;
 	if(GunTrace(Hit, ShotDirection))
 	{
 		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
@@ -248,7 +361,8 @@ void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 {
-	Character->GetAmmoCountMap()->Emplace(Explosive, *(Character->GetAmmoCountMap()->Find(Explosive)) - 1);
+	//Character->GetAmmoCountMap()->Emplace(Explosive, *(Character->GetAmmoCountMap()->Find(Explosive)) - 1);
+	ExplosiveMag--;
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
@@ -304,7 +418,8 @@ void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 {
-	Character->GetAmmoCountMap()->Emplace(Flare, *(Character->GetAmmoCountMap()->Find(Flare)) - 1);
+	//Character->GetAmmoCountMap()->Emplace(Flare, *(Character->GetAmmoCountMap()->Find(Flare)) - 1);
+	FlareMag--;
 	if(GunTrace(Hit, ShotDirection))
 	{
 		
@@ -344,7 +459,8 @@ void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 {
-	Character->GetAmmoCountMap()->Emplace(Piercing, *(Character->GetAmmoCountMap()->Find(Piercing)) - 1);
+	//Character->GetAmmoCountMap()->Emplace(Piercing, *(Character->GetAmmoCountMap()->Find(Piercing)) - 1);
+	PiercingMag--;
 	if(GunTrace(Hit, ShotDirection))
 	{
 		

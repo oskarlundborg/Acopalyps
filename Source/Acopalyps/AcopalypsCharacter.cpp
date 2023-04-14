@@ -10,6 +10,7 @@
 #include "Components/BoxComponent.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,14 +80,20 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
+
+	// Add start ammo
+	AmmoCountMap.Add(Regular, 50);
+	AmmoCountMap.Add(Piercing, 50);
+	AmmoCountMap.Add(Explosive, 10);
+	AmmoCountMap.Add(Flare, 10);
 	
-	AmmoCountMap.Add(Regular, 10);
-	AmmoCountMap.Add(Piercing, 10);
-	AmmoCountMap.Add(Explosive, 1);
-	AmmoCountMap.Add(Flare, 1);
+	for( auto& t : AmmoCountMap )
+	{
+		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
+	}
 }
 
-TMap<AMMO_TYPES, int32>* AAcopalypsCharacter::GetAmmoCountMap()
+TMap<TEnumAsByte<AMMO_TYPES>, int32>* AAcopalypsCharacter::GetAmmoCountMap()
 {
 	return &AmmoCountMap;
 }
