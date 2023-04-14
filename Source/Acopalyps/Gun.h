@@ -110,6 +110,31 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection);
+
+	void SetRegularMag(int32 Size);
+	void SetPiercingMag(int32 Size);
+	void SetExplosiveMag(int32 Size);
+	void SetFlareMag(int32 Size);
+
+	/** Reloading */
+	UFUNCTION()
+	void Reload();
+	/** Reloading */
+	UFUNCTION()
+	void AlternateReload();
+
+	UFUNCTION(BlueprintGetter)
+	AMMO_TYPES GetCurrentAmmoType();
+	
+	UFUNCTION(BlueprintGetter)
+	AMMO_TYPES GetCurrentAlternateAmmoType();
+
+	/** Equiped Ammo Type */
+	UPROPERTY(BlueprintReadOnly)
+	TEnumAsByte<AMMO_TYPES> CurrentAmmoType;
+	UPROPERTY(BlueprintReadOnly)
+	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType;
+
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
@@ -136,10 +161,11 @@ private:
 
 	bool GunTrace(FHitResult &HitResult, FVector &ShootDirection);
 	AController* GetOwnerController() const;
-
-	/** Equiped Ammo Type */
-	AMMO_TYPES CurrentAmmoType;
-	AMMO_TYPES CurrentAlternateAmmoType;
+	
+	int32 RegularMag = 12;
+	int32 PiercingMag = 12;
+	int32 ExplosiveMag = 1;
+	int32 FlareMag = 1;
 
 	/** Ammo Setter Functions */
 	void SetAmmoRegular();
@@ -152,8 +178,4 @@ private:
 	void FireExplosive(FHitResult &Hit, FVector &ShotDirection);
 	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
 	void FirePiercing(FHitResult &Hit, FVector &ShotDirection);
-
-	/** Reloading */
-	UFUNCTION()
-	void Reload();
 };
