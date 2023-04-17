@@ -11,6 +11,8 @@
 #include "Engine/LocalPlayer.h"
 #include "Animation/AnimInstance.h"
 #include "NiagaraFunctionLibrary.h"
+#include "ExplosiveProjectile.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 AGun::AGun()
 {
@@ -265,32 +267,26 @@ void AGun::SetFlareMag(int32 Size)
 {
 	FlareMag = Size;
 }
-
 void AGun::SetAmmoRegular()
 {
 	CurrentAmmoType=AMMO_TYPES::Regular;
 }
-
 void AGun::SetAmmoExplosive()
 {
 	CurrentAlternateAmmoType=AMMO_TYPES::Explosive;
 }
-
 void AGun::SetAmmoFlare()
 {
 	CurrentAlternateAmmoType=AMMO_TYPES::Flare;
 }
-
 void AGun::SetAmmoPiercing()
 {
 	CurrentAmmoType=AMMO_TYPES::Piercing;
 }
-
 AMMO_TYPES AGun::GetCurrentAmmoType()
 {
 	return CurrentAmmoType;
 }
-
 AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 {
 	return CurrentAlternateAmmoType;
@@ -341,42 +337,52 @@ void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 {
-	//Character->GetAmmoCountMap()->Emplace(Explosive, *(Character->GetAmmoCountMap()->Find(Explosive)) - 1);
 	ExplosiveMag--;
-	if(GunTrace(Hit, ShotDirection))
+	if( ExplosiveProjectileClass != nullptr )
 	{
-		
-		DrawDebugSphere(GetWorld(),Hit.Location,120,10,FColor::Red,true,5);
-		
-		AActor* HitActor = Hit.GetActor();
-		if(HitActor != nullptr)
-		{
-			if (ImpactSoundExplosiveAmmo != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundExplosiveAmmo, Hit.Location);
-			}
-			if (ImpactEffectExplosiveAmmo != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
-			}
-			UGameplayStatics::ApplyRadialDamageWithFalloff(
-				GetWorld(),
-				80.f,
-				20.f,
-				Hit.Location,
-				60.f,
-				120.f,
-				1.f,
-				nullptr,
-				{},
-				Character,
-				GetOwnerController(),
-				ECC_Visibility
-				);
-			//AddRadialForce(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
-			//AddRadialImpulse(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
-		}
+		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
+		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<AExplosiveProjectile>(ExplosiveProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
+	//if(GunTrace(Hit, ShotDirection))
+	//{
+	//	
+	//	DrawDebugSphere(GetWorld(),Hit.Location,120,10,FColor::Red,true,5);
+	//	
+	//	AActor* HitActor = Hit.GetActor();
+	//	if(HitActor != nullptr)
+	//	{
+	//		if (ImpactSoundExplosiveAmmo != nullptr)
+	//		{
+	//			UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundExplosiveAmmo, Hit.Location);
+	//		}
+	//		if (ImpactEffectExplosiveAmmo != nullptr)
+	//		{
+	//			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
+	//		}
+	//		UGameplayStatics::ApplyRadialDamageWithFalloff(
+	//			GetWorld(),
+	//			80.f,
+	//			20.f,
+	//			Hit.Location,
+	//			60.f,
+	//			120.f,
+	//			1.f,
+	//			nullptr,
+	//			{},
+	//			Character,
+	//			GetOwnerController(),
+	//			ECC_Visibility
+	//			);
+	//		//AddRadialForce(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
+	//		//AddRadialImpulse(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
+	//	}
+	//}
 
 	if (FireSound != nullptr)
 	{

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "Gun.generated.h"
 
 UENUM()
@@ -183,4 +184,8 @@ private:
 	void FireExplosive(FHitResult &Hit, FVector &ShotDirection);
 	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
 	void FirePiercing(FHitResult &Hit, FVector &ShotDirection);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
+	AExplosiveProjectile* ExplosiveProjectile;
 };
