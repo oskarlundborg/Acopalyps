@@ -8,6 +8,7 @@
 #include "EnemyAICharacter.generated.h"
 
 
+class ACombatManager;
 UCLASS()
 class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 {
@@ -67,5 +68,7 @@ public:
 	void RagDoll();
 
 	void RagDoll(FVector ForceDirection);
+
+	ACombatManager* Manager;
 
 };
