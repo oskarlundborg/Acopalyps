@@ -2,45 +2,22 @@
 
 
 #include "ExplosiveProjectile.h"
-#include "GameFramework/ProjectileMovementComponent.h"
-#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
+#include "Engine/EngineTypes.h"
+#include "Components/PrimitiveComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
-AExplosiveProjectile::AExplosiveProjectile() 
+AExplosiveProjectile::AExplosiveProjectile()
 {
-	// Use a sphere as a simple collision representation
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(5.0f);
-	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
-	CollisionComp->OnComponentHit.AddDynamic(this, &AExplosiveProjectile::OnHit);		// set up a notification for when this component hits something blocking
-
-	// Players can't walk on it
-	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
-	CollisionComp->CanCharacterStepUpOn = ECB_No;
-
-	// Set as root component
-	RootComponent = CollisionComp;
-
-	// Use a ProjectileMovementComponent to govern this projectile's movement
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile"));
-	ProjectileMovement->UpdatedComponent = CollisionComp;
+	//Projectile values overriden from the base Projectile class.
 	ProjectileMovement->InitialSpeed = 3000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
-	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->bShouldBounce = false;
-	ProjectileMovement->ProjectileGravityScale = 0.f;
-
-	// Die after 3 seconds by default
-	InitialLifeSpan = 3.0f;
 }
 
-void AExplosiveProjectile::OnHit(
-	UPrimitiveComponent* HitComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse,
-	const FHitResult& Hit
-	)
+//Overriden OnHit class
+void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	AActor* HitActor = Hit.GetActor();
 	TArray<FOverlapResult> Overlaps;
@@ -71,7 +48,6 @@ void AExplosiveProjectile::OnHit(
 	Destroy();
 }
 
-/** Performs a ray casts, returns true if hit is registered */
 bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
 {
 	AController* OwnerController = GetWorld()->GetFirstPlayerController();
@@ -99,3 +75,18 @@ bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
 		Params
 		);
 }
+
+USphereComponent* AExplosiveProjectile::GetCollisionComp() const
+{
+	return CollisionComp;
+}
+
+UProjectileMovementComponent* AExplosiveProjectile::GetProjectileMovement() const
+{
+	return ProjectileMovement;
+}
+
+
+
+
+

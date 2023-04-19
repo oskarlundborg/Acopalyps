@@ -13,6 +13,8 @@ UCLASS()
 class ACOPALYPS_API AProjectile : public AActor
 {
 	GENERATED_BODY()
+
+protected:
 	
 	/** Sphere collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
@@ -27,8 +29,8 @@ public:
 
 	/** called when projectile hits something */
 	UFUNCTION()
-	void OnHit(
-		UPrimitiveComponent* HitComp,
+	virtual void OnHit(
+		UPrimitiveComponent* HitComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse,
@@ -36,8 +38,8 @@ public:
 		);
 
 	/** Returns CollisionComp subobject **/
-	USphereComponent* GetCollisionComp() const { return CollisionComp; }
+	virtual USphereComponent* GetCollisionComp() const { return CollisionComp; }
 	/** Returns ProjectileMovement subobject **/
-	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	virtual UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
 };
