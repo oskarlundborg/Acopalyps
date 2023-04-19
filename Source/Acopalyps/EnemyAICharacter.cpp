@@ -59,7 +59,8 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			PrototypeGameModeBase->PawnKilled(this);
 		}
 		RagDoll();
-		Manager->RemoveEnemy(this);
+		if(Manager)
+			Manager->RemoveEnemy(this);
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
