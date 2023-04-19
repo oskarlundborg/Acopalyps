@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SpawnZone.generated.h"
+#include "SpawnPoint.generated.h"
 
-class UBoxComponent;
+class ACombatManager;
 class AEnemyAICharacter;
 UCLASS()
-class ACOPALYPS_API ASpawnZone : public AActor
+class ACOPALYPS_API ASpawnPoint : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ASpawnZone();
+	ASpawnPoint();
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,18 +25,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
-	TArray<AActor*> SpawnPoints = TArray<AActor*>();
+	AEnemyAICharacter* Spawn(TSubclassOf<AEnemyAICharacter> EnemyClass);
 
-	UPROPERTY(VisibleAnywhere)
-	UBoxComponent* SpawnZoneZone;
+	bool IsVisibleToPlayer();
 
-	//void SpawnEnemies(int EnemiesToSpawn);
+private:
 	
-	UPROPERTY(EditAnywhere, Category="Spawning")
-	int SpawnDelay;
+	//ACombatManager* CombatManager;
 
-
-	UPROPERTY(EditAnywhere)
-	int SpawnZoneID;
 };

@@ -29,8 +29,10 @@ void ASpawnZone::Tick(float DeltaTime)
 
 }
 
-TArray<AEnemyAICharacter*>& ASpawnZone::GetAllEnemiesFromSpawnZone()
+/*
+void ASpawnZone::SpawnEnemies(int EnemiesToSpawn)
 {
-	return SpawnZoneBasicEnemies;
+	//TODO: iterera över spawnpoints, spawna från en point i taget, kanske med delay?
+	kanske att vi ska returnera nåt när det är klart till manager
 }
-
+*/

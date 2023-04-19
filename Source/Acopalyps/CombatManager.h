@@ -25,7 +25,7 @@ struct FCombatWave
 	int NumberOfBasicEnemies;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn Wave")
-	int CurrentEnemyCountMaxForNextSpawn;
+	int CurrentEnemyCountMaxForNextWave;
 
 	//TODO: Tillgång till spawnZone, för spawnpoints, timer för spawn, decrement numBasicEnemy, 
 };
@@ -49,24 +49,33 @@ public:
 
 	void RemoveEnemy(AEnemyAICharacter* EnemyToRemove);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void EndOfCombat();
+
+	void GatherOverlappingActors();
+
+	void AddEnemy(AEnemyAICharacter* Enemy);
+
 private:
 
 	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
 	void RunSpawnWave();
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<AEnemyAICharacter*> ManagementZoneBasicEnemies;
+	TArray<AEnemyAICharacter*> ManagedEnemies = TArray<AEnemyAICharacter*>();
 	
 	UPROPERTY(VisibleAnywhere)
-	TArray<ASpawnZone*> SpawnZones;
+	TArray<ASpawnZone*> SpawnZones = TArray<ASpawnZone*>();
 
 	UPROPERTY(EditAnywhere)
-	TArray<FCombatWave> CombatWaves;
+	TArray<FCombatWave> CombatWaves = TArray<FCombatWave>();
 
-	TQueue<FCombatWave> WavesQueue;
+	TQueue<FCombatWave> WavesQueue = TQueue<FCombatWave>();
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* ManagementZone;
+
+	//void SetCombatManagerToSpawnPoints();
 
 	int ActiveEnemiesCount = 0;
 };

@@ -15,6 +15,7 @@ ACombatManager::ACombatManager()
 	PrimaryActorTick.bCanEverTick = true;
 
 	ManagementZone = CreateDefaultSubobject<UBoxComponent>(TEXT("ZoneBox"));
+	ManagementZone->SetCollisionProfileName("CombatManager");
 	RootComponent = ManagementZone;
 }
 
@@ -22,8 +23,34 @@ ACombatManager::ACombatManager()
 void ACombatManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
+	FTimerHandle GatherOverlapHandle;
+	GetWorldTimerManager().SetTimer(GatherOverlapHandle, this, &ACombatManager::GatherOverlappingActors, 0.1, false);
+	for (FCombatWave Wave : CombatWaves)
+	{
+		WavesQueue.Enqueue(Wave);
+	}
+	
+}
+
+// Called every frame
+void ACombatManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void ACombatManager::RunSpawnWave()
+{
+	FCombatWave CurrentWave;
+	WavesQueue.Dequeue(CurrentWave);
+	//GetWorld()->SpawnActor()
+}
+
+
+
+void ACombatManager::GatherOverlappingActors()
+{
 	// populate array with all overlapping zones
 	TArray<AActor*> OverlappingSpawnZones;
 	ManagementZone->GetOverlappingActors(OverlappingSpawnZones, ASpawnZone::StaticClass());
@@ -35,39 +62,41 @@ void ACombatManager::BeginPlay()
 	// populate array with all overlapping enemies
 	TArray<AActor*> OverlappingEnemies;
 	ManagementZone->GetOverlappingActors(OverlappingEnemies, AEnemyAICharacter::StaticClass());
+	ensure(!OverlappingEnemies.IsEmpty());
 	for(AActor* BasicEnemy : OverlappingEnemies)
 	{
 		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(BasicEnemy);
 		if(Enemy)
 		{
-			ManagementZoneBasicEnemies.Add(Enemy);
+			ensure(Enemy != nullptr);
+			AddEnemy(Enemy);
 			Enemy->Manager = this;
-			ActiveEnemiesCount++;
 		}
-	}
-
-	for (FCombatWave Wave : CombatWaves)
-	{
-		WavesQueue.Enqueue(Wave);
 	}
 }
 
-// Called every frame
-void ACombatManager::Tick(float DeltaTime)
+/*
+void ACombatManager::SetCombatManagerToSpawnPoints()
 {
-	Super::Tick(DeltaTime);
+	for(AActor* SpawnZone : SpawnZones)
+	{
+		//TODO: sätta alla spawnzones manager
+	}
+}
+*/
 
+void ACombatManager::AddEnemy(AEnemyAICharacter* Enemy)
+{
+	ManagedEnemies.Add(Enemy);
+	ActiveEnemiesCount++;
 }
 
 void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
 {
-	ManagementZoneBasicEnemies.Remove(EnemyToRemove);
+	ManagedEnemies.Remove(EnemyToRemove);
 	ActiveEnemiesCount--;
-}
-
-void ACombatManager::RunSpawnWave()
-{
-	FCombatWave CurrentWave;
-	WavesQueue.Dequeue(CurrentWave);
-	//GetWorld()->SpawnActor()
+	if(WavesQueue.IsEmpty() && ActiveEnemiesCount == 0)
+	{
+		EndOfCombat();
+	}
 }
