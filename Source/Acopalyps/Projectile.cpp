@@ -1,18 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ExplosiveProjectile.h"
+#include "Projectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-AExplosiveProjectile::AExplosiveProjectile() 
+AProjectile::AProjectile() 
 {
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
-	CollisionComp->OnComponentHit.AddDynamic(this, &AExplosiveProjectile::OnHit);		// set up a notification for when this component hits something blocking
+	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component hits something blocking
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -34,7 +34,7 @@ AExplosiveProjectile::AExplosiveProjectile()
 	InitialLifeSpan = 3.0f;
 }
 
-void AExplosiveProjectile::OnHit(
+void AProjectile::OnHit(
 	UPrimitiveComponent* HitComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,
@@ -44,7 +44,7 @@ void AExplosiveProjectile::OnHit(
 {
 	AActor* HitActor = Hit.GetActor();
 	TArray<FOverlapResult> Overlaps;
-	if(HitActor != nullptr && ExplosionTrace(Overlaps) )
+	if(HitActor != nullptr )
 	{
 		UGameplayStatics::ApplyRadialDamageWithFalloff(
 			GetWorld(),
@@ -69,33 +69,4 @@ void AExplosiveProjectile::OnHit(
 		}
 	}
 	Destroy();
-}
-
-/** Performs a ray casts, returns true if hit is registered */
-bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
-{
-	AController* OwnerController = GetWorld()->GetFirstPlayerController();
-	if(OwnerController == nullptr)
-	{
-		return false;
-	}
-	
-	FVector Location;
-	FRotator Rotation;
-	OwnerController->GetPlayerViewPoint(Location, Rotation);
-	FVector End = Location + Rotation.Vector() * 240;
-	
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	Params.AddIgnoredActor(OwnerController);
-
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
-	return GetWorld()->OverlapMultiByChannel(
-		Overlaps,
-		GetActorLocation(),
-		FQuat::Identity,
-		ECollisionChannel::ECC_GameTraceChannel1,
-		FCollisionShape::MakeSphere(240),
-		Params
-		);
 }
