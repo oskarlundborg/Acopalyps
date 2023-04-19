@@ -84,6 +84,7 @@ void AAcopalypsCharacter::BeginPlay()
 	// Add start ammo
 	AmmoCountMap.Add(Regular, 50);
 	AmmoCountMap.Add(Piercing, 50);
+	AmmoCountMap.Add(Rapid, 50);
 	AmmoCountMap.Add(Explosive, 10);
 	AmmoCountMap.Add(Flare, 10);
 	

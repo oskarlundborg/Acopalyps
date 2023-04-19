@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "Gun.generated.h"
 
 UENUM()
-enum AMMO_TYPES{Regular, Piercing, Explosive, Flare};
+enum AMMO_TYPES{Regular, Piercing, Explosive, Flare, Rapid};
 
 class AAcopalypsCharacter;
 class UNiagaraSystem;
@@ -67,6 +68,9 @@ public:
 	/** Fire Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* RapidFireAction;
 	
 	/** Alternate Fire Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -92,6 +96,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoPiercingAction;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* ChangeAmmoRapidAction;
+	
 	/** Sets default values for this component's properties */
 	AGun();
 
@@ -102,6 +109,10 @@ public:
 	/** Make the weapon Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
+
+	//Make the weapon fire RAPIDLY*/
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void RapidFire();
 
 	/** Make the weapon Alternate Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
@@ -114,6 +125,7 @@ public:
 	void SetPiercingMag(int32 Size);
 	void SetExplosiveMag(int32 Size);
 	void SetFlareMag(int32 Size);
+	void SetRapidMag(int32 Size);
 
 	/** Reloading */
 	UFUNCTION()
@@ -142,6 +154,8 @@ public:
 	int32 ExplosiveMag = 1;
 	UPROPERTY(BlueprintReadOnly)
 	int32 FlareMag = 1;
+	UPROPERTY(BlueprintReadOnly)
+	int32 RapidMag = 12;
 
 protected:
 	UFUNCTION()
@@ -153,6 +167,9 @@ protected:
 private:
 	/** The Character holding this weapon*/
 	AAcopalypsCharacter* Character;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Properties")
+	float InaccuracyModifier = 8.0;
 
 	/** Weapon Max Range */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
@@ -170,6 +187,7 @@ private:
 	int32 MaxAmmo = 12;
 
 	bool GunTrace(FHitResult &HitResult, FVector &ShootDirection);
+	bool GunTraceInaccurate(FHitResult &HitResult, FVector &ShootDirection);
 	AController* GetOwnerController() const;
 
 	/** Ammo Setter Functions */
@@ -177,10 +195,21 @@ private:
 	void SetAmmoExplosive();
 	void SetAmmoFlare();
 	void SetAmmoPiercing();
+	void SetAmmoRapid();
 
 	/** Ammo Fire Functions */
 	void FireRegular(FHitResult &Hit, FVector &ShotDirection);
 	void FireExplosive(FHitResult &Hit, FVector &ShotDirection);
 	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
 	void FirePiercing(FHitResult &Hit, FVector &ShotDirection);
+	void FireRapid(FHitResult &Hit, FVector &ShotDirection);
+
+	/**Helper Functions */
+	FRotator RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AProjectile> RegularProjectileClass;
+	AExplosiveProjectile* ExplosiveProjectile;
 };
