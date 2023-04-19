@@ -209,5 +209,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AProjectile> RegularProjectileClass;
 	AExplosiveProjectile* ExplosiveProjectile;
 };

@@ -12,6 +12,7 @@
 #include "Animation/AnimInstance.h"
 #include "NiagaraFunctionLibrary.h"
 #include "ExplosiveProjectile.h"
+#include "Projectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AGun::AGun()
@@ -369,9 +370,20 @@ AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 
 void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 {
-	// Decrease ammo count by 1
-	//Character->GetAmmoCountMap()->Emplace(Regular, *(Character->GetAmmoCountMap()->Find(Regular)) - 1);
+	
 	RegularMag--;
+	if( RegularProjectileClass != nullptr )
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
+		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
+	}
+	/*
 	if(GunTrace(Hit, ShotDirection))
 	{
 		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
@@ -391,7 +403,7 @@ void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 		}
 		FireTriggerEvent(Hit, ShotDirection);
 	}
-	
+	*/
 	// Try and play the sound if specified
 	if (FireSound != nullptr)
 	{
@@ -564,6 +576,20 @@ void AGun::FireRapid(FHitResult& Hit, FVector& ShotDirection)
 	UE_LOG(LogTemp,Display,TEXT("Fire rapidly"));
 	// Decrease ammo count by 1
 	RapidMag--;
+	if( RegularProjectileClass != nullptr )
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
+		FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+		//Randomize the spawnrotation to act as inaccuracy
+		SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,InaccuracyModifier);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
+	}
+	/*
 	if(GunTraceInaccurate(Hit, ShotDirection))
 	{
 		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Orange,true,5);
@@ -583,6 +609,7 @@ void AGun::FireRapid(FHitResult& Hit, FVector& ShotDirection)
 		}
 		FireTriggerEvent(Hit, ShotDirection);
 	}
+	*/
 	
 	// Try and play the sound if specified
 	if (FireSound != nullptr)
@@ -625,7 +652,7 @@ bool AGun::GunTraceInaccurate(FHitResult& HitResult, FVector& ShotDirection)
 
 FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const
 {
-	const float NewPitch = FMath::FRandRange(Pitch,Pitch+Interval);
+	const float NewPitch = FMath::FRandRange(Pitch-Interval,Pitch+Interval);
 	const float NewYaw = FMath::FRandRange(Yaw-Interval,Yaw+Interval);
 	//const float NewRoll = FMath::FRandRange(Roll-Interval,Roll+Interval);
 	return FRotator(NewPitch,NewYaw,Roll);

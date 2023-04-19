@@ -42,30 +42,10 @@ void AProjectile::OnHit(
 	)
 {
 	AActor* HitActor = Hit.GetActor();
-	TArray<FOverlapResult> Overlaps;
 	if(HitActor != nullptr )
 	{
-		UGameplayStatics::ApplyRadialDamageWithFalloff(
-			GetWorld(),
-			80.f,
-			20.f,
-			Hit.Location,
-			120.f,
-			240.f,
-			1.f,
-			nullptr,
-			{},
-			this,
-			GetWorld()->GetFirstPlayerController(),
-			ECC_Visibility
-			);
-		for( FOverlapResult Overlap : Overlaps )
-		{
-			if( Overlap.GetComponent()->IsSimulatingPhysics() )
-			{
-				Overlap.GetComponent()->AddImpulseAtLocation(GetActorLocation() + GetVelocity().Size() * 20.f, GetActorLocation());
-			}
-		}
+		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
 	}
 	Destroy();
 }
