@@ -39,7 +39,7 @@ void AFlareProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 
 void AFlareProjectile::TickDamage()
 {
-	UE_LOG(LogTemp, Display, TEXT("Tick Damage on %p"), HitActor);
+	UE_LOG(LogTemp, Display, TEXT("Tick Damage on %s"), *HitActor->GetName());
 	if( HitActor != nullptr )
 	{
 		UGameplayStatics::ApplyDamage(HitActor, 2.f, GetWorld()->GetFirstPlayerController(), this,nullptr);

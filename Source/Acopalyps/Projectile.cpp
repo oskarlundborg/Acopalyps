@@ -31,6 +31,9 @@ AProjectile::AProjectile()
 
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
+	Mesh->SetupAttachment(RootComponent);
 }
 
 void AProjectile::OnHit(

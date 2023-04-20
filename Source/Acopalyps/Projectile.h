@@ -47,4 +47,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		bool bDrawDebugSphere;
+
+	UPROPERTY(EditDefaultsOnly)
+		UStaticMeshComponent* Mesh;
 };

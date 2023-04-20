@@ -174,7 +174,7 @@ void AAcopalypsCharacter::SlowDownTime()
 	SlowTimeTriggerEvent();
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
 	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, 2.f, false);
-	CustomTimeDilation = 2.f;
+	CustomTimeDilation = 1.6f;
 }
 
 void AAcopalypsCharacter::ResumeTime()
