@@ -19,7 +19,10 @@ void ABouncingProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	if(HitActor != nullptr && !HitActor->ActorHasTag(TEXT("Player")))
 	{
 		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
-		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
+		if( bDrawDebugSphere )
+		{
+			DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
+		}
 	}
 	if(Bounces==0)
 	{

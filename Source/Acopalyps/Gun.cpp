@@ -7,14 +7,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Engine/DamageEvents.h"
 #include "Engine/LocalPlayer.h"
 #include "Animation/AnimInstance.h"
-#include "NiagaraFunctionLibrary.h"
 #include "ExplosiveProjectile.h"
 #include "FlareProjectile.h"
 #include "BouncingProjectile.h"
 #include "Projectile.h"
+#include "BeanBagProjectile.h"
 
 AGun::AGun()
 {
@@ -47,12 +46,14 @@ void AGun::Fire()
 		if( RegularMag > 0 )
 		{
 			FireRegular(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Regular);
 		}
 		break;
 	case Bouncing:
 		if( BouncingMag > 0 )
 		{
 			FireBouncing(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Bouncing);
 		}
 		break;
 	default:break;
@@ -89,6 +90,7 @@ void AGun::AlternateFire()
 		if( ExplosiveMag > 0 )
 		{
 			FireExplosive(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Explosive);
 			AlternateReload();
 		}
 		break;
@@ -96,6 +98,15 @@ void AGun::AlternateFire()
 		if( FlareMag > 0 )
 		{
 			FireFlare(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Flare);
+			AlternateReload();
+		}
+		break;
+	case BeanBag:
+		if( BeanBagMag > 0 )
+		{
+			FireBeanBag(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, BeanBag);
 			AlternateReload();
 		}
 		break;
@@ -119,10 +130,10 @@ void AGun::RapidFire()
 	
 	FHitResult Hit;
 	FVector ShotDirection;
-
 	if(RapidMag > 0)
 	{
 		FireRapid(Hit, ShotDirection);
+		FireTriggerEvent(Hit, ShotDirection, Rapid);
 	}
 	
 	AController* OwnerController = GetOwnerController();
@@ -131,7 +142,6 @@ void AGun::RapidFire()
 		return;
 	}
 }
-
 
 /** Snap weapon to player character 0 */
 void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
@@ -165,6 +175,7 @@ void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction(ChangeAmmoFlareAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoFlare);
 			EnhancedInputComponent->BindAction(ChangeAmmoBouncingAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBouncing);
 			EnhancedInputComponent->BindAction(ChangeAmmoRapidAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRapid);
+			EnhancedInputComponent->BindAction(ChangeAmmoBeanBagAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBeanBag);
 		}
 	}
 }
@@ -219,7 +230,8 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
-	ReloadTriggerEvent();
+	ReloadTriggerEvent(CurrentAmmoType);
+	
 	int32 Total;
 	switch (CurrentAmmoType)
 	{
@@ -284,7 +296,8 @@ void AGun::Reload()
 
 void AGun::AlternateReload()
 {
-	AlternateReloadTriggerEvent();
+	AlternateReloadTriggerEvent(CurrentAlternateAmmoType);
+
 	// Load alternate ammo
 	int32 Total;
 	switch (CurrentAlternateAmmoType)
@@ -313,10 +326,23 @@ void AGun::AlternateReload()
 			SetFlareMag(1);
 		}
 		break;
+	case BeanBag:
+		Total = *(Character->GetAmmoCountMap()->Find(BeanBag));
+		if( Total <= 1 )
+		{
+			Character->GetAmmoCountMap()->Emplace(BeanBag,0);
+			SetBeanBagMag(Total);
+		} else
+		{
+			Character->GetAmmoCountMap()->Emplace(BeanBag,Total - 1);
+			SetBeanBagMag(1);
+		}
+		break;
 	default:break;
 	}
 }
 
+// Set Mag Size
 void AGun::SetRegularMag(int32 Size)
 {
 	RegularMag = Size;
@@ -337,8 +363,12 @@ void AGun::SetRapidMag(int32 Size)
 {
 	RapidMag = Size;
 }
+void AGun::SetBeanBagMag(int32 Size)
+{
+	BeanBagMag = Size;
+}
 
-
+// Set Ammo Type
 void AGun::SetAmmoRegular()
 {
 	CurrentAmmoType=AMMO_TYPES::Regular;
@@ -360,8 +390,12 @@ void AGun::SetAmmoRapid()
 	CurrentAmmoType=AMMO_TYPES::Rapid;
 	UE_LOG(LogTemp,Display,TEXT("Ammo swapped"));
 }
+void AGun::SetAmmoBeanBag()
+{
+	CurrentAlternateAmmoType=AMMO_TYPES::BeanBag;
+}
 
-
+// Getters for equipped ammo
 AMMO_TYPES AGun::GetCurrentAmmoType()
 {
 	return CurrentAmmoType;
@@ -371,6 +405,7 @@ AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 	return CurrentAlternateAmmoType;
 }
 
+// Fire actions per ammo type
 void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 {
 	RegularMag--;
@@ -481,26 +516,38 @@ void AGun::FireBouncing(FHitResult& Hit, FVector& ShotDirection)
 
 		GetWorld()->SpawnActor<ABouncingProjectile>(BouncingProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
-	/*
-	if(GunTrace(Hit, ShotDirection))
+	if (FireSound != nullptr)
 	{
-		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
-		AActor* HitActor = Hit.GetActor();
-		if(HitActor != nullptr)
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
+	}
+	
+	// Try and play a firing animation if specified
+	if (FireAnimation != nullptr)
+	{
+		// Get the animation object for the arms mesh
+		UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
+		if (AnimInstance != nullptr)
 		{
-			if (ImpactSoundPiercingAmmo != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundPiercingAmmo, Hit.Location);
-			}
-			if (ImpactEffectPiercingAmmo != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectPiercingAmmo, Hit.Location, ShotDirection.Rotation());
-			}
-			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
-	*/
+}
+
+void AGun::FireBeanBag(FHitResult& Hit, FVector& ShotDirection)
+{
+	BeanBagMag--;
+	if( BeanBagProjectileClass != nullptr )
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
+		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<ABeanBagProjectile>(BeanBagProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
+	}
+
 	if (FireSound != nullptr)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
@@ -520,7 +567,7 @@ void AGun::FireBouncing(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FireRapid(FHitResult& Hit, FVector& ShotDirection)
 {
-	UE_LOG(LogTemp,Display,TEXT("Fire rapidly"));
+	//UE_LOG(LogTemp,Display,TEXT("Fire rapidly"));
 	// Decrease ammo count by 1
 	RapidMag--;
 	if( RegularProjectileClass != nullptr )

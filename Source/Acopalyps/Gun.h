@@ -14,6 +14,7 @@ enum AMMO_TYPES
 	Explosive,
 	Flare,
 	Rapid,
+	BeanBag,
 };
 
 class AAcopalypsCharacter;
@@ -105,6 +106,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoRapidAction;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* ChangeAmmoBeanBagAction;
+	
 	/** Sets default values for this component's properties */
 	AGun();
 
@@ -125,18 +129,19 @@ public:
 	void AlternateFire();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection);
+	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ReloadTriggerEvent();
+		void ReloadTriggerEvent(AMMO_TYPES AmmoType);
 	UFUNCTION(BlueprintImplementableEvent)
-		void AlternateReloadTriggerEvent();
+		void AlternateReloadTriggerEvent(AMMO_TYPES AlternateAmmoType);
 	
 	void SetRegularMag(int32 Size);
 	void SetBouncingMag(int32 Size);
 	void SetExplosiveMag(int32 Size);
 	void SetFlareMag(int32 Size);
 	void SetRapidMag(int32 Size);
+	void SetBeanBagMag(int32 Size);
 
 	/** Reloading */
 	UFUNCTION()
@@ -167,6 +172,8 @@ public:
 	int32 FlareMag = 1;
 	UPROPERTY(BlueprintReadOnly)
 	int32 RapidMag = 12;
+	UPROPERTY(BlueprintReadOnly)
+	int32 BeanBagMag = 1;
 
 protected:
 	UFUNCTION()
@@ -207,6 +214,7 @@ private:
 	void SetAmmoFlare();
 	void SetAmmoBouncing();
 	void SetAmmoRapid();
+	void SetAmmoBeanBag();
 
 	/** Ammo Fire Functions */
 	void FireRegular(FHitResult &Hit, FVector &ShotDirection);
@@ -214,6 +222,7 @@ private:
 	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
 	void FireBouncing(FHitResult &Hit, FVector &ShotDirection);
 	void FireRapid(FHitResult &Hit, FVector &ShotDirection);
+	void FireBeanBag(FHitResult &Hit, FVector &ShotDirection);
 
 	/**Helper Functions */
 	FRotator RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const;
@@ -226,4 +235,6 @@ private:
 		TSubclassOf<class AFlareProjectile> FlareProjectileClass;
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<class ABouncingProjectile> BouncingProjectileClass;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<class ABeanBagProjectile> BeanBagProjectileClass;
 };

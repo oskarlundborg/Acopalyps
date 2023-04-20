@@ -171,17 +171,18 @@ void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 
 void AAcopalypsCharacter::SlowDownTime()
 {
+	SlowTimeTriggerEvent();
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
-	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResetTime, 2.f, false);
-	CustomTimeDilation = 2.f;
+	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, 2.f, false);
+	CustomTimeDilation = 1.6f;
 }
 
-void AAcopalypsCharacter::ResetTime()
+void AAcopalypsCharacter::ResumeTime()
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 	CustomTimeDilation = 1.f;
+	ResumeTimeTriggerEvent();
 }
-
 
 void AAcopalypsCharacter::StartCrouch()
 {
@@ -193,9 +194,11 @@ void AAcopalypsCharacter::StartCrouch()
 			false
 			);
 	}
+	CrouchTriggerEvent();
 	bIsCrouching = true;
 	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed;
 }
+
 void AAcopalypsCharacter::EndCrouch()
 {
 	bIsCrouching = false;
@@ -207,9 +210,11 @@ void AAcopalypsCharacter::StartSprint()
 	if( !bIsCrouching )
 	{
 		bIsSprinting = true;
+		SprintTriggerEvent();
 		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed;
 	}
 }
+
 void AAcopalypsCharacter::EndSprint()
 {
 	bIsSprinting = false;
@@ -299,6 +304,8 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	Health -= DamageApplied;
 	UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
 
+	const AActor* ConstDamageCauser = DamageCauser;
+	TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
 	
 	if(IsDead())
 	{
