@@ -47,12 +47,14 @@ void AGun::Fire()
 		if( RegularMag > 0 )
 		{
 			FireRegular(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Regular);
 		}
 		break;
 	case Bouncing:
 		if( BouncingMag > 0 )
 		{
 			FireBouncing(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Bouncing);
 		}
 		break;
 	default:break;
@@ -89,6 +91,7 @@ void AGun::AlternateFire()
 		if( ExplosiveMag > 0 )
 		{
 			FireExplosive(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Explosive);
 			AlternateReload();
 		}
 		break;
@@ -96,6 +99,7 @@ void AGun::AlternateFire()
 		if( FlareMag > 0 )
 		{
 			FireFlare(Hit, ShotDirection);
+			FireTriggerEvent(Hit, ShotDirection, Flare);
 			AlternateReload();
 		}
 		break;
@@ -123,6 +127,7 @@ void AGun::RapidFire()
 	if(RapidMag > 0)
 	{
 		FireRapid(Hit, ShotDirection);
+		FireTriggerEvent(Hit, ShotDirection, Rapid);
 	}
 	
 	AController* OwnerController = GetOwnerController();
@@ -131,7 +136,6 @@ void AGun::RapidFire()
 		return;
 	}
 }
-
 
 /** Snap weapon to player character 0 */
 void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
@@ -219,7 +223,8 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
-	ReloadTriggerEvent();
+	ReloadTriggerEvent(CurrentAmmoType);
+	
 	int32 Total;
 	switch (CurrentAmmoType)
 	{
@@ -284,7 +289,8 @@ void AGun::Reload()
 
 void AGun::AlternateReload()
 {
-	AlternateReloadTriggerEvent();
+	AlternateReloadTriggerEvent(CurrentAlternateAmmoType);
+	
 	// Load alternate ammo
 	int32 Total;
 	switch (CurrentAlternateAmmoType)

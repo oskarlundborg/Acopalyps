@@ -125,12 +125,12 @@ public:
 	void AlternateFire();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection);
+	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ReloadTriggerEvent();
+		void ReloadTriggerEvent(AMMO_TYPES AmmoType);
 	UFUNCTION(BlueprintImplementableEvent)
-		void AlternateReloadTriggerEvent();
+		void AlternateReloadTriggerEvent(AMMO_TYPES AlternateAmmoType);
 	
 	void SetRegularMag(int32 Size);
 	void SetBouncingMag(int32 Size);

@@ -114,6 +114,24 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void KickTriggerEvent(const FHitResult &Hit);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SprintTriggerEvent();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void CrouchTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SlideTriggerEvent(const FVector& Velocity);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void TakeDamageTriggerEvent(const float& Damage, const AActor* DamageCauser);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SlowTimeTriggerEvent();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ResumeTimeTriggerEvent();
+	
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -140,7 +158,7 @@ protected:
 	//void StopJumping() override;
 
 	void SlowDownTime();
-	void ResetTime();
+	void ResumeTime();
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
