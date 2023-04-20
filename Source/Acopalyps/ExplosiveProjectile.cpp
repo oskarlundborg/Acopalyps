@@ -42,6 +42,7 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			if( Overlap.GetComponent()->IsSimulatingPhysics() )
 			{
 				Overlap.GetComponent()->AddImpulseAtLocation(GetActorLocation() + GetVelocity().Size() * 20.f, GetActorLocation());
+				HitTriggerEvent(Overlap.GetActor());
 			}
 		}
 	}

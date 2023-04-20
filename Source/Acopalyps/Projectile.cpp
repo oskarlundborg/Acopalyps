@@ -44,8 +44,9 @@ void AProjectile::OnHit(
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr )
 	{
-		HitTriggerEvent(HitActor);
 		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		const AActor* ConstHitActor = HitActor;
+		HitTriggerEvent(ConstHitActor);
 		//DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
 	}
 	Destroy();

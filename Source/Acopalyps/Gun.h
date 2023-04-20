@@ -127,6 +127,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void ReloadTriggerEvent();
+	UFUNCTION(BlueprintImplementableEvent)
+		void AlternateReloadTriggerEvent();
+	
 	void SetRegularMag(int32 Size);
 	void SetPiercingMag(int32 Size);
 	void SetExplosiveMag(int32 Size);

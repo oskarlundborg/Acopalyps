@@ -218,6 +218,7 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
+	ReloadTriggerEvent();
 	int32 Total;
 	switch (CurrentAmmoType)
 	{
@@ -282,6 +283,7 @@ void AGun::Reload()
 
 void AGun::AlternateReload()
 {
+	AlternateReloadTriggerEvent();
 	// Load alternate ammo
 	int32 Total;
 	switch (CurrentAlternateAmmoType)

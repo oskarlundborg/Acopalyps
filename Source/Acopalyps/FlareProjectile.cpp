@@ -24,7 +24,8 @@ void AFlareProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	TArray<FOverlapResult> Overlaps;
 	if( HitActor != nullptr && HitActor != this )
 	{
-		HitTriggerEvent(HitActor);
+		const AActor* ConstHitActor = HitActor;
+		HitTriggerEvent(ConstHitActor);
 		AttachToActor(HitActor, FAttachmentTransformRules::KeepWorldTransform, "NAME_None");
 		UGameplayStatics::ApplyDamage(HitActor, 20.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		GetWorldTimerManager().SetTimer(TickDamageTimerHandle, this, &AFlareProjectile::TickDamage, 1.f, true);
