@@ -35,6 +35,9 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCharacterMovementComponent* CharacterMovementComponent;
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -46,7 +49,15 @@ class AAcopalypsCharacter : public ACharacter
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+	
+	/** Kick Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
 
+	/** Kick Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
+	
 	/** Kick Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
@@ -57,9 +68,10 @@ class AAcopalypsCharacter : public ACharacter
 	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
 	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
 	
-public:
+	public:
 	AAcopalypsCharacter();
 
+	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay();
 
@@ -103,11 +115,22 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const;
-
+	
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
+	// Crouching funtions
+	void StartCrouch();
+	void EndCrouch();
+	
+	// Crouching funtions
+	void StartSprint();
+	void EndSprint();
+
+	virtual void Jump() override;
+	//void StopJumping() override;
+	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
@@ -117,7 +140,6 @@ protected:
 	/** Called after kicking timer ended*/
 	void HideLeg() const;
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
@@ -127,15 +149,49 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	/** Returns AmmoCountMap TMap<AMMO_TYPES, int32> **/
+	TMap<TEnumAsByte<AMMO_TYPES>, int32>* GetAmmoCountMap() { return &AmmoCountMap; }
+
 	
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class AGun> GunClass;
+	// ---- GUN ---- //
+	
+	// Gun variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
+		TSubclassOf<class AGun> GunClass;
 	UPROPERTY(BlueprintReadOnly)
-	AGun* Gun;
+		AGun* Gun;
 
 	// Map of Ammo types and their current amount
-	TMap<TEnumAsByte<AMMO_TYPES>, int32>* GetAmmoCountMap();
-	UPROPERTY(BlueprintReadOnly)
-	TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun|Ammo")
+		TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap = {
+			{ Regular,   100 },
+			{ Piercing,  100 },
+			{ Explosive, 100 },
+			{ Flare,     100 },
+			{ Rapid,	  300 },
+		};
+
+	
+	// ---- MOVEMENT ---- //
+	
+	// Characters active movespeed variable
+	UPROPERTY(VisibleAnywhere, Category="Movement|Crouch")
+		float WalkingMovementSpeed = 600.f;
+
+	// Crouching variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Crouch")
+		bool bIsCrouching;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
+		float CrouchMovementSpeed = 300.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
+		float CrouchSpeed = 5.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
+		float CrouchInterpTime;
+
+	// Sprinting variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Sprint")
+		bool bIsSprinting;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Sprint")
+		float SprintMovementSpeed = 1000.f;
 };
 

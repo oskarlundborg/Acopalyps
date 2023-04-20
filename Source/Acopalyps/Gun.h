@@ -4,11 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/SphereComponent.h"
 #include "Gun.generated.h"
 
 UENUM()
-enum AMMO_TYPES{Regular, Piercing, Explosive, Flare, Rapid};
+enum AMMO_TYPES
+{
+	Regular,
+	Piercing,
+	Explosive,
+	Flare,
+	Rapid,
+};
 
 class AAcopalypsCharacter;
 class UNiagaraSystem;

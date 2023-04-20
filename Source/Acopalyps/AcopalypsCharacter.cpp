@@ -1,17 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AcopalypsCharacter.h"
-#include "AcopalypsProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Components/BoxComponent.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
-#include "BehaviorTree/Blackboard/BlackboardKeyType.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AAcopalypsCharacter
@@ -23,6 +20,8 @@ AAcopalypsCharacter::AAcopalypsCharacter()
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+
+	CharacterMovementComponent = GetCharacterMovement();
 		
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -38,7 +37,6 @@ AAcopalypsCharacter::AAcopalypsCharacter()
 	Mesh1P->CastShadow = false;
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
 
 	// Create a mesh component that will be used to kick
 	LegMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Leg"));
@@ -80,13 +78,6 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-
-	// Add start ammo
-	AmmoCountMap.Add(Regular, 50);
-	AmmoCountMap.Add(Piercing, 50);
-	AmmoCountMap.Add(Rapid, 50);
-	AmmoCountMap.Add(Explosive, 10);
-	AmmoCountMap.Add(Flare, 10);
 	
 	for( auto& t : AmmoCountMap )
 	{
@@ -94,9 +85,41 @@ void AAcopalypsCharacter::BeginPlay()
 	}
 }
 
-TMap<TEnumAsByte<AMMO_TYPES>, int32>* AAcopalypsCharacter::GetAmmoCountMap()
+void AAcopalypsCharacter::Tick(float DeltaTime)
 {
-	return &AmmoCountMap;
+	Super::Tick(DeltaTime);
+
+	CrouchInterpTime = FMath::Min(1.f, CrouchSpeed * DeltaTime);
+	float const CurrentCapsuleHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
+	//UE_LOG(LogTemp, Display, TEXT("%f"), CharacterMovementComponent->Velocity.Size());
+	
+	if( bIsCrouching && CurrentCapsuleHeight > 56 )
+	{
+		if( CharacterMovementComponent->Velocity.Size() > 400 )
+		{
+			CharacterMovementComponent->GroundFriction = 0.f;
+			if( CharacterMovementComponent->Velocity.Size() > 800 )
+			{
+				Kick();
+			}
+		}
+		else
+		{
+			CharacterMovementComponent->GroundFriction = 8.f;
+		}
+		GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 32, CrouchInterpTime));
+	} else if ( !bIsCrouching )
+	{
+		if( CurrentCapsuleHeight < 98 )
+		{
+			GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 122, CrouchInterpTime));
+		}
+		if ( CharacterMovementComponent->GroundFriction < 8.f )
+		{
+			CharacterMovementComponent->GroundFriction += 0.1f;
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -112,6 +135,14 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Move);
+
+		//Sprinting
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartSprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndSprint);
+
+		//Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndCrouch);
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Look);
@@ -135,6 +166,49 @@ void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
+void AAcopalypsCharacter::StartCrouch()
+{
+	if( CharacterMovementComponent->IsMovingOnGround() )
+	{
+		LaunchCharacter(
+			CharacterMovementComponent->Velocity / 8,
+			false,
+			false
+			);
+	}
+	bIsCrouching = true;
+	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed;
+}
+void AAcopalypsCharacter::EndCrouch()
+{
+	bIsCrouching = false;
+	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
+}
+
+void AAcopalypsCharacter::StartSprint()
+{
+	if( !bIsCrouching )
+	{
+		bIsSprinting = true;
+		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed;
+	}
+}
+void AAcopalypsCharacter::EndSprint()
+{
+	bIsSprinting = false;
+	if( !bIsCrouching )
+	{
+		CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
+	}
+}
+
+void AAcopalypsCharacter::Jump()
+{
+	Super::Jump();
+	HideLeg();
+}
+
+
 void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -152,10 +226,6 @@ void AAcopalypsCharacter::Kick()
 {
 	if (Controller != nullptr)
 	{
-		for( auto& type : AmmoCountMap )
-		{
-			UE_LOG(LogTemp, Display, TEXT("Type: %d Ammo: %i"), type.Key, type.Value);
-		}
 		// makes leg mesh visible, and sets collision response of the leg mesh and box collider to collide
 		LegMesh->SetVisibility(true);
 		LegMesh->SetCollisionProfileName("Weapon");
