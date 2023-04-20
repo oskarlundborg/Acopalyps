@@ -50,6 +50,9 @@ public:
 	void RemoveEnemy(AEnemyAICharacter* EnemyToRemove);
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void StartOfCombat();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void EndOfCombat();
 
 	void GatherOverlappingActors();
@@ -58,8 +61,12 @@ public:
 
 private:
 
-	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
 	void RunSpawnWave();
+
+	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
+	void StartCombatMode();
+
+	FTimerHandle RecurringSpawnCheckTimerHandle;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<AEnemyAICharacter*> ManagedEnemies = TArray<AEnemyAICharacter*>();
@@ -74,8 +81,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* ManagementZone;
-
-	//void SetCombatManagerToSpawnPoints();
-
+	
 	int ActiveEnemiesCount = 0;
 };

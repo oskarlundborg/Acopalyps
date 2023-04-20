@@ -30,7 +30,8 @@ void ACombatManager::BeginPlay()
 	{
 		WavesQueue.Enqueue(Wave);
 	}
-	
+	//TODO Remove the following call before merging
+	StartCombatMode();
 }
 
 // Called every frame
@@ -40,13 +41,33 @@ void ACombatManager::Tick(float DeltaTime)
 
 }
 
-void ACombatManager::RunSpawnWave()
+void ACombatManager::StartCombatMode()
 {
-	FCombatWave CurrentWave;
-	WavesQueue.Dequeue(CurrentWave);
-	//GetWorld()->SpawnActor()
+	GetWorldTimerManager().SetTimer(RecurringSpawnCheckTimerHandle, this, &ACombatManager::RunSpawnWave, 1.f, true);
+	StartOfCombat();
 }
 
+
+void ACombatManager::RunSpawnWave()
+{
+	if(WavesQueue.IsEmpty())
+	{
+		GetWorldTimerManager().ClearTimer(RecurringSpawnCheckTimerHandle);
+		return;
+	}
+	if(ActiveEnemiesCount > WavesQueue.Peek()->CurrentEnemyCountMaxForNextWave) return;
+	FCombatWave CurrentWave;
+	WavesQueue.Dequeue(CurrentWave);
+	ActiveEnemiesCount += CurrentWave.NumberOfBasicEnemies;
+	for(ASpawnZone* SpawnZone : SpawnZones)
+	{
+		if(CurrentWave.SpawnZoneID == SpawnZone->SpawnZoneID)
+		{
+			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies);
+		}
+	}
+	
+}
 
 
 void ACombatManager::GatherOverlappingActors()
@@ -57,7 +78,11 @@ void ACombatManager::GatherOverlappingActors()
 	for(AActor* SpawnZone : OverlappingSpawnZones)
 	{
 		ASpawnZone* Zone = Cast<ASpawnZone>(SpawnZone);
-		if(Zone) SpawnZones.Add(Zone);
+		if(Zone)
+		{
+			SpawnZones.Add(Zone);
+			Zone->CombatManager = this;
+		}
 	}
 	// populate array with all overlapping enemies
 	TArray<AActor*> OverlappingEnemies;
@@ -70,25 +95,15 @@ void ACombatManager::GatherOverlappingActors()
 		{
 			ensure(Enemy != nullptr);
 			AddEnemy(Enemy);
-			Enemy->Manager = this;
+			ActiveEnemiesCount++;
 		}
 	}
 }
 
-/*
-void ACombatManager::SetCombatManagerToSpawnPoints()
-{
-	for(AActor* SpawnZone : SpawnZones)
-	{
-		//TODO: sätta alla spawnzones manager
-	}
-}
-*/
-
 void ACombatManager::AddEnemy(AEnemyAICharacter* Enemy)
 {
 	ManagedEnemies.Add(Enemy);
-	ActiveEnemiesCount++;
+	Enemy->Manager = this;
 }
 
 void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)

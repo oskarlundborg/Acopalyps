@@ -27,7 +27,13 @@ AEnemyAICharacter::AEnemyAICharacter()
 void AEnemyAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if(!GetController())
+	{
+		SpawnDefaultController();
+	}
+	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
+	AIController->Initialize();
 }
 
 // Called every frame
@@ -58,6 +64,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			PrototypeGameModeBase->PawnKilled(this);
 		}
+		OnDeath();
 		RagDoll();
 		if(Manager)
 			Manager->RemoveEnemy(this);

@@ -5,6 +5,7 @@
 
 #include "CombatManager.h"
 #include "EnemyAICharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -12,6 +13,9 @@ ASpawnPoint::ASpawnPoint()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComponent");
+	RootComponent = CapsuleComponent;
 }
 
 // Called when the game starts or when spawned
@@ -28,12 +32,12 @@ void ASpawnPoint::Tick(float DeltaTime)
 
 }
 
-AEnemyAICharacter* ASpawnPoint::Spawn(TSubclassOf<AEnemyAICharacter> EnemyClass)
+AEnemyAICharacter* ASpawnPoint::Spawn()
 {
 	AEnemyAICharacter* EnemyAICharacter = nullptr;
-	if(IsValid(EnemyClass))
+	if(IsValid(DefaultEnemyClass))
 	{
-		EnemyAICharacter = GetWorld()->SpawnActor<AEnemyAICharacter>(EnemyClass, GetActorLocation(), GetActorRotation());
+		EnemyAICharacter = GetWorld()->SpawnActor<AEnemyAICharacter>(DefaultEnemyClass, GetActorLocation(), GetActorRotation());
 	}
 	return EnemyAICharacter;
 }

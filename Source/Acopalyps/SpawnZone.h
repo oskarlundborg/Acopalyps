@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "SpawnZone.generated.h"
 
+class ASpawnPoint;
+class ACombatManager;
 class UBoxComponent;
 class AEnemyAICharacter;
 UCLASS()
@@ -25,18 +27,29 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	ACombatManager* CombatManager = nullptr;
+
+	void HandleWave(int EnemiesToSpawn);
+
 	UPROPERTY(EditAnywhere)
-	TArray<AActor*> SpawnPoints = TArray<AActor*>();
+	int SpawnZoneID;
+	
+private:
 
-	UPROPERTY(VisibleAnywhere)
+	void GatherOverlappingSpawnPoints();
+
+	void Spawn();
+
+	FTimerHandle SpawnTimerHandle;
+
+	UPROPERTY(EditAnywhere)
+	TArray<ASpawnPoint*> SpawnPoints = TArray<ASpawnPoint*>();
+
+	UPROPERTY(EditAnywhere)
 	UBoxComponent* SpawnZoneZone;
-
-	//void SpawnEnemies(int EnemiesToSpawn);
 	
 	UPROPERTY(EditAnywhere, Category="Spawning")
 	int SpawnDelay;
 
-
-	UPROPERTY(EditAnywhere)
-	int SpawnZoneID;
+	int NumberOfEnemiesLeftToSpawn = 0;
 };

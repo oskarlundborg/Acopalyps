@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "SpawnPoint.generated.h"
 
+class UCapsuleComponent;
 class ACombatManager;
 class AEnemyAICharacter;
 UCLASS()
@@ -25,9 +26,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	AEnemyAICharacter* Spawn(TSubclassOf<AEnemyAICharacter> EnemyClass);
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AEnemyAICharacter> DefaultEnemyClass;
+
+	AEnemyAICharacter* Spawn();
 
 	bool IsVisibleToPlayer();
+
+	UPROPERTY(EditAnywhere)
+	UCapsuleComponent* CapsuleComponent;
 
 private:
 	

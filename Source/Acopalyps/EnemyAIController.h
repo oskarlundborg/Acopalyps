@@ -19,6 +19,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	void SetIsRagdoll(bool val);
 
+	void Initialize();
+
 protected:
 	void BeginPlay() override;
 
