@@ -22,6 +22,7 @@ class AAcopalypsCharacter : public ACharacter
 
 	/** Timer handle for all timers*/
 	FTimerHandle TimerHandle;
+	FTimerHandle TimeTimerHandle;
 	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
@@ -50,13 +51,17 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 	
-	/** Kick Input Action */
+	/** Sprint Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
 
-	/** Kick Input Action */
+	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
+	
+	/** Slow Down Time Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* SlowDownTimeAction;
 	
 	/** Kick Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -133,6 +138,9 @@ protected:
 
 	virtual void Jump() override;
 	//void StopJumping() override;
+
+	void SlowDownTime();
+	void ResetTime();
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
@@ -196,5 +204,8 @@ public:
 		bool bIsSprinting;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Sprint")
 		float SprintMovementSpeed = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Time")
+		float TimeMovementModifier = 1.f;
 };
 

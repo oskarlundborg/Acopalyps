@@ -31,6 +31,10 @@ void AFlareProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		GetWorldTimerManager().SetTimer(TickDamageTimerHandle, this, &AFlareProjectile::TickDamage, 1.f, true);
 		GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AFlareProjectile::DisableTickDamage, 10.f, false);
 	}
+	if( bDrawDebugSphere )
+	{
+		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Yellow,true,5);
+	}
 }
 
 void AFlareProjectile::TickDamage()

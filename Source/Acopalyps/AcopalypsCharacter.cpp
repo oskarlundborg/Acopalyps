@@ -9,6 +9,7 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
 // AAcopalypsCharacter
@@ -149,9 +150,11 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 		//Kicking
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Kick);
+		
+		//Slow Down Time
+		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
 	}
 }
-
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 {
@@ -166,6 +169,20 @@ void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
+void AAcopalypsCharacter::SlowDownTime()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
+	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResetTime, 2.f, false);
+	TimeMovementModifier = 2.f;
+}
+
+void AAcopalypsCharacter::ResetTime()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
+	TimeMovementModifier = 1.f;
+}
+
+
 void AAcopalypsCharacter::StartCrouch()
 {
 	if( CharacterMovementComponent->IsMovingOnGround() )
@@ -177,12 +194,12 @@ void AAcopalypsCharacter::StartCrouch()
 			);
 	}
 	bIsCrouching = true;
-	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed;
+	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed * TimeMovementModifier;
 }
 void AAcopalypsCharacter::EndCrouch()
 {
 	bIsCrouching = false;
-	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
+	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed * TimeMovementModifier;
 }
 
 void AAcopalypsCharacter::StartSprint()
@@ -190,7 +207,7 @@ void AAcopalypsCharacter::StartSprint()
 	if( !bIsCrouching )
 	{
 		bIsSprinting = true;
-		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed;
+		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed * TimeMovementModifier;
 	}
 }
 void AAcopalypsCharacter::EndSprint()
@@ -198,7 +215,7 @@ void AAcopalypsCharacter::EndSprint()
 	bIsSprinting = false;
 	if( !bIsCrouching )
 	{
-		CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
+		CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed * TimeMovementModifier;
 	}
 }
 

@@ -66,7 +66,10 @@ bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
 	Params.AddIgnoredActor(this);
 	Params.AddIgnoredActor(OwnerController);
 
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
+	if( bDrawDebugSphere )
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
+	}
 	return GetWorld()->OverlapMultiByChannel(
 		Overlaps,
 		GetActorLocation(),
