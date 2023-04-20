@@ -12,8 +12,8 @@
 #include "Animation/AnimInstance.h"
 #include "NiagaraFunctionLibrary.h"
 #include "ExplosiveProjectile.h"
+#include "FlareProjectile.h"
 #include "Projectile.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 
 AGun::AGun()
 {
@@ -218,6 +218,7 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
+	ReloadTriggerEvent();
 	int32 Total;
 	switch (CurrentAmmoType)
 	{
@@ -282,6 +283,7 @@ void AGun::Reload()
 
 void AGun::AlternateReload()
 {
+	AlternateReloadTriggerEvent();
 	// Load alternate ammo
 	int32 Total;
 	switch (CurrentAlternateAmmoType)
@@ -370,7 +372,6 @@ AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 
 void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 {
-	
 	RegularMag--;
 	if( RegularProjectileClass != nullptr )
 	{
@@ -383,27 +384,6 @@ void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 
 		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
-	/*
-	if(GunTrace(Hit, ShotDirection))
-	{
-		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
-		AActor* HitActor = Hit.GetActor();
-		if(HitActor != nullptr)
-		{
-			if (ImpactSoundRegularAmmo != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundRegularAmmo, Hit.Location);
-			}
-			if (ImpactEffectRegularAmmo != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectRegularAmmo, Hit.Location, ShotDirection.Rotation());
-			}
-			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
-		}
-		FireTriggerEvent(Hit, ShotDirection);
-	}
-	*/
 	// Try and play the sound if specified
 	if (FireSound != nullptr)
 	{
@@ -436,46 +416,11 @@ void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 
 		GetWorld()->SpawnActor<AExplosiveProjectile>(ExplosiveProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
-	//if(GunTrace(Hit, ShotDirection))
-	//{
-	//	
-	//	DrawDebugSphere(GetWorld(),Hit.Location,120,10,FColor::Red,true,5);
-	//	
-	//	AActor* HitActor = Hit.GetActor();
-	//	if(HitActor != nullptr)
-	//	{
-	//		if (ImpactSoundExplosiveAmmo != nullptr)
-	//		{
-	//			UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundExplosiveAmmo, Hit.Location);
-	//		}
-	//		if (ImpactEffectExplosiveAmmo != nullptr)
-	//		{
-	//			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectExplosiveAmmo, Hit.Location, ShotDirection.Rotation());
-	//		}
-	//		UGameplayStatics::ApplyRadialDamageWithFalloff(
-	//			GetWorld(),
-	//			80.f,
-	//			20.f,
-	//			Hit.Location,
-	//			60.f,
-	//			120.f,
-	//			1.f,
-	//			nullptr,
-	//			{},
-	//			Character,
-	//			GetOwnerController(),
-	//			ECC_Visibility
-	//			);
-	//		//AddRadialForce(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
-	//		//AddRadialImpulse(Hit.Location, 60.f, 1000.f, RIF_Linear, false);
-	//	}
-	//}
 
 	if (FireSound != nullptr)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
 	}
-	
 	
 	// Try and play a firing animation if specified
 	if (FireAnimation != nullptr)
@@ -491,26 +436,17 @@ void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 {
-	//Character->GetAmmoCountMap()->Emplace(Flare, *(Character->GetAmmoCountMap()->Find(Flare)) - 1);
 	FlareMag--;
-	if(GunTrace(Hit, ShotDirection))
+	if( ExplosiveProjectileClass != nullptr )
 	{
-		
-		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Yellow,true,5);
-		AActor* HitActor = Hit.GetActor();
-		if(HitActor != nullptr)
-		{
-			if (ImpactSoundFlareAmmo != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundFlareAmmo, Hit.Location);
-			}
-			if (ImpactEffectFlareAmmo != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectFlareAmmo, Hit.Location, ShotDirection.Rotation());
-			}
-			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
-		}
+		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
+		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<AFlareProjectile>(FlareProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
 
 	if (FireSound != nullptr)
@@ -532,11 +468,9 @@ void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 {
-	//Character->GetAmmoCountMap()->Emplace(Piercing, *(Character->GetAmmoCountMap()->Find(Piercing)) - 1);
 	PiercingMag--;
 	if(GunTrace(Hit, ShotDirection))
 	{
-		
 		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor != nullptr)
@@ -589,27 +523,6 @@ void AGun::FireRapid(FHitResult& Hit, FVector& ShotDirection)
 
 		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
-	/*
-	if(GunTraceInaccurate(Hit, ShotDirection))
-	{
-		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Orange,true,5);
-		AActor* HitActor = Hit.GetActor();
-		if(HitActor != nullptr)
-		{
-			if (ImpactSoundRegularAmmo != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactSoundRegularAmmo, Hit.Location);
-			}
-			if (ImpactEffectRegularAmmo != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactEffectRegularAmmo, Hit.Location, ShotDirection.Rotation());
-			}
-			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
-		}
-		FireTriggerEvent(Hit, ShotDirection);
-	}
-	*/
 	
 	// Try and play the sound if specified
 	if (FireSound != nullptr)

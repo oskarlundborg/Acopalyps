@@ -4,24 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "Projectile.h"
-#include "ExplosiveProjectile.generated.h"
+#include "FlareProjectile.generated.h"
 
 /**
  * 
  */
-
 UCLASS()
-class ACOPALYPS_API AExplosiveProjectile : public AProjectile
+class ACOPALYPS_API AFlareProjectile : public AProjectile
 {
 	GENERATED_BODY()
-public:
-	AExplosiveProjectile();
+
+	AFlareProjectile();
 
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
-	
-	bool ExplosionTrace(TArray<struct FOverlapResult>& Overlaps);
-	
+
 	virtual USphereComponent* GetCollisionComp() const override;
 
 	virtual UProjectileMovementComponent* GetProjectileMovement() const override;
+private:
+	FTimerHandle TickDamageTimerHandle;
+	FTimerHandle DestroyTimerHandle;
+
+	void TickDamage();
+	void DisableTickDamage();
+	AActor* HitActor;
 };

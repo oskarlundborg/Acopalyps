@@ -9,6 +9,7 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
 // AAcopalypsCharacter
@@ -149,9 +150,11 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 		//Kicking
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Kick);
+		
+		//Slow Down Time
+		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
 	}
 }
-
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 {
@@ -165,6 +168,20 @@ void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
 }
+
+void AAcopalypsCharacter::SlowDownTime()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
+	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResetTime, 2.f, false);
+	CustomTimeDilation = 2.f;
+}
+
+void AAcopalypsCharacter::ResetTime()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
+	CustomTimeDilation = 1.f;
+}
+
 
 void AAcopalypsCharacter::StartCrouch()
 {
@@ -208,7 +225,6 @@ void AAcopalypsCharacter::Jump()
 	HideLeg();
 }
 
-
 void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -240,7 +256,6 @@ void AAcopalypsCharacter::HideLeg() const
 	LegMesh->SetVisibility(false);
 	LegMesh->SetCollisionProfileName("NoCollision");
 	LegMesh->SetNotifyRigidBodyCollision(false);
-	
 }
 
 void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -274,6 +289,7 @@ void AAcopalypsCharacter::OnKickAttackOverlap(UPrimitiveComponent* OverlappedCom
 			//Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
 		}
 	}
+	KickTriggerEvent(SweepResult);
 }
 
 float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

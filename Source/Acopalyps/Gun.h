@@ -127,6 +127,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void ReloadTriggerEvent();
+	UFUNCTION(BlueprintImplementableEvent)
+		void AlternateReloadTriggerEvent();
+	
 	void SetRegularMag(int32 Size);
 	void SetPiercingMag(int32 Size);
 	void SetExplosiveMag(int32 Size);
@@ -212,10 +217,11 @@ private:
 
 	/**Helper Functions */
 	FRotator RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const;
-
+	
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
+		TSubclassOf<class AProjectile> RegularProjectileClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class AProjectile> RegularProjectileClass;
-	AExplosiveProjectile* ExplosiveProjectile;
+		TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<class AFlareProjectile> FlareProjectileClass;
 };

@@ -42,6 +42,7 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			if( Overlap.GetComponent()->IsSimulatingPhysics() )
 			{
 				Overlap.GetComponent()->AddImpulseAtLocation(GetActorLocation() + GetVelocity().Size() * 20.f, GetActorLocation());
+				HitTriggerEvent(Overlap.GetActor());
 			}
 		}
 	}
@@ -65,7 +66,10 @@ bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
 	Params.AddIgnoredActor(this);
 	Params.AddIgnoredActor(OwnerController);
 
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
+	if( bDrawDebugSphere )
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
+	}
 	return GetWorld()->OverlapMultiByChannel(
 		Overlaps,
 		GetActorLocation(),
@@ -85,8 +89,3 @@ UProjectileMovementComponent* AExplosiveProjectile::GetProjectileMovement() cons
 {
 	return ProjectileMovement;
 }
-
-
-
-
-
