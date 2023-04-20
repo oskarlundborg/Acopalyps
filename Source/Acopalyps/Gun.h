@@ -10,7 +10,7 @@ UENUM()
 enum AMMO_TYPES
 {
 	Regular,
-	Piercing,
+	Bouncing,
 	Explosive,
 	Flare,
 	Rapid,
@@ -51,9 +51,9 @@ public:
 	
 	// Piercing ammo impact sound and particle effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	UNiagaraSystem* ImpactEffectPiercingAmmo;
+	UNiagaraSystem* ImpactEffectBouncingAmmo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* ImpactSoundPiercingAmmo;
+	USoundBase* ImpactSoundBouncingAmmo;
 	
 	// Explosive ammo impact sound and particle effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
@@ -100,7 +100,7 @@ public:
 
 	/** Change Ammo to Piercing Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* ChangeAmmoPiercingAction;
+	class UInputAction* ChangeAmmoBouncingAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoRapidAction;
@@ -133,7 +133,7 @@ public:
 		void AlternateReloadTriggerEvent();
 	
 	void SetRegularMag(int32 Size);
-	void SetPiercingMag(int32 Size);
+	void SetBouncingMag(int32 Size);
 	void SetExplosiveMag(int32 Size);
 	void SetFlareMag(int32 Size);
 	void SetRapidMag(int32 Size);
@@ -160,7 +160,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	int32 RegularMag = 12;
 	UPROPERTY(BlueprintReadOnly)
-	int32 PiercingMag = 12;
+	int32 BouncingMag = 12;
 	UPROPERTY(BlueprintReadOnly)
 	int32 ExplosiveMag = 1;
 	UPROPERTY(BlueprintReadOnly)
@@ -205,14 +205,14 @@ private:
 	void SetAmmoRegular();
 	void SetAmmoExplosive();
 	void SetAmmoFlare();
-	void SetAmmoPiercing();
+	void SetAmmoBouncing();
 	void SetAmmoRapid();
 
 	/** Ammo Fire Functions */
 	void FireRegular(FHitResult &Hit, FVector &ShotDirection);
 	void FireExplosive(FHitResult &Hit, FVector &ShotDirection);
 	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
-	void FirePiercing(FHitResult &Hit, FVector &ShotDirection);
+	void FireBouncing(FHitResult &Hit, FVector &ShotDirection);
 	void FireRapid(FHitResult &Hit, FVector &ShotDirection);
 
 	/**Helper Functions */
@@ -224,4 +224,6 @@ private:
 		TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<class AFlareProjectile> FlareProjectileClass;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<class ABouncingProjectile> BouncingProjectileClass;
 };

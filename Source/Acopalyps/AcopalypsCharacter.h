@@ -176,7 +176,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun|Ammo")
 		TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap = {
 			{ Regular,   100 },
-			{ Piercing,  100 },
+			{ Bouncing,  100 },
 			{ Explosive, 100 },
 			{ Flare,     100 },
 			{ Rapid,	  300 },

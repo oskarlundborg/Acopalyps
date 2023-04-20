@@ -13,6 +13,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "ExplosiveProjectile.h"
 #include "FlareProjectile.h"
+#include "BouncingProjectile.h"
 #include "Projectile.h"
 
 AGun::AGun()
@@ -48,10 +49,10 @@ void AGun::Fire()
 			FireRegular(Hit, ShotDirection);
 		}
 		break;
-	case Piercing:
-		if( PiercingMag > 0 )
+	case Bouncing:
+		if( BouncingMag > 0 )
 		{
-			FirePiercing(Hit, ShotDirection);
+			FireBouncing(Hit, ShotDirection);
 		}
 		break;
 	default:break;
@@ -162,7 +163,7 @@ void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction(ChangeAmmoRegularAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRegular);
 			EnhancedInputComponent->BindAction(ChangeAmmoExplosiveAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoExplosive);
 			EnhancedInputComponent->BindAction(ChangeAmmoFlareAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoFlare);
-			EnhancedInputComponent->BindAction(ChangeAmmoPiercingAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoPiercing);
+			EnhancedInputComponent->BindAction(ChangeAmmoBouncingAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBouncing);
 			EnhancedInputComponent->BindAction(ChangeAmmoRapidAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRapid);
 		}
 	}
@@ -239,20 +240,20 @@ void AGun::Reload()
 			SetRegularMag(12);
 		}
 		break;
-	case Piercing:
-		Total = *(Character->GetAmmoCountMap()->Find(Piercing));
+	case Bouncing:
+		Total = *(Character->GetAmmoCountMap()->Find(Bouncing));
 		if(Total==0)
 		{
 			return;
 		}
-		if( Total + PiercingMag <= 12 )
+		if( Total + BouncingMag <= 12 )
 		{
-			Character->GetAmmoCountMap()->Emplace(Piercing, 0);
-			SetPiercingMag(Total+PiercingMag);
+			Character->GetAmmoCountMap()->Emplace(Bouncing, 0);
+			SetBouncingMag(Total+BouncingMag);
 		} else
 		{
-			Character->GetAmmoCountMap()->Emplace(Piercing,(Total - 12) + PiercingMag);
-			SetPiercingMag(12);
+			Character->GetAmmoCountMap()->Emplace(Bouncing,(Total - 12) + BouncingMag);
+			SetBouncingMag(12);
 		}
 		break;
 	case Rapid:
@@ -320,9 +321,9 @@ void AGun::SetRegularMag(int32 Size)
 {
 	RegularMag = Size;
 }
-void AGun::SetPiercingMag(int32 Size)
+void AGun::SetBouncingMag(int32 Size)
 {
-	PiercingMag = Size;
+	BouncingMag = Size;
 }
 void AGun::SetExplosiveMag(int32 Size)
 {
@@ -350,9 +351,9 @@ void AGun::SetAmmoFlare()
 {
 	CurrentAlternateAmmoType=AMMO_TYPES::Flare;
 }
-void AGun::SetAmmoPiercing()
+void AGun::SetAmmoBouncing()
 {
-	CurrentAmmoType=AMMO_TYPES::Piercing;
+	CurrentAmmoType=AMMO_TYPES::Bouncing;
 }
 void AGun::SetAmmoRapid()
 {
@@ -437,7 +438,7 @@ void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 {
 	FlareMag--;
-	if( ExplosiveProjectileClass != nullptr )
+	if( FlareProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
 		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
@@ -466,9 +467,21 @@ void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-void AGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireBouncing(FHitResult& Hit, FVector& ShotDirection)
 {
-	PiercingMag--;
+	BouncingMag--;
+	if( BouncingProjectileClass != nullptr )
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
+		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<ABouncingProjectile>(BouncingProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
+	}
+	/*
 	if(GunTrace(Hit, ShotDirection))
 	{
 		DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
@@ -487,7 +500,7 @@ void AGun::FirePiercing(FHitResult& Hit, FVector& ShotDirection)
 			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), GetOwner());;
 		}
 	}
-
+	*/
 	if (FireSound != nullptr)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
