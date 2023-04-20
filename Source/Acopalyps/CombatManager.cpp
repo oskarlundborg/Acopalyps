@@ -15,6 +15,7 @@ ACombatManager::ACombatManager()
 	PrimaryActorTick.bCanEverTick = true;
 
 	ManagementZone = CreateDefaultSubobject<UBoxComponent>(TEXT("ZoneBox"));
+	ManagementZone->SetCollisionProfileName("CombatManager");
 	RootComponent = ManagementZone;
 }
 
@@ -22,34 +23,15 @@ ACombatManager::ACombatManager()
 void ACombatManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
-	// populate array with all overlapping zones
-	TArray<AActor*> OverlappingSpawnZones;
-	ManagementZone->GetOverlappingActors(OverlappingSpawnZones, ASpawnZone::StaticClass());
-	for(AActor* SpawnZone : OverlappingSpawnZones)
-	{
-		ASpawnZone* Zone = Cast<ASpawnZone>(SpawnZone);
-		if(Zone) SpawnZones.Add(Zone);
-	}
-	// populate array with all overlapping enemies
-	TArray<AActor*> OverlappingEnemies;
-	ManagementZone->GetOverlappingActors(OverlappingEnemies, AEnemyAICharacter::StaticClass());
-	for(AActor* BasicEnemy : OverlappingEnemies)
-	{
-		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(BasicEnemy);
-		if(Enemy)
-		{
-			ManagementZoneBasicEnemies.Add(Enemy);
-			Enemy->Manager = this;
-			ActiveEnemiesCount++;
-		}
-	}
-
+	FTimerHandle GatherOverlapHandle;
+	GetWorldTimerManager().SetTimer(GatherOverlapHandle, this, &ACombatManager::GatherOverlappingActors, 0.1, false);
 	for (FCombatWave Wave : CombatWaves)
 	{
 		WavesQueue.Enqueue(Wave);
 	}
+	//TODO Remove the following call before merging
+	StartCombatMode();
 }
 
 // Called every frame
@@ -59,15 +41,77 @@ void ACombatManager::Tick(float DeltaTime)
 
 }
 
-void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
+void ACombatManager::StartCombatMode()
 {
-	ManagementZoneBasicEnemies.Remove(EnemyToRemove);
-	ActiveEnemiesCount--;
+	GetWorldTimerManager().SetTimer(RecurringSpawnCheckTimerHandle, this, &ACombatManager::RunSpawnWave, 1.f, true);
+	StartOfCombat();
 }
+
 
 void ACombatManager::RunSpawnWave()
 {
+	if(WavesQueue.IsEmpty())
+	{
+		GetWorldTimerManager().ClearTimer(RecurringSpawnCheckTimerHandle);
+		return;
+	}
+	if(ActiveEnemiesCount > WavesQueue.Peek()->CurrentEnemyCountMaxForNextWave) return;
 	FCombatWave CurrentWave;
 	WavesQueue.Dequeue(CurrentWave);
-	//GetWorld()->SpawnActor()
+	ActiveEnemiesCount += CurrentWave.NumberOfBasicEnemies;
+	for(ASpawnZone* SpawnZone : SpawnZones)
+	{
+		if(CurrentWave.SpawnZoneID == SpawnZone->SpawnZoneID)
+		{
+			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies);
+		}
+	}
+	
+}
+
+
+void ACombatManager::GatherOverlappingActors()
+{
+	// populate array with all overlapping zones
+	TArray<AActor*> OverlappingSpawnZones;
+	ManagementZone->GetOverlappingActors(OverlappingSpawnZones, ASpawnZone::StaticClass());
+	for(AActor* SpawnZone : OverlappingSpawnZones)
+	{
+		ASpawnZone* Zone = Cast<ASpawnZone>(SpawnZone);
+		if(Zone)
+		{
+			SpawnZones.Add(Zone);
+			Zone->CombatManager = this;
+		}
+	}
+	// populate array with all overlapping enemies
+	TArray<AActor*> OverlappingEnemies;
+	ManagementZone->GetOverlappingActors(OverlappingEnemies, AEnemyAICharacter::StaticClass());
+	ensure(!OverlappingEnemies.IsEmpty());
+	for(AActor* BasicEnemy : OverlappingEnemies)
+	{
+		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(BasicEnemy);
+		if(Enemy)
+		{
+			ensure(Enemy != nullptr);
+			AddEnemy(Enemy);
+			ActiveEnemiesCount++;
+		}
+	}
+}
+
+void ACombatManager::AddEnemy(AEnemyAICharacter* Enemy)
+{
+	ManagedEnemies.Add(Enemy);
+	Enemy->Manager = this;
+}
+
+void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
+{
+	ManagedEnemies.Remove(EnemyToRemove);
+	ActiveEnemiesCount--;
+	if(WavesQueue.IsEmpty() && ActiveEnemiesCount == 0)
+	{
+		EndOfCombat();
+	}
 }

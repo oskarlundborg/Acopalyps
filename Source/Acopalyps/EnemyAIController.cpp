@@ -16,10 +16,15 @@ void AEnemyAIController::BeginPlay()
 	PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	//PlayerCharacter = Cast<AApocalypsCharacter>(PlayerPawn);
 	
+}
+
+void AEnemyAIController::Initialize()
+{
 	if(BehaviorTree) RunBehaviorTree(BehaviorTree);
 	GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), this->GetPawn()->GetActorLocation());
 	SetIsRagdoll(false);
 }
+
 
 void AEnemyAIController::Tick(float DeltaSeconds)
 {

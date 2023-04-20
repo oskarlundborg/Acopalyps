@@ -2,7 +2,11 @@
 
 
 #include "SpawnZone.h"
+
+#include "CombatManager.h"
 #include "EnemyAICharacter.h"
+#include "EnemyAIController.h"
+#include "SpawnPoint.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -19,7 +23,9 @@ ASpawnZone::ASpawnZone()
 void ASpawnZone::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	FTimerHandle GatherSpawnPointHandler;
+	GetWorldTimerManager().SetTimer(GatherSpawnPointHandler, this, &ASpawnZone::GatherOverlappingSpawnPoints, 0.1f, false);
 }
 
 // Called every frame
@@ -29,8 +35,46 @@ void ASpawnZone::Tick(float DeltaTime)
 
 }
 
-TArray<AEnemyAICharacter*>& ASpawnZone::GetAllEnemiesFromSpawnZone()
+
+void ASpawnZone::HandleWave(int EnemiesToSpawn)
 {
-	return SpawnZoneBasicEnemies;
+	NumberOfEnemiesLeftToSpawn += EnemiesToSpawn;
+	if(!GetWorldTimerManager().TimerExists(SpawnTimerHandle))
+		Spawn();
 }
 
+void ASpawnZone::Spawn()
+{
+	for(ASpawnPoint* SpawnPoint : SpawnPoints)
+	{
+		if(NumberOfEnemiesLeftToSpawn > 0 && !SpawnPoint->IsVisibleToPlayer())
+		{
+			AEnemyAICharacter* SpawnedEnemy = SpawnPoint->Spawn();
+			if(SpawnedEnemy)
+			{
+				CombatManager->AddEnemy(SpawnedEnemy);
+				NumberOfEnemiesLeftToSpawn--;
+			}
+		}
+	}
+	if(NumberOfEnemiesLeftToSpawn > 0)
+	{
+		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, 2.f, false);
+	} else
+	{
+		GetWorldTimerManager().ClearTimer(SpawnTimerHandle);
+	}
+}
+
+
+void ASpawnZone::GatherOverlappingSpawnPoints()
+{
+	// populate array with all overlapping spawn points
+	TArray<AActor*> OverlappingSpawnPoints;
+	SpawnZoneZone->GetOverlappingActors(OverlappingSpawnPoints, ASpawnPoint::StaticClass());
+	for(AActor* SpawnPoint : OverlappingSpawnPoints)
+	{
+		ASpawnPoint* Point = Cast<ASpawnPoint>(SpawnPoint);
+		if(ensure(Point != nullptr)) SpawnPoints.Add(Point);
+	}
+}
