@@ -32,7 +32,7 @@ void ABeanBagProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		if( OtherActor->ActorHasTag(TEXT("Enemy")) )
 		{
 			AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(OtherActor);
-			if( Enemy )
+			if( Enemy && !Enemy->IsDead() )
 			{
 				Enemy->RagDoll(GetActorForwardVector() * 50);
 			}
