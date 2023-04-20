@@ -37,6 +37,9 @@ public:
 		const FHitResult& Hit
 		);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void HitTriggerEvent(AActor*& Actor);
+	
 	/** Returns CollisionComp subobject **/
 	virtual USphereComponent* GetCollisionComp() const { return CollisionComp; }
 	/** Returns ProjectileMovement subobject **/

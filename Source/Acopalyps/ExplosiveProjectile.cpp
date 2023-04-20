@@ -85,8 +85,3 @@ UProjectileMovementComponent* AExplosiveProjectile::GetProjectileMovement() cons
 {
 	return ProjectileMovement;
 }
-
-
-
-
-

@@ -208,7 +208,6 @@ void AAcopalypsCharacter::Jump()
 	HideLeg();
 }
 
-
 void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -240,7 +239,6 @@ void AAcopalypsCharacter::HideLeg() const
 	LegMesh->SetVisibility(false);
 	LegMesh->SetCollisionProfileName("NoCollision");
 	LegMesh->SetNotifyRigidBodyCollision(false);
-	
 }
 
 void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -274,6 +272,7 @@ void AAcopalypsCharacter::OnKickAttackOverlap(UPrimitiveComponent* OverlappedCom
 			//Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
 		}
 	}
+	KickTriggerEvent(SweepResult);
 }
 
 float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
