@@ -127,6 +127,9 @@ protected:
 	// Crouching funtions
 	void StartSprint();
 	void EndSprint();
+
+	virtual void Jump() override;
+	//void StopJumping() override;
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);

@@ -202,6 +202,13 @@ void AAcopalypsCharacter::EndSprint()
 	}
 }
 
+void AAcopalypsCharacter::Jump()
+{
+	Super::Jump();
+	HideLeg();
+}
+
+
 void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
