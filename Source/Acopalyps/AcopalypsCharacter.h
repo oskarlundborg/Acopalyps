@@ -204,8 +204,5 @@ public:
 		bool bIsSprinting;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Sprint")
 		float SprintMovementSpeed = 1000.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Time")
-		float TimeMovementModifier = 1.f;
 };
 

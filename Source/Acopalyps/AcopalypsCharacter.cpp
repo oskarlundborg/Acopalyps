@@ -173,13 +173,13 @@ void AAcopalypsCharacter::SlowDownTime()
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
 	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResetTime, 2.f, false);
-	TimeMovementModifier = 2.f;
+	CustomTimeDilation = 2.f;
 }
 
 void AAcopalypsCharacter::ResetTime()
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
-	TimeMovementModifier = 1.f;
+	CustomTimeDilation = 1.f;
 }
 
 
@@ -194,12 +194,12 @@ void AAcopalypsCharacter::StartCrouch()
 			);
 	}
 	bIsCrouching = true;
-	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed * TimeMovementModifier;
+	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed;
 }
 void AAcopalypsCharacter::EndCrouch()
 {
 	bIsCrouching = false;
-	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed * TimeMovementModifier;
+	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
 }
 
 void AAcopalypsCharacter::StartSprint()
@@ -207,7 +207,7 @@ void AAcopalypsCharacter::StartSprint()
 	if( !bIsCrouching )
 	{
 		bIsSprinting = true;
-		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed * TimeMovementModifier;
+		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed;
 	}
 }
 void AAcopalypsCharacter::EndSprint()
@@ -215,7 +215,7 @@ void AAcopalypsCharacter::EndSprint()
 	bIsSprinting = false;
 	if( !bIsCrouching )
 	{
-		CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed * TimeMovementModifier;
+		CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
 	}
 }
 
