@@ -20,6 +20,7 @@ AExplosiveProjectile::AExplosiveProjectile()
 void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	AActor* HitActor = Hit.GetActor();
+	HitTriggerEvent(Hit);
 	TArray<FOverlapResult> Overlaps;
 	if(HitActor != nullptr && ExplosionTrace(Overlaps) )
 	{
@@ -42,7 +43,7 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			if( Overlap.GetComponent()->IsSimulatingPhysics() )
 			{
 				Overlap.GetComponent()->AddImpulseAtLocation(GetActorLocation() + GetVelocity().Size() * 20.f, GetActorLocation());
-				HitTriggerEvent(Overlap.GetActor());
+				ExplostionOverlapActorEvent(Overlap.GetActor());
 			}
 		}
 	}

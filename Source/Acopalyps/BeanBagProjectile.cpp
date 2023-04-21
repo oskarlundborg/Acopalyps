@@ -21,12 +21,11 @@ ABeanBagProjectile::ABeanBagProjectile()
 //Overriden OnHit class
 void ABeanBagProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	HitTriggerEvent(Hit);
 	AActor* HitActor = Hit.GetActor();
 	TArray<FOverlapResult> Overlaps;
 	if( HitActor != nullptr && HitActor != this )
 	{
-		const AActor* ConstHitActor = HitActor;
-		HitTriggerEvent(ConstHitActor);
 		UGameplayStatics::ApplyDamage(HitActor, 1.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		
 		if( OtherActor->ActorHasTag(TEXT("Enemy")) )
