@@ -20,12 +20,12 @@ AFlareProjectile::AFlareProjectile()
 //Overriden OnHit class
 void AFlareProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	HitTriggerEvent(Hit);
 	HitActor = Hit.GetActor();
 	TArray<FOverlapResult> Overlaps;
 	if( HitActor != nullptr && HitActor != this )
 	{
 		const AActor* ConstHitActor = HitActor;
-		HitTriggerEvent(ConstHitActor);
 		AttachToActor(HitActor, FAttachmentTransformRules::KeepWorldTransform, "NAME_None");
 		UGameplayStatics::ApplyDamage(HitActor, 20.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		GetWorldTimerManager().SetTimer(TickDamageTimerHandle, this, &AFlareProjectile::TickDamage, 1.f, true);
