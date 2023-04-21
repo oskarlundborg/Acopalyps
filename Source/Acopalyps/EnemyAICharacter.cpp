@@ -34,6 +34,19 @@ void AEnemyAICharacter::BeginPlay()
 	}
 	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
 	AIController->Initialize();
+	
+	if( GunClass != nullptr )
+	{
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		Gun->AttachToActor(
+			this,
+			AttachmentRules,
+			FName(TEXT("GunSocket"))
+			);
+		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
+		Gun->SetOwner(this);
+	}
 }
 
 // Called every frame
@@ -82,6 +95,9 @@ bool AEnemyAICharacter::IsDead() const
 void AEnemyAICharacter::Shoot()
 {
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
+	FHitResult Hit;
+	FVector Dir;
+	Gun->FireEnemy(Hit, Dir);
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {

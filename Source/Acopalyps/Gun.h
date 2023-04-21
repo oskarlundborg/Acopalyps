@@ -223,6 +223,9 @@ private:
 	void FireBouncing(FHitResult &Hit, FVector &ShotDirection);
 	void FireRapid(FHitResult &Hit, FVector &ShotDirection);
 	void FireBeanBag(FHitResult &Hit, FVector &ShotDirection);
+public:
+	void FireEnemy(FHitResult &Hit, FVector &ShotDirection);
+private:
 
 	/**Helper Functions */
 	FRotator RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const;
