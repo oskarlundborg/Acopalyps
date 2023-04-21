@@ -74,4 +74,23 @@ public:
 
 	ACombatManager* Manager;
 
+	// Gun variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
+		TSubclassOf<class AGun> GunClass;
+	UPROPERTY(BlueprintReadOnly)
+		AGun* Gun;
+
+	// Map of Ammo types and their current amount
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun|Ammo")
+		TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap = {
+			// Left Barrel
+			{ Regular,   100 },
+			{ Bouncing,  100 },
+			{ Rapid,	  300 },
+			// Right Barrel
+			{ Explosive, 100 },
+			{ Flare,     100 },
+			{ BeanBag,	  100 },
+		};
+
 };

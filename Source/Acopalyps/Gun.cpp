@@ -405,6 +405,37 @@ AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 	return CurrentAlternateAmmoType;
 }
 
+void AGun::FireEnemy(FHitResult& Hit, FVector& ShotDirection)
+{
+	RegularMag--;
+	if( RegularProjectileClass != nullptr )
+	{
+		const FRotator SpawnRotation = GetOwner()->GetActorForwardVector().Rotation();
+		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
+	}
+	// Try and play the sound if specified
+	if (FireSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
+	}
+	
+	// Try and play a firing animation if specified
+	if (FireAnimation != nullptr)
+	{
+		// Get the animation object for the arms mesh
+		UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
+		if (AnimInstance != nullptr)
+		{
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
+		}
+	}
+}
+
 // Fire actions per ammo type
 void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 {
