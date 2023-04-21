@@ -14,7 +14,7 @@ ABouncingProjectile::ABouncingProjectile()
 
 void ABouncingProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	
+	HitTriggerEvent(Hit);
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr && !HitActor->ActorHasTag(TEXT("Player")))
 	{
