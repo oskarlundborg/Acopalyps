@@ -27,5 +27,6 @@ public:
 
 	bool bIsOccupied = false;
 
+	UPROPERTY(EditAnywhere)
 	UBoxComponent* CoverBox;
 };

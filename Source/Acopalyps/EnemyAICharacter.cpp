@@ -21,6 +21,8 @@ AEnemyAICharacter::AEnemyAICharacter()
 	CharacterMesh = GetMesh();
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	
 }
 
 // Called when the game starts or when spawned
@@ -39,11 +41,7 @@ void AEnemyAICharacter::BeginPlay()
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		Gun->AttachToActor(
-			this,
-			AttachmentRules,
-			FName(TEXT("GunSocket"))
-			);
+		Gun->AttachToComponent(GetMesh(), AttachmentRules, TEXT("GunSocket"));
 		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
 		Gun->SetOwner(this);
 	}
