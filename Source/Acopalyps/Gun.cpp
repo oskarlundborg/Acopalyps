@@ -25,8 +25,6 @@ AGun::AGun()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//Root = CreateDefaultSubobject<USceneComponent>();
 }
 
 
@@ -45,33 +43,19 @@ void AGun::Fire()
 	case Regular:
 		if( RegularMag > 0 )
 		{
-			FireRegular(Hit, ShotDirection);
+			FireRegular();
 			FireTriggerEvent(Hit, ShotDirection, Regular);
 		}
 		break;
 	case Bouncing:
 		if( BouncingMag > 0 )
 		{
-			FireBouncing(Hit, ShotDirection);
+			FireBouncing();
 			FireTriggerEvent(Hit, ShotDirection, Bouncing);
 		}
 		break;
 	default:break;
 	}
-	AController* OwnerController = GetOwnerController();
-	if(OwnerController == nullptr)
-	{
-		return;
-	}
-	//UStaticMeshComponent* MeshComponent  = Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent());
-	//if(MeshComponent && Hit.GetActor()->IsRootComponentMovable())
-	//{
-	//	FVector Location;
-	//	FRotator Rotation;
-	//	OwnerController->GetPlayerViewPoint(Location, Rotation);
-	//	ShotDirection = Rotation.Vector();
-	//	MeshComponent->AddImpulse(ShotDirection * ImpulseForce * MeshComponent->GetMass());
-	//}
 }
 
 /** Fire alternate barrel of the gun */
@@ -89,7 +73,7 @@ void AGun::AlternateFire()
 	case Explosive:
 		if( ExplosiveMag > 0 )
 		{
-			FireExplosive(Hit, ShotDirection);
+			FireExplosive();
 			FireTriggerEvent(Hit, ShotDirection, Explosive);
 			AlternateReload();
 		}
@@ -97,7 +81,7 @@ void AGun::AlternateFire()
 	case Flare:
 		if( FlareMag > 0 )
 		{
-			FireFlare(Hit, ShotDirection);
+			FireFlare();
 			FireTriggerEvent(Hit, ShotDirection, Flare);
 			AlternateReload();
 		}
@@ -105,7 +89,7 @@ void AGun::AlternateFire()
 	case BeanBag:
 		if( BeanBagMag > 0 )
 		{
-			FireBeanBag(Hit, ShotDirection);
+			FireBeanBag();
 			FireTriggerEvent(Hit, ShotDirection, BeanBag);
 			AlternateReload();
 		}
@@ -117,7 +101,6 @@ void AGun::AlternateFire()
 /** Rapid Fire through regular barrel.*/
 void AGun::RapidFire()
 {
-	UE_LOG(LogTemp,Display,TEXT("Trying to fire rapidly"));
 	if (Character == nullptr || Character->GetController() == nullptr)
 	{
 		return;
@@ -132,14 +115,8 @@ void AGun::RapidFire()
 	FVector ShotDirection;
 	if(RapidMag > 0)
 	{
-		FireRapid(Hit, ShotDirection);
+		FireRapid();
 		FireTriggerEvent(Hit, ShotDirection, Rapid);
-	}
-	
-	AController* OwnerController = GetOwnerController();
-	if(OwnerController == nullptr)
-	{
-		return;
 	}
 }
 
@@ -178,28 +155,6 @@ void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction(ChangeAmmoBeanBagAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBeanBag);
 		}
 	}
-}
-
-/** Performs a ray casts, returns true if hit is registered */
-bool AGun::GunTrace(FHitResult& HitResult, FVector& ShotDirection)
-{
-	AController* OwnerController = GetOwnerController();
-	if(OwnerController == nullptr)
-	{
-		
-		return false;
-	}
-	
-	FVector Location;
-	FRotator Rotation;
-	OwnerController->GetPlayerViewPoint(Location, Rotation);
-	ShotDirection = -Rotation.Vector();
-	FVector End = Location + Rotation.Vector() * MaxRange;
-	
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	Params.AddIgnoredActor(Character);
-	return GetWorld()->LineTraceSingleByChannel(HitResult,Location,End,ECollisionChannel::ECC_GameTraceChannel1, Params);
 }
 
 AController* AGun::GetOwnerController() const
@@ -371,28 +326,27 @@ void AGun::SetBeanBagMag(int32 Size)
 // Set Ammo Type
 void AGun::SetAmmoRegular()
 {
-	CurrentAmmoType=AMMO_TYPES::Regular;
+	CurrentAmmoType=Regular;
 }
 void AGun::SetAmmoExplosive()
 {
-	CurrentAlternateAmmoType=AMMO_TYPES::Explosive;
+	CurrentAlternateAmmoType=Explosive;
 }
 void AGun::SetAmmoFlare()
 {
-	CurrentAlternateAmmoType=AMMO_TYPES::Flare;
+	CurrentAlternateAmmoType=Flare;
 }
 void AGun::SetAmmoBouncing()
 {
-	CurrentAmmoType=AMMO_TYPES::Bouncing;
+	CurrentAmmoType=Bouncing;
 }
 void AGun::SetAmmoRapid()
 {
-	CurrentAmmoType=AMMO_TYPES::Rapid;
-	UE_LOG(LogTemp,Display,TEXT("Ammo swapped"));
+	CurrentAmmoType=Rapid;
 }
 void AGun::SetAmmoBeanBag()
 {
-	CurrentAlternateAmmoType=AMMO_TYPES::BeanBag;
+	CurrentAlternateAmmoType=BeanBag;
 }
 
 // Getters for equipped ammo
@@ -405,7 +359,7 @@ AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 	return CurrentAlternateAmmoType;
 }
 
-void AGun::FireEnemy(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireEnemy()
 {
 	RegularMag--;
 	if( RegularProjectileClass != nullptr )
@@ -437,7 +391,7 @@ void AGun::FireEnemy(FHitResult& Hit, FVector& ShotDirection)
 }
 
 // Fire actions per ammo type
-void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireRegular()
 {
 	RegularMag--;
 	if( RegularProjectileClass != nullptr )
@@ -469,7 +423,7 @@ void AGun::FireRegular(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireExplosive()
 {
 	ExplosiveMag--;
 	if( ExplosiveProjectileClass != nullptr )
@@ -501,7 +455,7 @@ void AGun::FireExplosive(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireFlare()
 {
 	FlareMag--;
 	if( FlareProjectileClass != nullptr )
@@ -533,7 +487,7 @@ void AGun::FireFlare(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-void AGun::FireBouncing(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireBouncing()
 {
 	BouncingMag--;
 	if( BouncingProjectileClass != nullptr )
@@ -564,7 +518,7 @@ void AGun::FireBouncing(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-void AGun::FireBeanBag(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireBeanBag()
 {
 	BeanBagMag--;
 	if( BeanBagProjectileClass != nullptr )
@@ -596,10 +550,9 @@ void AGun::FireBeanBag(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-void AGun::FireRapid(FHitResult& Hit, FVector& ShotDirection)
+void AGun::FireRapid()
 {
-	//UE_LOG(LogTemp,Display,TEXT("Fire rapidly"));
-	// Decrease ammo count by 1
+	// Decrease ammo
 	RapidMag--;
 	if( RegularProjectileClass != nullptr )
 	{
@@ -633,32 +586,10 @@ void AGun::FireRapid(FHitResult& Hit, FVector& ShotDirection)
 	}
 }
 
-bool AGun::GunTraceInaccurate(FHitResult& HitResult, FVector& ShotDirection)
-{
-	AController* OwnerController = GetOwnerController();
-	if(OwnerController == nullptr)
-	{
-		return false;
-	}
-	
-	FVector Location;
-	FRotator Rotation;
-	OwnerController->GetPlayerViewPoint(Location, Rotation);
-	Rotation = RandomRotator(Rotation.Pitch,Rotation.Yaw,Rotation.Roll, InaccuracyModifier);
-	ShotDirection = -Rotation.Vector();
-	FVector End = Location + Rotation.Vector()*MaxRange;
-	
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	Params.AddIgnoredActor(Character);
-	return GetWorld()->LineTraceSingleByChannel(HitResult,Location,End,ECollisionChannel::ECC_GameTraceChannel1, Params);
-}
-
 FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const
 {
 	const float NewPitch = FMath::FRandRange(Pitch-Interval,Pitch+Interval);
 	const float NewYaw = FMath::FRandRange(Yaw-Interval,Yaw+Interval);
-	//const float NewRoll = FMath::FRandRange(Roll-Interval,Roll+Interval);
 	return FRotator(NewPitch,NewYaw,Roll);
 }
 

@@ -203,9 +203,7 @@ private:
 	/** Ammo variables **/
 	UPROPERTY(EditDefaultsOnly)
 	int32 MaxAmmo = 12;
-
-	bool GunTrace(FHitResult &HitResult, FVector &ShootDirection);
-	bool GunTraceInaccurate(FHitResult &HitResult, FVector &ShootDirection);
+	
 	AController* GetOwnerController() const;
 
 	/** Ammo Setter Functions */
@@ -217,14 +215,14 @@ private:
 	void SetAmmoBeanBag();
 
 	/** Ammo Fire Functions */
-	void FireRegular(FHitResult &Hit, FVector &ShotDirection);
-	void FireExplosive(FHitResult &Hit, FVector &ShotDirection);
-	void FireFlare(FHitResult &Hit, FVector &ShotDirection);
-	void FireBouncing(FHitResult &Hit, FVector &ShotDirection);
-	void FireRapid(FHitResult &Hit, FVector &ShotDirection);
-	void FireBeanBag(FHitResult &Hit, FVector &ShotDirection);
+	void FireRegular();
+	void FireExplosive();
+	void FireFlare();
+	void FireBouncing();
+	void FireRapid();
+	void FireBeanBag();
 public:
-	void FireEnemy(FHitResult &Hit, FVector &ShotDirection);
+	void FireEnemy();
 private:
 
 	/**Helper Functions */
