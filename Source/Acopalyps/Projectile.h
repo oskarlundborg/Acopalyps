@@ -27,8 +27,6 @@ protected:
 public:
 	AProjectile();
 
-	virtual void BeginPlay() override;
-
 	/** called when projectile hits something */
 	UFUNCTION()
 		virtual void OnHit(

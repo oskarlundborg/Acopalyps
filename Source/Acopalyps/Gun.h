@@ -114,25 +114,22 @@ public:
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter);
+	void AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter);
 
 	/** Make the weapon Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void Fire();
+	void Fire();
 
 	//Make the weapon fire RAPIDLY*/
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void RapidFire();
+	void RapidFire();
 
 	/** Make the weapon Alternate Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void AlternateFire();
-
-	UFUNCTION(BlueprintCallable, Category="Weapon")
-		bool GunTrace(FHitResult& Hit, FVector& ShotDirection);
+	void AlternateFire();
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
+	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ReloadTriggerEvent(AMMO_TYPES AmmoType);
@@ -194,7 +191,7 @@ private:
 
 	/** Weapon Max Range */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
-	float MaxRange = 10000.0;
+	float MaxRange = 5000.0;
 	/** Damage Variable */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float Damage = 10.f;
