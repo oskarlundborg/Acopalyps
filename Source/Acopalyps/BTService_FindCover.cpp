@@ -54,6 +54,7 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 			if(CoverPoint && !CoverPoint->bIsOccupied && IsCoverValid(CoverPoint))
 			{
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", CoverPoint);
+				UE_LOG(LogTemp, Warning, TEXT("HAs found cover %i"), OverlapResults.Num());
 				CoverPoint->bIsOccupied = true;
 				break;
 			}

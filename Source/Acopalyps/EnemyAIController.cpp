@@ -4,6 +4,7 @@
 #include "EnemyAIController.h"
 
 #include "AcopalypsCharacter.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,7 +22,9 @@ void AEnemyAIController::BeginPlay()
 void AEnemyAIController::Initialize()
 {
 	if(BehaviorTree) RunBehaviorTree(BehaviorTree);
+	UE_LOG(LogTemp, Warning, TEXT("BehaviourTReetorun %s"), *BehaviorTree->GetName());
 	GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), this->GetPawn()->GetActorLocation());
+	GetBlackboardComponent()->SetValueAsObject(TEXT("Player"), UGameplayStatics::GetPlayerCharacter(this, 0));
 	SetIsRagdoll(false);
 }
 
