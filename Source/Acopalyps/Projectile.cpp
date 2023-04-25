@@ -2,6 +2,7 @@
 
 
 #include "Projectile.h"
+#include "Gun.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,6 +35,15 @@ AProjectile::AProjectile()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	Mesh->SetupAttachment(RootComponent);
+}
+
+void AProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+	if( bDrawDebugSphere )
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(),10,10,FColor::Red,true,5);
+	}
 }
 
 void AProjectile::OnHit(

@@ -14,10 +14,10 @@
 #include "BouncingProjectile.h"
 #include "Projectile.h"
 #include "BeanBagProjectile.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AGun::AGun()
 {
-	MuzzleOffset = FVector(100.0, 0.0, 10.0);
 	SetAmmoRegular();
 	SetAmmoExplosive();
 }
@@ -26,7 +26,6 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
 
 /** Fire standard barrel of the gun */
 void AGun::Fire()
@@ -359,6 +358,27 @@ AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
 	return CurrentAlternateAmmoType;
 }
 
+/** Performs a ray casts, returns true if hit is registered */
+bool AGun::GunTrace(FHitResult& HitResult, FVector& ShotDirection)
+{
+	AController* OwnerController = GetOwnerController();
+	if( OwnerController == nullptr )
+	{
+		return false;
+	}
+	
+	FVector Location;
+	FRotator Rotation;
+	OwnerController->GetPlayerViewPoint(Location, Rotation);
+	ShotDirection = Rotation.Vector();
+	FVector End = Location + Rotation.Vector() * MaxRange;
+	
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(Character);
+	return GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, ECollisionChannel::ECC_GameTraceChannel1, Params);
+}
+
 void AGun::FireEnemy()
 {
 	RegularMag--;
@@ -369,6 +389,10 @@ void AGun::FireEnemy()
 
 		FActorSpawnParameters ActorSpawnParameters;
 		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
 
 		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
@@ -397,11 +421,20 @@ void AGun::FireRegular()
 	if( RegularProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
+		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+			Hit.Location
+			);
+		
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
 		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		ActorSpawnParameters.Owner = this;
 
 		GetWorld()->SpawnActor<AProjectile>(RegularProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParameters);
 	}
@@ -429,7 +462,13 @@ void AGun::FireExplosive()
 	if( ExplosiveProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
+		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+			Hit.Location
+			);
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -461,7 +500,13 @@ void AGun::FireFlare()
 	if( FlareProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
+		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+			Hit.Location
+			);
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -493,7 +538,13 @@ void AGun::FireBouncing()
 	if( BouncingProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
+		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+			Hit.Location
+			);
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -524,7 +575,13 @@ void AGun::FireBeanBag()
 	if( BeanBagProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-		const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
+		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+			Hit.Location
+			);
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -557,7 +614,13 @@ void AGun::FireRapid()
 	if( RegularProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-		FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		FHitResult Hit;
+		FVector ShotDirection;
+		GunTrace(Hit, ShotDirection);
+		FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+			Hit.Location
+			);
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 		//Randomize the spawnrotation to act as inaccuracy
 		SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,InaccuracyModifier);
