@@ -1,18 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EnemyAICharacter.h"
+#include "NonHostileAICharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
-#include "EnemyAIController.h"
+#include "NonHostileAIController.h"
 #include "HealthComponent.h"
-
-#include "AcopalypsProjectile.h"
-#include "CombatManager.h"
-#include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
-AEnemyAICharacter::AEnemyAICharacter()
+ANonHostileAICharacter::ANonHostileAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -24,7 +20,7 @@ AEnemyAICharacter::AEnemyAICharacter()
 }
 
 // Called when the game starts or when spawned
-void AEnemyAICharacter::BeginPlay()
+void ANonHostileAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -32,46 +28,34 @@ void AEnemyAICharacter::BeginPlay()
 	{
 		SpawnDefaultController();
 	}
-	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
+	ANonHostileAIController* AIController = Cast<ANonHostileAIController>(GetController());
 	AIController->Initialize();
-	
-	if( GunClass != nullptr )
-	{
-		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		Gun->AttachToActor(
-			this,
-			AttachmentRules,
-			FName(TEXT("GunSocket"))
-			);
-		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
-		Gun->SetOwner(this);
-	}
 }
 
 // Called every frame
-void AEnemyAICharacter::Tick(float DeltaTime)
+void ANonHostileAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
-void AEnemyAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ANonHostileAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float ANonHostileAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	if(IsDead()) return DamageApplied;
+	if( IsDead() )
+	{
+		return DamageApplied;
+	}
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
-
 	
-	if(IsDead())
+	if( IsDead())
 	{
 		if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
 		{
@@ -79,53 +63,48 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		}
 		OnDeath();
 		RagDoll();
-		if(Manager)
-			Manager->RemoveEnemy(this);
+		//if(Manager)
+		//	Manager->RemoveEnemy(this);
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
 	return DamageApplied;
 }
 
-bool AEnemyAICharacter::IsDead() const
+bool ANonHostileAICharacter::IsDead() const
 {
 	return HealthComponent->IsDead();
 }
 
-void AEnemyAICharacter::Shoot()
-{
-	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
-	Gun->FireEnemy();
-}
-float AEnemyAICharacter::GetHealthPercent() const
+float ANonHostileAICharacter::GetHealthPercent() const
 {
 	return HealthComponent->GetHealthPercent();
 }
 
-void AEnemyAICharacter::RagDoll()
+void ANonHostileAICharacter::RagDoll()
 {
 	RagDoll(FVector::ZeroVector);
 }
 
 
-void AEnemyAICharacter::RagDoll(FVector ForceDirection)
+void ANonHostileAICharacter::RagDoll(FVector ForceDirection)
 {
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName("RagDoll");
 	GetMesh()->AddForceToAllBodiesBelow(ForceDirection, TEXT("pelvis"), true);
 	GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
-	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
-	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
+	Cast<ANonHostileAIController>(GetController())->SetIsRagdoll(true);
+	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &ANonHostileAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
 
 
-void AEnemyAICharacter::UnRagDoll()
+void ANonHostileAICharacter::UnRagDoll()
 {
 	if(IsDead()) return;
 	GetMesh()->SetSimulatePhysics(false);
 	GetMesh()->SetCollisionProfileName("CharacterMesh");
 	GetCapsuleComponent()->SetCollisionProfileName("Enemy");
-	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(false);
+	Cast<ANonHostileAIController>(GetController())->SetIsRagdoll(false);
 	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation(), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
