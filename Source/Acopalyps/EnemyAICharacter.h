@@ -35,8 +35,9 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AEnemyAICharacter();
-
 	
+	UFUNCTION(BlueprintImplementableEvent)
+		void FireEnemyTriggerEvent();
 
 protected:
 	// Called when the game starts or when spawned
