@@ -45,7 +45,7 @@ AEnemyAICharacter* ASpawnPoint::Spawn()
 bool ASpawnPoint::IsVisibleToPlayer()
 {
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	if(PlayerController && PlayerController->LineOfSightTo(this))
+	if(PlayerController && PlayerController->LineOfSightTo(this) && PlayerController->GetCharacter() != nullptr)
 	{
 		return PlayerController->GetCharacter()->GetActorForwardVector().Dot(GetActorLocation() - PlayerController->GetCharacter()->GetActorLocation()) > 0;
 	}
