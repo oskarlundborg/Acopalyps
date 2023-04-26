@@ -6,7 +6,9 @@
 #include "AIController.h"
 #include "EnemyAICharacter.h"
 #include "SpawnZone.h"
+#include "AI/NavigationSystemBase.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACombatManager::ACombatManager()
@@ -63,6 +65,10 @@ void ACombatManager::RunSpawnWave()
 	{
 		if(CurrentWave.SpawnZoneID == SpawnZone->SpawnZoneID)
 		{
+			if (CurrentWave.StartSoundWave)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), Cast<USoundBase>(CurrentWave.StartSoundWave), CurrentWave.VolumeMultiplyer, CurrentWave.PitchMultiplyer, 0.1f);
+			}	
 			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies);
 		}
 	}

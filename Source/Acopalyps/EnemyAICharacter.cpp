@@ -93,6 +93,7 @@ bool AEnemyAICharacter::IsDead() const
 void AEnemyAICharacter::Shoot()
 {
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
+	FireEnemyTriggerEvent();
 	Gun->FireEnemy();
 }
 float AEnemyAICharacter::GetHealthPercent() const
