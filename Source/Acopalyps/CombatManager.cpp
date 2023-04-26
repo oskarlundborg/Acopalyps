@@ -87,7 +87,6 @@ void ACombatManager::GatherOverlappingActors()
 	// populate array with all overlapping enemies
 	TArray<AActor*> OverlappingEnemies;
 	ManagementZone->GetOverlappingActors(OverlappingEnemies, AEnemyAICharacter::StaticClass());
-	ensure(!OverlappingEnemies.IsEmpty());
 	for(AActor* BasicEnemy : OverlappingEnemies)
 	{
 		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(BasicEnemy);

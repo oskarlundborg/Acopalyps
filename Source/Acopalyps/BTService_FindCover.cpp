@@ -37,7 +37,7 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 	FCollisionObjectQueryParams Params = FCollisionObjectQueryParams();
 	Params.AddObjectTypesToQuery(ECC_GameTraceChannel8);
 	TArray<FOverlapResult> OverlapResults;
-	DrawDebugSphere(GetWorld(), MidwayPoint, HalfDistanceToPlayer + 300, 24, FColor::Turquoise, false, .5f);
+	//DrawDebugSphere(GetWorld(), MidwayPoint, HalfDistanceToPlayer + 300, 24, FColor::Turquoise, false, .5f);
 	bool bOverlaps = GetWorld()->OverlapMultiByObjectType(
 		OverlapResults,
 		MidwayPoint,
