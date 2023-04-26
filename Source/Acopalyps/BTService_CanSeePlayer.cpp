@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 UBTService_CanSeePlayer::UBTService_CanSeePlayer()
@@ -19,15 +20,19 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (!PlayerPawn)
 	{
-		OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("CanSeePlayer"), false);
+		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
 		return;
 	}
 	if (OwnerComp.GetAIOwner() == nullptr) return;
 
-	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn))
+	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn, OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation() + FVector(0, 0, 100)))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Sees player"), true);
-		OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("CanSeePlayer"), true);
+		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+	}
+	else
+	{
+		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
 	}
 	/*
 	else
