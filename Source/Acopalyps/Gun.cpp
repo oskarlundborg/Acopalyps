@@ -424,11 +424,18 @@ void AGun::FireRegular()
 
 		FHitResult Hit;
 		FVector ShotDirection;
-		GunTrace(Hit, ShotDirection);
-		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-			Hit.Location
-			);
+		
+		FRotator SpawnRotation;
+		if( GunTrace(Hit, ShotDirection) )
+		{
+			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Hit.Location
+				);
+		} else
+		{
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		}
 		
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
@@ -464,11 +471,18 @@ void AGun::FireExplosive()
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
 		FHitResult Hit;
 		FVector ShotDirection;
-		GunTrace(Hit, ShotDirection);
-		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-			Hit.Location
-			);
+		
+		FRotator SpawnRotation;
+		if( GunTrace(Hit, ShotDirection) )
+		{
+			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Hit.Location
+				);
+		} else
+		{
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		}
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -502,11 +516,18 @@ void AGun::FireFlare()
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
 		FHitResult Hit;
 		FVector ShotDirection;
-		GunTrace(Hit, ShotDirection);
-		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-			Hit.Location
-			);
+		
+		FRotator SpawnRotation;
+		if( GunTrace(Hit, ShotDirection) )
+		{
+			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Hit.Location
+				);
+		} else
+		{
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		}
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -540,11 +561,18 @@ void AGun::FireBouncing()
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
 		FHitResult Hit;
 		FVector ShotDirection;
-		GunTrace(Hit, ShotDirection);
-		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-			Hit.Location
-			);
+		
+		FRotator SpawnRotation;
+		if( GunTrace(Hit, ShotDirection) )
+		{
+			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Hit.Location
+				);
+		} else
+		{
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		}
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -577,11 +605,18 @@ void AGun::FireBeanBag()
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
 		FHitResult Hit;
 		FVector ShotDirection;
-		GunTrace(Hit, ShotDirection);
-		const FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-			Hit.Location
-			);
+		
+		FRotator SpawnRotation;
+		if( GunTrace(Hit, ShotDirection) )
+		{
+			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Hit.Location
+				);
+		} else
+		{
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		}
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
 		FActorSpawnParameters ActorSpawnParameters;
@@ -616,11 +651,18 @@ void AGun::FireRapid()
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
 		FHitResult Hit;
 		FVector ShotDirection;
-		GunTrace(Hit, ShotDirection);
-		FRotator SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-			Hit.Location
-			);
+		
+		FRotator SpawnRotation;
+		if( GunTrace(Hit, ShotDirection) )
+		{
+			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Hit.Location
+				);
+		} else
+		{
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		}
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 		//Randomize the spawnrotation to act as inaccuracy
 		SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,InaccuracyModifier);
