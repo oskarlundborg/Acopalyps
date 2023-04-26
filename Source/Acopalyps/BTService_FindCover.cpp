@@ -25,7 +25,7 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 	ACoverPoint* CurrentCover = Cast<ACoverPoint>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Cover"));
 	if(CurrentCover)
 	{
-		if(IsCoverValid(CurrentCover))
+		if(IsCoverValid(CurrentCover) && FVector::Distance(OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation(), CurrentCover->GetActorLocation()) < FVector::Distance(PlayerPawn->GetActorLocation(), OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation()) / 3)
 			return;
 		CurrentCover->bIsOccupied = false;
 		OwnerComp.GetBlackboardComponent()->ClearValue("Cover");

@@ -25,7 +25,7 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	}
 	if (OwnerComp.GetAIOwner() == nullptr) return;
 
-	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn, OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation() + FVector(0, 0, 100)))
+	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn, OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation() + FVector(0, 0, 60)))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Sees player"), true);
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
