@@ -200,7 +200,7 @@ public:
 			// Right Barrel
 			{ Explosive, 100 },
 			{ Flare,     100 },
-			{ BeanBag,	  100 },
+			{ BeanBag,	  10 },
 		};
 
 	
