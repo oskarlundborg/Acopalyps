@@ -66,12 +66,18 @@ class AAcopalypsCharacter : public ACharacter
 	/** Kick Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
+
+	/** Kick Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 	FVector KickForce = FVector(0, 0, 5000);
 	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
 	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
+	
+	FHitResult LookHit;
 	
 	public:
 	AAcopalypsCharacter();
@@ -131,6 +137,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ResumeTimeTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void InteractTriggerEvent();
 	
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -141,6 +150,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const;
+
 	
 protected:
 	/** Called for movement input */
@@ -181,6 +191,9 @@ public:
 	/** Returns AmmoCountMap TMap<AMMO_TYPES, int32> **/
 	TMap<TEnumAsByte<AMMO_TYPES>, int32>* GetAmmoCountMap() { return &AmmoCountMap; }
 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
+	TSubclassOf<class AActor> AmmoStationClass;
 	
 	// ---- GUN ---- //
 	
@@ -200,9 +213,30 @@ public:
 			// Right Barrel
 			{ Explosive, 100 },
 			{ Flare,     100 },
-			{ BeanBag,	  100 },
+			{ BeanBag,	  10 },
 		};
 
+	UFUNCTION(BlueprintCallable)
+	void RefillAllAmmo()
+	{
+		UE_LOG(LogTemp,Display,TEXT("ME WANT GIVE AMMO"))
+		AmmoCountMap = {
+			// Left Barrel
+			{ Regular,   100 },
+			{ Bouncing,  100 },
+			{ Rapid,	  300 },
+			// Right Barrel
+			{ Explosive, 100 },
+			{ Flare,     100 },
+			{ BeanBag,	  10 },
+		};
+	}
+
+	UFUNCTION(BlueprintCallable)
+	void RefillAmmo(AMMO_TYPES AmmoType, int32 Amount)
+	{
+		AmmoCountMap.Emplace(AmmoType, Amount);
+	}
 	
 	// ---- MOVEMENT ---- //
 	

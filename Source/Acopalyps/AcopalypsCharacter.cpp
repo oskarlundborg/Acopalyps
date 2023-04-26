@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
+#include "InteractiveToolActionSet.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
 
@@ -121,6 +122,16 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 			CharacterMovementComponent->GroundFriction += 0.1f;
 		}
 	}
+
+	if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetComponentLocation(), FirstPersonCameraComponent->GetComponentLocation().ForwardVector * 100, ECC_WorldDynamic) )
+	{
+		AActor* HitActor = LookHit.GetActor();
+
+		if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
+		{
+			UE_LOG(LogTemp, Display, TEXT("ammo station"));
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -153,6 +164,9 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
+
+		//Interaction
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Interact);
 	}
 }
 
@@ -339,3 +353,4 @@ bool AAcopalypsCharacter::GetHasRifle()
 {
 	return bHasRifle;
 }
+
