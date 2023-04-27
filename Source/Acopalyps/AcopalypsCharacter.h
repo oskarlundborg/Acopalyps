@@ -230,6 +230,7 @@ public:
 			{ Flare,     100 },
 			{ BeanBag,	  10 },
 		};
+		Health = MaxHealth;
 	}
 
 	UFUNCTION(BlueprintCallable)
