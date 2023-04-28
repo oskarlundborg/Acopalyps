@@ -188,8 +188,6 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-	/** Returns AmmoCountMap TMap<AMMO_TYPES, int32> **/
-	TMap<TEnumAsByte<AMMO_TYPES>, int32>* GetAmmoCountMap() { return &AmmoCountMap; }
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
@@ -202,42 +200,6 @@ public:
 		TSubclassOf<class AGun> GunClass;
 	UPROPERTY(BlueprintReadOnly)
 		AGun* Gun;
-
-	// Map of Ammo types and their current amount
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun|Ammo")
-		TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap = {
-			// Left Barrel
-			{ Regular,   100 },
-			{ Bouncing,  100 },
-			{ Rapid,	  300 },
-			// Right Barrel
-			{ Explosive, 100 },
-			{ Flare,     100 },
-			{ BeanBag,	  10 },
-		};
-
-	UFUNCTION(BlueprintCallable)
-	void RefillAllAmmo()
-	{
-		UE_LOG(LogTemp,Display,TEXT("ME WANT GIVE AMMO"))
-		AmmoCountMap = {
-			// Left Barrel
-			{ Regular,   100 },
-			{ Bouncing,  100 },
-			{ Rapid,	  300 },
-			// Right Barrel
-			{ Explosive, 100 },
-			{ Flare,     100 },
-			{ BeanBag,	  10 },
-		};
-		Health = MaxHealth;
-	}
-
-	UFUNCTION(BlueprintCallable)
-	void RefillAmmo(AMMO_TYPES AmmoType, int32 Amount)
-	{
-		AmmoCountMap.Emplace(AmmoType, Amount);
-	}
 	
 	// ---- MOVEMENT ---- //
 	
