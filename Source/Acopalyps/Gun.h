@@ -110,9 +110,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoBeanBagAction;
 	
-	/** Sets default values for this component's properties */
-	AGun();
-
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 		void AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter);
@@ -153,7 +150,7 @@ public:
 
 	/** Equiped Ammo Type */
 	UPROPERTY(BlueprintReadOnly)
-	TEnumAsByte<AMMO_TYPES> CurrentAmmoType;
+	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType;
 
@@ -189,15 +186,13 @@ public:
 	}
 
 protected:
-	UFUNCTION()
-	virtual void BeginPlay() override;
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	/** The Character holding this weapon*/
-	AAcopalypsCharacter* Character;
+	TUniquePtr<AAcopalypsCharacter*> Character;
 
 	
 

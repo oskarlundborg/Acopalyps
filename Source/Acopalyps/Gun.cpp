@@ -16,17 +16,6 @@
 #include "BeanBagProjectile.h"
 #include "Kismet/KismetMathLibrary.h"
 
-AGun::AGun()
-{
-	SetAmmoRegular();
-	SetAmmoExplosive();
-}
-
-void AGun::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 /** Fire standard barrel of the gun */
 void AGun::Fire()
 {
@@ -162,6 +151,7 @@ void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction(ChangeAmmoBouncingAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBouncing);
 			EnhancedInputComponent->BindAction(ChangeAmmoRapidAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRapid);
 			EnhancedInputComponent->BindAction(ChangeAmmoBeanBagAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBeanBag);
+			//EnhancedInputComponent->BindAction(ChangeAmmoBeanBagAction, ETriggerEvent::Triggered, this, [this](){ CurrentAlternateAmmoType = BeanBag; });
 		}
 	}
 }
