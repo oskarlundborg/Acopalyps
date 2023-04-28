@@ -81,10 +81,6 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->AttachWeaponInputs(this);
 	}
 	
-	for( auto& t : AmmoCountMap )
-	{
-		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
-	}
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)

@@ -35,19 +35,24 @@ void AGun::Fire()
 		return;
 	}
 	
+	if(!bCanReload)
+	{
+		return;
+	}
+	
 	FHitResult Hit;
 	FVector ShotDirection;
 	switch (CurrentAmmoType)
 	{
 	case Regular:
-		if( RegularMag > 0 )
+		if( CurrentMag > 0 )
 		{
 			FireRegular();
 			FireTriggerEvent(Hit, ShotDirection, Regular);
 		}
 		break;
 	case Bouncing:
-		if( BouncingMag > 0 )
+		if( CurrentMag > 0 )
 		{
 			FireBouncing();
 			FireTriggerEvent(Hit, ShotDirection, Bouncing);
@@ -60,37 +65,38 @@ void AGun::Fire()
 /** Fire alternate barrel of the gun */
 void AGun::AlternateFire()
 {
+	
 	if (Character == nullptr || Character->GetController() == nullptr)
 	{
 		return;
 	}
-
+	if(!bCanReload)
+	{
+		return;
+	}
 	FHitResult Hit;
 	FVector ShotDirection;
 	switch (CurrentAlternateAmmoType)
 	{
 	case Explosive:
-		if( ExplosiveMag > 0 )
+		if( CurrentMag > 0 )
 		{
 			FireExplosive();
 			FireTriggerEvent(Hit, ShotDirection, Explosive);
-			AlternateReload();
 		}
 		break;
 	case Flare:
-		if( FlareMag > 0 )
+		if( CurrentMag > 0 )
 		{
 			FireFlare();
 			FireTriggerEvent(Hit, ShotDirection, Flare);
-			AlternateReload();
 		}
 		break;
 	case BeanBag:
-		if( BeanBagMag > 0 )
+		if( CurrentMag > 0 )
 		{
 			FireBeanBag();
 			FireTriggerEvent(Hit, ShotDirection, BeanBag);
-			AlternateReload();
 		}
 		break;
 	default:break;
@@ -100,6 +106,10 @@ void AGun::AlternateFire()
 /** Rapid Fire through regular barrel.*/
 void AGun::RapidFire()
 {
+	if(!bCanReload)
+	{
+		return;
+	}
 	if (Character == nullptr || Character->GetController() == nullptr)
 	{
 		return;
@@ -112,7 +122,7 @@ void AGun::RapidFire()
 	
 	FHitResult Hit;
 	FVector ShotDirection;
-	if(RapidMag > 0)
+	if(CurrentMag > 0)
 	{
 		FireRapid();
 		FireTriggerEvent(Hit, ShotDirection, Rapid);
@@ -144,7 +154,7 @@ void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction(RapidFireAction, ETriggerEvent::Triggered, this, &AGun::RapidFire);
 			EnhancedInputComponent->BindAction(AlternativeFireAction, ETriggerEvent::Triggered, this, &AGun::AlternateFire);
 			// Reload
-			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AGun::Reload);
+			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AGun::AttemptReload);
 			// Change ammo type
 			EnhancedInputComponent->BindAction(ChangeAmmoRegularAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRegular);
 			EnhancedInputComponent->BindAction(ChangeAmmoExplosiveAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoExplosive);
@@ -184,178 +194,19 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
-	ReloadTriggerEvent(CurrentAmmoType);
+	ReloadCompletedEvent();
+	if(AmmoCapacity > MaxMagSize-CurrentMag)
+	{
+		AmmoCapacity-=MaxMagSize-CurrentMag;
+		CurrentMag = MaxMagSize;
+	}
+	else
+	{
+		CurrentMag+=AmmoCapacity;
+		AmmoCapacity=0;
+	}
 	
-	int32 Total;
-	switch (CurrentAmmoType)
-	{
-	case Regular:
-		// Load regular ammo if has
-		Total = *(Character->GetAmmoCountMap()->Find(Regular));
-		if(Total == 0)
-		{
-			return;
-		}
-		if( Total + RegularMag <= 12 )
-		{
-			Character->GetAmmoCountMap()->Emplace(Regular, 0);
-			SetRegularMag(Total+RegularMag);
-		} else
-		{
-			Character->GetAmmoCountMap()->Emplace(Regular,(Total - 12) + RegularMag);
-			SetRegularMag(12);
-		}
-		break;
-	case Bouncing:
-		Total = *(Character->GetAmmoCountMap()->Find(Bouncing));
-		if(Total==0)
-		{
-			return;
-		}
-		if( Total + BouncingMag <= 12 )
-		{
-			Character->GetAmmoCountMap()->Emplace(Bouncing, 0);
-			SetBouncingMag(Total+BouncingMag);
-		} else
-		{
-			Character->GetAmmoCountMap()->Emplace(Bouncing,(Total - 12) + BouncingMag);
-			SetBouncingMag(12);
-		}
-		break;
-	case Rapid:
-		//Load Rapid Fire ammo if available
-		Total = *(Character->GetAmmoCountMap()->Find(Rapid));
-		if(Total == 0)
-		{
-			//Ladda med 0 i reserv
-			return;
-		}
-		
-		if((Total+RapidMag)<=12)
-		{
-			Character->GetAmmoCountMap()->Emplace(Rapid, 0);
-			SetRapidMag(Total + RapidMag);
-		}
-
-		else
-		{
-			Character->GetAmmoCountMap()->Emplace(Rapid, (Total-12) + RapidMag);
-			SetRapidMag(12);
-		}
-		
-		
-	default:break;
-	}
-}
-
-void AGun::AlternateReload()
-{
-	AlternateReloadTriggerEvent(CurrentAlternateAmmoType);
-
-	// Load alternate ammo
-	int32 Total;
-	switch (CurrentAlternateAmmoType)
-	{
-	case Explosive:
-		Total = *(Character->GetAmmoCountMap()->Find(Explosive));
-		if( Total <= 1 )
-		{
-			Character->GetAmmoCountMap()->Emplace(Explosive,0);
-			SetExplosiveMag(Total);
-		} else
-		{
-			Character->GetAmmoCountMap()->Emplace(Explosive,Total - 1);
-			SetExplosiveMag(1);
-		}
-		break;
-	case Flare:
-		Total = *(Character->GetAmmoCountMap()->Find(Flare));
-		if( Total <= 1 )
-		{
-			Character->GetAmmoCountMap()->Emplace(Flare,0);
-			SetFlareMag(Total);
-		} else
-		{
-			Character->GetAmmoCountMap()->Emplace(Flare,Total - 1);
-			SetFlareMag(1);
-		}
-		break;
-	case BeanBag:
-		Total = *(Character->GetAmmoCountMap()->Find(BeanBag));
-		if( Total <= 1 )
-		{
-			Character->GetAmmoCountMap()->Emplace(BeanBag,0);
-			SetBeanBagMag(Total);
-		} else
-		{
-			Character->GetAmmoCountMap()->Emplace(BeanBag,Total - 1);
-			SetBeanBagMag(1);
-		}
-		break;
-	default:break;
-	}
-}
-
-// Set Mag Size
-void AGun::SetRegularMag(int32 Size)
-{
-	RegularMag = Size;
-}
-void AGun::SetBouncingMag(int32 Size)
-{
-	BouncingMag = Size;
-}
-void AGun::SetExplosiveMag(int32 Size)
-{
-	ExplosiveMag = Size;
-}
-void AGun::SetFlareMag(int32 Size)
-{
-	FlareMag = Size;
-}
-void AGun::SetRapidMag(int32 Size)
-{
-	RapidMag = Size;
-}
-void AGun::SetBeanBagMag(int32 Size)
-{
-	BeanBagMag = Size;
-}
-
-// Set Ammo Type
-void AGun::SetAmmoRegular()
-{
-	CurrentAmmoType=Regular;
-}
-void AGun::SetAmmoExplosive()
-{
-	CurrentAlternateAmmoType=Explosive;
-}
-void AGun::SetAmmoFlare()
-{
-	CurrentAlternateAmmoType=Flare;
-}
-void AGun::SetAmmoBouncing()
-{
-	CurrentAmmoType=Bouncing;
-}
-void AGun::SetAmmoRapid()
-{
-	CurrentAmmoType=Rapid;
-}
-void AGun::SetAmmoBeanBag()
-{
-	CurrentAlternateAmmoType=BeanBag;
-}
-
-// Getters for equipped ammo
-AMMO_TYPES AGun::GetCurrentAmmoType()
-{
-	return CurrentAmmoType;
-}
-AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
-{
-	return CurrentAlternateAmmoType;
+	bCanReload=true;
 }
 
 /** Performs a ray casts, returns true if hit is registered */
@@ -381,7 +232,8 @@ bool AGun::GunTrace(FHitResult& HitResult, FVector& ShotDirection)
 
 void AGun::FireEnemy()
 {
-	RegularMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( RegularProjectileClass != nullptr )
 	{
 		const FRotator SpawnRotation = GetOwner()->GetActorForwardVector().Rotation();
@@ -417,7 +269,8 @@ void AGun::FireEnemy()
 // Fire actions per ammo type
 void AGun::FireRegular()
 {
-	RegularMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( RegularProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
@@ -465,7 +318,8 @@ void AGun::FireRegular()
 
 void AGun::FireExplosive()
 {
-	ExplosiveMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAlternateAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( ExplosiveProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
@@ -510,7 +364,8 @@ void AGun::FireExplosive()
 
 void AGun::FireFlare()
 {
-	FlareMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAlternateAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( FlareProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
@@ -555,7 +410,8 @@ void AGun::FireFlare()
 
 void AGun::FireBouncing()
 {
-	BouncingMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( BouncingProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
@@ -599,7 +455,8 @@ void AGun::FireBouncing()
 
 void AGun::FireBeanBag()
 {
-	BeanBagMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAlternateAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( BeanBagProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
@@ -645,7 +502,8 @@ void AGun::FireBeanBag()
 void AGun::FireRapid()
 {
 	// Decrease ammo
-	RapidMag--;
+	CurrentMag-=*AmmoTypeCostValues.Find(CurrentAmmoType);
+	if(CurrentMag<0) CurrentMag=0;
 	if( RegularProjectileClass != nullptr )
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
@@ -691,11 +549,60 @@ void AGun::FireRapid()
 	}
 }
 
+void AGun::AttemptReload()
+{
+	if(bCanReload)
+	{
+		if(CurrentMag!=MaxMagSize)
+		{
+			ReloadTriggerEvent();
+			bCanReload=false;
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AGun::Reload,ReloadTime );
+		}
+	}
+}
+
 FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const
 {
 	const float NewPitch = FMath::FRandRange(Pitch-Interval,Pitch+Interval);
 	const float NewYaw = FMath::FRandRange(Yaw-Interval,Yaw+Interval);
 	return FRotator(NewPitch,NewYaw,Roll);
+}
+
+// Set Ammo Type
+void AGun::SetAmmoRegular()
+{
+	CurrentAmmoType=Regular;
+}
+void AGun::SetAmmoExplosive()
+{
+	CurrentAlternateAmmoType=Explosive;
+}
+void AGun::SetAmmoFlare()
+{
+	CurrentAlternateAmmoType=Flare;
+}
+void AGun::SetAmmoBouncing()
+{
+	CurrentAmmoType=Bouncing;
+}
+void AGun::SetAmmoRapid()
+{
+	CurrentAmmoType=Rapid;
+}
+void AGun::SetAmmoBeanBag()
+{
+	CurrentAlternateAmmoType=BeanBag;
+}
+
+// Getters for equipped ammo
+AMMO_TYPES AGun::GetCurrentAmmoType()
+{
+	return CurrentAmmoType;
+}
+AMMO_TYPES AGun::GetCurrentAlternateAmmoType()
+{
+	return CurrentAlternateAmmoType;
 }
 
 

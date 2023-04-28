@@ -28,6 +28,7 @@ class ACOPALYPS_API AGun : public AActor
 {
 	GENERATED_BODY()
 public:
+	
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
@@ -135,23 +136,14 @@ public:
 		void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ReloadTriggerEvent(AMMO_TYPES AmmoType);
+		void ReloadTriggerEvent();
+
 	UFUNCTION(BlueprintImplementableEvent)
-		void AlternateReloadTriggerEvent(AMMO_TYPES AlternateAmmoType);
-	
-	void SetRegularMag(int32 Size);
-	void SetBouncingMag(int32 Size);
-	void SetExplosiveMag(int32 Size);
-	void SetFlareMag(int32 Size);
-	void SetRapidMag(int32 Size);
-	void SetBeanBagMag(int32 Size);
+	void ReloadCompletedEvent();
 
 	/** Reloading */
 	UFUNCTION()
 	void Reload();
-	/** Reloading */
-	UFUNCTION()
-	void AlternateReload();
 
 	UFUNCTION(BlueprintGetter)
 	AMMO_TYPES GetCurrentAmmoType();
@@ -164,19 +156,37 @@ public:
 	TEnumAsByte<AMMO_TYPES> CurrentAmmoType;
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ammo")
+	TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoTypeCostValues = {
+		{ Regular, 100},
+		{Bouncing, 150},
+		{Rapid, 50},
+		{Explosive, 500},
+		{Flare, 200},
+		{BeanBag, 300},
+	};
 	
 	UPROPERTY(BlueprintReadOnly)
-	int32 RegularMag = 12;
+	int32 CurrentMag = 1000;
+
+	int32 MaxMagSize = 1000;
+
 	UPROPERTY(BlueprintReadOnly)
-	int32 BouncingMag = 12;
+	int32 AmmoCapacity = 10000;
+
+	int32 MaxAmmoCapacity = 10000;
+
 	UPROPERTY(BlueprintReadOnly)
-	int32 ExplosiveMag = 1;
+	FTimerHandle ReloadTimerHandle;
 	UPROPERTY(BlueprintReadOnly)
-	int32 FlareMag = 1;
-	UPROPERTY(BlueprintReadOnly)
-	int32 RapidMag = 12;
-	UPROPERTY(BlueprintReadOnly)
-	int32 BeanBagMag = 1;
+	float ReloadTime = 3.0;
+
+	UFUNCTION(BlueprintCallable)
+	void RefillAllAmmo()
+	{
+		AmmoCapacity = MaxAmmoCapacity;
+	}
 
 protected:
 	UFUNCTION()
@@ -188,6 +198,8 @@ protected:
 private:
 	/** The Character holding this weapon*/
 	AAcopalypsCharacter* Character;
+
+	
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float InaccuracyModifier = 8.0;
@@ -227,6 +239,10 @@ private:
 public:
 	void FireEnemy();
 private:
+
+	bool bCanReload = true;
+
+	void AttemptReload();
 
 	/**Helper Functions */
 	FRotator RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const;
