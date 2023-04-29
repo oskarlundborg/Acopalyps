@@ -3,8 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Projectile.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Gun.generated.h"
+
+class AAcopalypsCharacter;
+class UNiagaraSystem;
+class AProjectile;
+class AExplosiveProjectile;
+class AFlareProjectile;
+class ABouncingProjectile; 
+class ABeanBagProjectile;
 
 UENUM()
 enum AMMO_TYPES
@@ -17,8 +26,16 @@ enum AMMO_TYPES
 	BeanBag,
 };
 
-class AAcopalypsCharacter;
-class UNiagaraSystem;
+USTRUCT()
+struct FProjectileInfo
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AProjectile> Class;
+	UPROPERTY(EditDefaultsOnly)
+		int32 Cost;
+};
 
 /**
  * 
@@ -90,7 +107,7 @@ public:
 	
 	/** Change Ammo to Regular Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* ChangeAmmoRegularAction;
+	const class UInputAction* ChangeAmmoRegularAction;
 
 	/** Change Ammo to Explosive Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -109,7 +126,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoBeanBagAction;
-	
+
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 		void AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter);
@@ -118,7 +135,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 		void Fire();
 
-	//Make the weapon fire RAPIDLY*/
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 		void RapidFire();
 
@@ -127,7 +143,7 @@ public:
 		void AlternateFire();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		bool GunTrace(FHitResult& Hit, FVector& ShotDirection);
+		bool HitTrace(FHitResult& Hit, FVector& ShotDirection);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
@@ -142,39 +158,40 @@ public:
 	UFUNCTION()
 	void Reload();
 
-	UFUNCTION(BlueprintGetter)
-	AMMO_TYPES GetCurrentAmmoType();
-	
-	UFUNCTION(BlueprintGetter)
-	AMMO_TYPES GetCurrentAlternateAmmoType();
-
 	/** Equiped Ammo Type */
 	UPROPERTY(BlueprintReadOnly)
-	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
+		TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
 	UPROPERTY(BlueprintReadOnly)
-	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType;
+		TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType = Explosive;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ammo")
-	TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoTypeCostValues = {
-		{ Regular, 100},
-		{Bouncing, 150},
-		{Rapid, 50},
-		{Explosive, 500},
-		{Flare, 200},
-		{BeanBag, 300},
+	UPROPERTY(EditDefaultsOnly, Category="Ammo")
+	TMap<TEnumAsByte<AMMO_TYPES>, FProjectileInfo> Projectiles = {
+	   // Name			          // Class			 // Cost
+		{ Regular,      { nullptr,	100 } },
+		{ Bouncing,     { nullptr,	150 } },
+		{ Rapid,        { nullptr,	50  } },
+		{ Explosive,    { nullptr,	500 } },
+		{ Flare,        { nullptr,	200 } },
+		{ BeanBag,      { nullptr,	300 } },
 	};
+
+	UFUNCTION()
+	FProjectileInfo GetProjectileInfoByKey(AMMO_TYPES AmmoType)
+	{
+		return *Projectiles.Find(AmmoType);
+	}
 	
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	int32 CurrentMag = 1000;
 
 	int32 MaxMagSize = 1000;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	int32 AmmoCapacity = 10000;
 
 	int32 MaxAmmoCapacity = 10000;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	FTimerHandle ReloadTimerHandle;
 	UPROPERTY(BlueprintReadOnly)
 	float ReloadTime = 3.0;
@@ -186,15 +203,17 @@ public:
 	}
 
 protected:
+	/** Begins gameplay for this component. */
+	//UFUNCTION()
+	//virtual void BeginPlay() override;
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	/** The Character holding this weapon*/
-	TUniquePtr<AAcopalypsCharacter*> Character;
-
-	
+	UPROPERTY(VisibleAnywhere)
+	AAcopalypsCharacter* Character;
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float InaccuracyModifier = 8.0;
@@ -224,32 +243,10 @@ private:
 	void SetAmmoRapid();
 	void SetAmmoBeanBag();
 
-	/** Ammo Fire Functions */
-	void FireRegular();
-	void FireExplosive();
-	void FireFlare();
-	void FireBouncing();
-	void FireRapid();
-	void FireBeanBag();
-public:
-	void FireEnemy();
-private:
-
 	bool bCanReload = true;
 
 	void AttemptReload();
 
 	/**Helper Functions */
 	FRotator RandomRotator(float Pitch, float Yaw, float Roll, float Interval) const;
-	
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<class AProjectile> RegularProjectileClass;
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<class AExplosiveProjectile> ExplosiveProjectileClass;
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<class AFlareProjectile> FlareProjectileClass;
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<class ABouncingProjectile> BouncingProjectileClass;
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<class ABeanBagProjectile> BeanBagProjectileClass;
 };
