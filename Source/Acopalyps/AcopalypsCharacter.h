@@ -106,10 +106,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	void SetHasRifle(bool bNewHasRifle);
 
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
-
 	/** Triggered on collision hit event between leg hitbox and enemies*/
 	UFUNCTION()
 	void OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -151,16 +147,18 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const;
 
+	UFUNCTION(BlueprintCallable)
+	void RefillHealth() { Health = MaxHealth; }
 	
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-	// Crouching funtions
+	// Crouching functions
 	void StartCrouch();
 	void EndCrouch();
 	
-	// Crouching funtions
+	// Crouching functions
 	void StartSprint();
 	void EndSprint();
 
@@ -189,7 +187,6 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
 	TSubclassOf<class AActor> AmmoStationClass;
 	
@@ -197,7 +194,7 @@ public:
 	
 	// Gun variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
-		TSubclassOf<class AGun> GunClass;
+		TSubclassOf<AGun> GunClass;
 	UPROPERTY(BlueprintReadOnly)
 		AGun* Gun;
 	

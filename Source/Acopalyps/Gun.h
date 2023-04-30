@@ -15,7 +15,7 @@ class AFlareProjectile;
 class ABouncingProjectile; 
 class ABeanBagProjectile;
 
-UENUM()
+UENUM(BlueprintType)
 enum AMMO_TYPES
 {
 	Regular,
@@ -26,26 +26,26 @@ enum AMMO_TYPES
 	BeanBag,
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FProjectileInfo
 {
 	GENERATED_BODY()
 	
 	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<AProjectile> Class;
+	TSubclassOf<AProjectile> Class;
+	
 	UPROPERTY(EditDefaultsOnly)
-		int32 Cost;
+	int32 Cost;
 };
 
 /**
- * 
+ *
  */
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACOPALYPS_API AGun : public AActor
 {
 	GENERATED_BODY()
 public:
-	
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound;
@@ -129,27 +129,29 @@ public:
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter);
-
+	void AttachWeaponInputs(ACharacter* TargetCharacter);
+	
 	/** Make the weapon Fire */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void Fire();
+	void Fire(TEnumAsByte<AMMO_TYPES> AmmoType);
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void RapidFire();
-
-	/** Make the weapon Alternate Fire */
+	void PrimaryFire();
+	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		void AlternateFire();
+	void AlternateFire();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-		bool HitTrace(FHitResult& Hit, FVector& ShotDirection);
+	void RapidFire();
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	bool HitTrace(FHitResult& Hit, FVector& ShotDirection);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
+	void FireTriggerEvent(const FHitResult &Hit, const FVector &ShotDirection, AMMO_TYPES AmmoType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ReloadTriggerEvent();
+	void ReloadTriggerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReloadCompletedEvent();
@@ -160,35 +162,30 @@ public:
 
 	/** Equiped Ammo Type */
 	UPROPERTY(BlueprintReadOnly)
-		TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
+	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
 	UPROPERTY(BlueprintReadOnly)
-		TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType = Explosive;
+	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType = Explosive;
 
 	UPROPERTY(EditDefaultsOnly, Category="Ammo")
 	TMap<TEnumAsByte<AMMO_TYPES>, FProjectileInfo> Projectiles = {
-	   // Name			          // Class			 // Cost
+	   // { Name, { Class, Cost } },
 		{ Regular,      { nullptr,	100 } },
 		{ Bouncing,     { nullptr,	150 } },
 		{ Rapid,        { nullptr,	50  } },
 		{ Explosive,    { nullptr,	500 } },
 		{ Flare,        { nullptr,	200 } },
 		{ BeanBag,      { nullptr,	300 } },
-	};
+	}; // Choose class in editor
 
 	UFUNCTION()
-	FProjectileInfo GetProjectileInfoByKey(AMMO_TYPES AmmoType)
-	{
-		return *Projectiles.Find(AmmoType);
-	}
+	FProjectileInfo GetProjectileInfoByKey(AMMO_TYPES AmmoType) { return *Projectiles.Find(AmmoType); }
 	
 	UPROPERTY(BlueprintReadWrite)
 	int32 CurrentMag = 1000;
-
 	int32 MaxMagSize = 1000;
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 AmmoCapacity = 10000;
-
 	int32 MaxAmmoCapacity = 10000;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -197,15 +194,9 @@ public:
 	float ReloadTime = 3.0;
 
 	UFUNCTION(BlueprintCallable)
-	void RefillAllAmmo()
-	{
-		AmmoCapacity = MaxAmmoCapacity;
-	}
+	void RefillAllAmmo() { AmmoCapacity = MaxAmmoCapacity; }
 
 protected:
-	/** Begins gameplay for this component. */
-	//UFUNCTION()
-	//virtual void BeginPlay() override;
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -213,7 +204,7 @@ protected:
 private:
 	/** The Character holding this weapon*/
 	UPROPERTY(VisibleAnywhere)
-	AAcopalypsCharacter* Character;
+	ACharacter* Character;
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float InaccuracyModifier = 8.0;
@@ -236,12 +227,8 @@ private:
 	AController* GetOwnerController() const;
 
 	/** Ammo Setter Functions */
-	void SetAmmoRegular();
-	void SetAmmoExplosive();
-	void SetAmmoFlare();
-	void SetAmmoBouncing();
-	void SetAmmoRapid();
-	void SetAmmoBeanBag();
+	void SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType);
+	void SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType);
 
 	bool bCanReload = true;
 

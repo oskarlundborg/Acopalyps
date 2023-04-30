@@ -26,8 +26,6 @@ public:
 protected:
 	void BeginPlay() override;
 
-
-
 private:
 	//class AApocalypsCharacter* PlayerCharacter;
 	APawn* PlayerPawn;

@@ -44,6 +44,9 @@ void AProjectile::BeginPlay()
 	{
 		DrawDebugSphere(GetWorld(), GetActorLocation(),10,10,FColor::Red,true,5);
 	}
+	CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
+	CollisionComp->IgnoreActorWhenMoving(GetOwner()->GetOwner(), true);
+	CollisionComp->IgnoreActorWhenMoving(GetOwner()->GetOwner()->GetOwner(), true);
 }
 
 void AProjectile::OnHit(

@@ -21,11 +21,4 @@ class ACOPALYPS_API AFlareProjectile : public AProjectile
 	virtual USphereComponent* GetCollisionComp() const override;
 
 	virtual UProjectileMovementComponent* GetProjectileMovement() const override;
-private:
-	FTimerHandle TickDamageTimerHandle;
-	FTimerHandle DestroyTimerHandle;
-
-	void TickDamage();
-	void DisableTickDamage();
-	AActor* HitActor;
 };

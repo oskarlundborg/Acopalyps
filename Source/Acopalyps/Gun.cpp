@@ -11,17 +11,11 @@
 #include "Kismet/KismetMathLibrary.h"
 
 /** Fire standard barrel of the gun */
-void AGun::Fire()
+void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
-	if( Character == nullptr || Character->GetController() == nullptr || !bCanReload )
+	if( *Projectiles.Find(AmmoType)->Class != nullptr && CurrentMag >= Projectiles.Find(AmmoType)->Cost && bCanReload )
 	{
-		return;
-	}
-	if( *Projectiles.Find(CurrentAmmoType)->Class != nullptr && CurrentMag >= Projectiles.Find(CurrentAmmoType)->Cost )
-	{
-		CurrentMag -= Projectiles.Find(CurrentAmmoType)->Cost;
-		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-
+		CurrentMag -= Projectiles.Find(AmmoType)->Cost;
 		FHitResult Hit;
 		FVector ShotDirection;
 		FRotator SpawnRotation;
@@ -33,9 +27,15 @@ void AGun::Fire()
 			   );
 		} else
 		{
-			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+			if( GetOwner()->ActorHasTag("Player"))
+			{
+				SpawnRotation = Cast<APlayerController>(GetOwnerController())->PlayerCameraManager->GetCameraRotation();
+			} else
+			{
+				SpawnRotation = GetOwner()->GetActorForwardVector().Rotation();
+			}
 		}
-		if( CurrentAmmoType == Rapid )
+		if( AmmoType == Rapid )
 		{
 			SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,InaccuracyModifier);
 		}
@@ -44,61 +44,30 @@ void AGun::Fire()
 		ActorSpawnParameters.Owner = this;
 
 		GetWorld()->SpawnActor<AProjectile>(
-			*Projectiles.Find(CurrentAmmoType)->Class,
+			*Projectiles.Find(AmmoType)->Class,
 			GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
 			SpawnRotation,
 			ActorSpawnParameters
-			);
-
-		FireTriggerEvent(Hit, ShotDirection, CurrentAmmoType);
+			)->SetOwner(this);
+		FireTriggerEvent(Hit, ShotDirection, AmmoType);
 	}
+}
+
+void AGun::PrimaryFire()
+{
+	Fire(CurrentAmmoType);
+}
+
+void AGun::AlternateFire()
+{
+	Fire(CurrentAlternateAmmoType);
 }
 
 void AGun::RapidFire()
 {
 	if( CurrentAmmoType == Rapid )
 	{
-		Fire();
-	}
-}
-
-/** Fire alternate barrel of the gun */
-void AGun::AlternateFire()
-{
-	if( Character == nullptr || Character->GetController() == nullptr || !bCanReload )
-	{
-		return;
-	}
-	if( *Projectiles.Find(CurrentAlternateAmmoType)->Class != nullptr && CurrentMag >= Projectiles.Find(CurrentAlternateAmmoType)->Cost )
-	{
-		CurrentMag -= Projectiles.Find(CurrentAlternateAmmoType)->Cost;
-		APlayerController* PlayerController = Cast<APlayerController>(GetOwnerController());
-
-		FHitResult Hit;
-		FVector ShotDirection;
-		FRotator SpawnRotation;
-		if( HitTrace(Hit, ShotDirection) )
-		{
-			 SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
-				GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-				Hit.Location
-				);
-		} else
-		{
-			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-		}
-		FActorSpawnParameters ActorSpawnParameters;
-		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-		ActorSpawnParameters.Owner = this;
-
-		GetWorld()->SpawnActor<AProjectile>(
-			*Projectiles.Find(CurrentAlternateAmmoType)->Class,
-			GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
-			SpawnRotation,
-			ActorSpawnParameters
-			);
-
-		FireTriggerEvent(Hit, ShotDirection, CurrentAlternateAmmoType);
+		Fire(Rapid);
 	}
 }
 
@@ -110,7 +79,6 @@ bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
 	{
 		return false;
 	}
-	
 	FVector Location;
 	FRotator Rotation;
 	OwnerController->GetPlayerViewPoint(Location, Rotation);
@@ -123,8 +91,8 @@ bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
 	return GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, ECollisionChannel::ECC_GameTraceChannel1, Params);
 }
 
-/** Snap weapon to player character 0 */
-void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
+/** Adds gun inputs to character */
+void AGun::AttachWeaponInputs(ACharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
 	if (Character == nullptr)
@@ -134,28 +102,26 @@ void AGun::AttachWeaponInputs(AAcopalypsCharacter* TargetCharacter)
 	// Set up action bindings
 	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
 	{
-
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			// Set the priority of the mapping to 1, so that it overrides the Jump action with the Fire action when using touch input
 			Subsystem->AddMappingContext(FireMappingContext, 1);
 		}
-		
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
 			// Fire
-			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AGun::Fire);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGun::PrimaryFire);
+			EnhancedInputComponent->BindAction(AlternativeFireAction, ETriggerEvent::Started, this, &AGun::AlternateFire);
 			EnhancedInputComponent->BindAction(RapidFireAction, ETriggerEvent::Triggered, this, &AGun::RapidFire);
-			EnhancedInputComponent->BindAction(AlternativeFireAction, ETriggerEvent::Triggered, this, &AGun::AlternateFire);
 			// Reload
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AGun::AttemptReload);
 			// Change ammo type
-			EnhancedInputComponent->BindAction(ChangeAmmoRegularAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRegular);
-			EnhancedInputComponent->BindAction(ChangeAmmoExplosiveAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoExplosive);
-			EnhancedInputComponent->BindAction(ChangeAmmoFlareAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoFlare);
-			EnhancedInputComponent->BindAction(ChangeAmmoBouncingAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBouncing);
-			EnhancedInputComponent->BindAction(ChangeAmmoRapidAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoRapid);
-			EnhancedInputComponent->BindAction(ChangeAmmoBeanBagAction, ETriggerEvent::Triggered, this, &AGun::SetAmmoBeanBag);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRegularAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Regular);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBouncingAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Bouncing);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRapidAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Rapid);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoExplosiveAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Explosive);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoFlareAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Flare);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBeanBagAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, BeanBag);
 		}
 	}
 }
@@ -198,7 +164,6 @@ void AGun::Reload()
 		CurrentMag+=AmmoCapacity;
 		AmmoCapacity=0;
 	}
-	
 	bCanReload=true;
 }
 
@@ -222,28 +187,12 @@ FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval)
 	return FRotator(NewPitch,NewYaw,Roll);
 }
 
-// Set Ammo Type
-void AGun::SetAmmoRegular()
+void AGun::SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
-	CurrentAmmoType=Regular;
+	CurrentAmmoType = AmmoType;
 }
-void AGun::SetAmmoExplosive()
+
+void AGun::SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
-	CurrentAlternateAmmoType=Explosive;
-}
-void AGun::SetAmmoFlare()
-{
-	CurrentAlternateAmmoType=Flare;
-}
-void AGun::SetAmmoBouncing()
-{
-	CurrentAmmoType=Bouncing;
-}
-void AGun::SetAmmoRapid()
-{
-	CurrentAmmoType=Rapid;
-}
-void AGun::SetAmmoBeanBag()
-{
-	CurrentAlternateAmmoType=BeanBag;
+	CurrentAlternateAmmoType = AmmoType;
 }
