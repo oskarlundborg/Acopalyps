@@ -42,7 +42,7 @@ public:
 	FVector MuzzleOffset;
 
 	/** Gun muzzle's offset from the characters location */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	UNiagaraSystem* MuzzleFlash;
 
 	// Regular ammo impact sound and particle effect

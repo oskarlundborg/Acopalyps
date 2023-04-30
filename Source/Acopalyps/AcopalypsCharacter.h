@@ -31,6 +31,7 @@ class AAcopalypsCharacter : public ACharacter
 	/** Leg mesh: visible only when kicking */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Mesh, meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* LegMesh;
+	
 
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

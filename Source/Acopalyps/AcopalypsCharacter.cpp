@@ -9,6 +9,9 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
 #include "InteractiveToolActionSet.h"
+#include "Projectile.h"
+#include "Animation/AnimInstanceProxy.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
 
@@ -160,7 +163,8 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
-
+	
+		
 	}
 }
 
@@ -179,10 +183,40 @@ void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 
 void AAcopalypsCharacter::SlowDownTime()
 {
+	/*
 	SlowTimeTriggerEvent();
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
 	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, 2.f, false);
 	CustomTimeDilation = 1.6f;
+	
+	*/
+	
+	FVector MidwayPoint = GetActorLocation() + GetActorForwardVector() * 700;
+	//FVector MidwayPoint = FVector(GetActorForwardVector().X, GetActorForwardVector().Y, 0).GetSafeNormal();
+	FCollisionShape CheckSphereShape = FCollisionShape::MakeSphere(200);
+	FCollisionObjectQueryParams Params = FCollisionObjectQueryParams();
+	//Params.AddObjectTypesToQuery(ECC_GameTraceChannel8);
+	TArray<FOverlapResult> OverlapResults;
+	DrawDebugSphere(GetWorld(), MidwayPoint, 200, 24, FColor::Turquoise, false, .5f);
+	bool bOverlaps = GetWorld()->OverlapMultiByObjectType(
+		OverlapResults,
+		MidwayPoint,
+		FQuat::Identity,
+		Params,
+		CheckSphereShape);
+	if(bOverlaps)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("overlaps: %i"), OverlapResults.Num());
+		
+		for(FOverlapResult Overlap : OverlapResults)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("overlaps: %s"), *Overlap.GetActor()->GetName());
+			SlowTimeTriggerEvent();
+			Overlap.GetActor()->CustomTimeDilation = 0.4f;
+			
+		}
+	}
+	
 }
 
 void AAcopalypsCharacter::ResumeTime()
