@@ -19,7 +19,6 @@ AEnemyAICharacter::AEnemyAICharacter()
 
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
-
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 	
@@ -37,13 +36,16 @@ void AEnemyAICharacter::BeginPlay()
 	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
 	AIController->Initialize();
 	
+	
 	if( GunClass != nullptr )
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 		Gun->AttachToComponent(GetMesh(), AttachmentRules, TEXT("GunSocket"));
-		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
 		Gun->SetOwner(this);
+		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
+		//Gun->SetActorRelativeRotation(GetActorForwardVector().Rotation());
+		
 	}
 }
 
@@ -94,6 +96,7 @@ void AEnemyAICharacter::Shoot()
 {
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
 	FireEnemyTriggerEvent();
+	Cast<AEnemyAIController>(GetController())->SetAim();
 	Gun->FireEnemy();
 }
 float AEnemyAICharacter::GetHealthPercent() const

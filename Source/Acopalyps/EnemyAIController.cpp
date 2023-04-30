@@ -8,6 +8,8 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "ProfilingDebugging/CookStats.h"
 
 
 void AEnemyAIController::BeginPlay()
@@ -27,6 +29,21 @@ void AEnemyAIController::Initialize()
 	GetBlackboardComponent()->SetValueAsObject(TEXT("Player"), UGameplayStatics::GetPlayerCharacter(this, 0));
 	SetIsRagdoll(false);
 }
+
+
+void AEnemyAIController::SetAim()
+{
+	FRotator AimRotation;
+	if( GetBlackboardComponent()->GetValueAsBool("CanSeePlayer"))
+	{
+		AimRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetCharacter()->GetActorLocation() + GetCharacter()->GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation()
+				);
+	}
+	GetCharacter()->SetActorRotation(AimRotation);
+}
+
 
 
 void AEnemyAIController::Tick(float DeltaSeconds)
