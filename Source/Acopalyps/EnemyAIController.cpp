@@ -19,11 +19,12 @@ void AEnemyAIController::BeginPlay()
 void AEnemyAIController::SetAim()
 {
 	FRotator AimRotation;
-	if( GetBlackboardComponent()->GetValueAsBool("CanSeePlayer"))
+	const ACharacter* Player = UGameplayStatics::GetPlayerCharacter(this, 0);
+	if( GetBlackboardComponent()->GetValueAsBool("CanSeePlayer") && Player != nullptr )
 	{
 		AimRotation = UKismetMathLibrary::FindLookAtRotation(
 				GetCharacter()->GetActorLocation() + GetCharacter()->GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-				UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation()
+				Player->GetActorLocation()
 				);
 	}
 	GetCharacter()->SetActorRotation(AimRotation);

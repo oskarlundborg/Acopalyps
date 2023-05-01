@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Projectile.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "Gun.generated.h"
 
 class AAcopalypsCharacter;
@@ -36,6 +35,13 @@ struct FProjectileInfo
 	
 	UPROPERTY(EditDefaultsOnly)
 	int32 Cost;
+
+	UPROPERTY(EditDefaultsOnly)
+	float Delay;
+
+	FTimerHandle TimerHandle = FTimerHandle();
+	UPROPERTY(VisibleAnywhere)
+	bool bCanFire = true;
 };
 
 /**
@@ -142,7 +148,7 @@ public:
 	void AlternateFire();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void RapidFire();
+	void RapidFire() { if( CurrentAmmoType == Rapid ) Fire(Rapid); }
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	bool HitTrace(FHitResult& Hit, FVector& ShotDirection);
@@ -168,13 +174,13 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Ammo")
 	TMap<TEnumAsByte<AMMO_TYPES>, FProjectileInfo> Projectiles = {
-	   // { Name, { Class, Cost } },
-		{ Regular,      { nullptr,	100 } },
-		{ Bouncing,     { nullptr,	150 } },
-		{ Rapid,        { nullptr,	50  } },
-		{ Explosive,    { nullptr,	500 } },
-		{ Flare,        { nullptr,	200 } },
-		{ BeanBag,      { nullptr,	300 } },
+	   // { Name, { Class, Cost, Delay } },
+		{ Regular,   { nullptr,	100, .3f  } },
+		{ Bouncing,  { nullptr,	150, 0.1f } },
+		{ Rapid,     { nullptr,	50,  0.f  } },
+		{ Explosive, { nullptr,	500, 2.5f } },
+		{ Flare,     { nullptr,	200, 2.f  } },
+		{ BeanBag,   { nullptr,	300, 1.f  } },
 	}; // Choose class in editor
 
 	UFUNCTION()
@@ -192,6 +198,13 @@ public:
 	FTimerHandle ReloadTimerHandle;
 	UPROPERTY(BlueprintReadOnly)
 	float ReloadTime = 3.0;
+	
+	UFUNCTION(BlueprintCallable, Category=Delay)
+	void ToggleCanFirePrimary(AMMO_TYPES AmmoType) { Projectiles.Find(AmmoType)->bCanFire ^= true; }
+	FTimerDelegate CanFirePrimaryDelegate;
+	UFUNCTION(BlueprintCallable, Category=Delay)
+	void ToggleCanFireAlternate(AMMO_TYPES AmmoType) { Projectiles.Find(AmmoType)->bCanFire ^= true; }
+	FTimerDelegate CanFireAlternateDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void RefillAllAmmo() { AmmoCapacity = MaxAmmoCapacity; }

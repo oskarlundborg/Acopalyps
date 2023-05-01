@@ -157,7 +157,6 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
-
 	}
 }
 

@@ -13,9 +13,10 @@
 /** Fire standard barrel of the gun */
 void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
-	if( *Projectiles.Find(AmmoType)->Class != nullptr && CurrentMag >= Projectiles.Find(AmmoType)->Cost && bCanReload )
+	FProjectileInfo* Projectile = Projectiles.Find(AmmoType);
+	if( Projectile->Class != nullptr && CurrentMag >= Projectile->Cost && bCanReload && GetOwner() != nullptr )
 	{
-		CurrentMag -= Projectiles.Find(AmmoType)->Cost;
+		CurrentMag -= Projectile->Cost;
 		FHitResult Hit;
 		FVector ShotDirection;
 		FRotator SpawnRotation;
@@ -27,7 +28,7 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 			   );
 		} else
 		{
-			if( GetOwner()->ActorHasTag("Player"))
+			if( GetOwner()->ActorHasTag("Player") && GetOwnerController() != nullptr )
 			{
 				SpawnRotation = Cast<APlayerController>(GetOwnerController())->PlayerCameraManager->GetCameraRotation();
 			} else
@@ -44,37 +45,55 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 		ActorSpawnParameters.Owner = this;
 
 		GetWorld()->SpawnActor<AProjectile>(
-			*Projectiles.Find(AmmoType)->Class,
+			Projectile->Class,
 			GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
 			SpawnRotation,
 			ActorSpawnParameters
-			)->SetOwner(this);
+			);
 		FireTriggerEvent(Hit, ShotDirection, AmmoType);
 	}
 }
 
 void AGun::PrimaryFire()
 {
-	Fire(CurrentAmmoType);
+	AMMO_TYPES AmmoToFire = CurrentAmmoType; // For TimerHandle to handle same ammo when switching mid delay
+	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
+	if( Projectiles.Find(AmmoToFire)->bCanFire )
+	{
+		Fire(AmmoToFire);
+		ToggleCanFirePrimary(AmmoToFire);
+		CanFirePrimaryDelegate.BindUFunction(this, FName("ToggleCanFirePrimary"), AmmoToFire);
+		GetWorldTimerManager().SetTimer(
+			Projectiles.Find(AmmoToFire)->TimerHandle,
+			CanFirePrimaryDelegate,
+			Projectiles.Find(AmmoToFire)->Delay,
+			false
+			);
+	}
 }
 
 void AGun::AlternateFire()
 {
-	Fire(CurrentAlternateAmmoType);
-}
-
-void AGun::RapidFire()
-{
-	if( CurrentAmmoType == Rapid )
+	AMMO_TYPES AmmoToFire = CurrentAlternateAmmoType; // For TimerHandle to handle same ammo when switching mid delay
+	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
+	if( Projectiles.Find(AmmoToFire)->bCanFire )
 	{
-		Fire(Rapid);
+		Fire(AmmoToFire);
+		ToggleCanFireAlternate(AmmoToFire);
+		CanFireAlternateDelegate.BindUFunction(this, FName("ToggleCanFireAlternate"), AmmoToFire);
+		GetWorldTimerManager().SetTimer(
+			Projectiles.Find(AmmoToFire)->TimerHandle,
+			CanFireAlternateDelegate,
+			Projectiles.Find(AmmoToFire)->Delay,
+			false
+			);
 	}
 }
 
 /** Performs a ray casts, returns true if hit is registered */
 bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
 {
-	AController* OwnerController = GetOwnerController();
+	const AController* OwnerController = GetOwnerController();
 	if( OwnerController == nullptr )
 	{
 		return false;
@@ -83,7 +102,7 @@ bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
 	FRotator Rotation;
 	OwnerController->GetPlayerViewPoint(Location, Rotation);
 	ShotDirection = Rotation.Vector();
-	FVector End = Location + Rotation.Vector() * MaxRange;
+	const FVector End = Location + Rotation.Vector() * MaxRange;
 	
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
@@ -94,13 +113,12 @@ bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
 /** Adds gun inputs to character */
 void AGun::AttachWeaponInputs(ACharacter* TargetCharacter)
 {
-	Character = TargetCharacter;
-	if (Character == nullptr)
+	if( (Character = TargetCharacter) == nullptr )
 	{
 		return;
 	}
 	// Set up action bindings
-	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
+	if( const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()) )
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -128,7 +146,7 @@ void AGun::AttachWeaponInputs(ACharacter* TargetCharacter)
 
 AController* AGun::GetOwnerController() const
 {
-	APawn* OwnerPawn = Cast<APawn>(Character);
+	const APawn* OwnerPawn = Cast<APawn>(Character);
 	if(OwnerPawn == nullptr)
 	{
 		return nullptr;
@@ -142,7 +160,7 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		return;
 	}
-	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
+	if( const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()) )
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{

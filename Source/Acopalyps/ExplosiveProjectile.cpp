@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ExplosiveProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -32,7 +31,7 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			ExplosionRadius / 2,
 			ExplosionRadius,
 			1.f,
-			nullptr,
+			nullptr, // Add explosive damage type
 			{},
 			this,
 			GetWorld()->GetFirstPlayerController(),
