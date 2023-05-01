@@ -77,7 +77,10 @@ class AAcopalypsCharacter : public ACharacter
 	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
 	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
 	
-	FHitResult LookHit;
+	//FHitResult LookHit;
+
+	UPROPERTY(EditAnywhere)
+	float MouseSensitivity = 0.6;
 	
 	public:
 	AAcopalypsCharacter();

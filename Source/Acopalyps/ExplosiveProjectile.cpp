@@ -3,6 +3,7 @@
 #include "ExplosiveProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "ExplosiveDamageType.h"
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
 #include "Components/PrimitiveComponent.h"
@@ -31,7 +32,7 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			ExplosionRadius / 2,
 			ExplosionRadius,
 			1.f,
-			nullptr, // Add explosive damage type
+			ExplosiveDamageType,
 			{},
 			this,
 			GetWorld()->GetFirstPlayerController(),
