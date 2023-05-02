@@ -85,6 +85,8 @@ class AAcopalypsCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere)
 	float MouseSensitivity = 0.6;
+
+	AActor* SpawnPoint;
 	
 	public:
 	AAcopalypsCharacter();
