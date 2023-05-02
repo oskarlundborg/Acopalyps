@@ -67,9 +67,13 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
 
-	/** Kick Input Action */
+	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
+	
+	/** Respawn Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* RespawnAction;
 	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
@@ -84,6 +88,8 @@ class AAcopalypsCharacter : public ACharacter
 	
 	public:
 	AAcopalypsCharacter();
+
+	void Respawn();
 
 	virtual void Tick(float DeltaTime) override;
 protected:

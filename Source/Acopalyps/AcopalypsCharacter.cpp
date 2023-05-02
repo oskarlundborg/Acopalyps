@@ -79,7 +79,6 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -137,27 +136,28 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		//Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Move);
-
 		//Sprinting
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndSprint);
-
 		//Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartCrouch);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndCrouch);
-
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Look);
-
 		//Kicking
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Kick);
-		
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
+		//Respawn
+		EnhancedInputComponent->BindAction(RespawnAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Respawn);
 	}
+}
+
+void AAcopalypsCharacter::Respawn()
+{
+	GetWorld()->GetAuthGameMode()->RestartPlayer(GetController());
 }
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)
@@ -311,7 +311,7 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	const AActor* ConstDamageCauser = DamageCauser;
 	TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
 	
-	if(IsDead())
+	if( IsDead() )
 	{
 		if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
 		{
