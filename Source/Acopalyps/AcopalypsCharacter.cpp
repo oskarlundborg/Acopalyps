@@ -8,7 +8,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
-#include "InteractiveToolActionSet.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
 
@@ -90,8 +89,6 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 	CrouchInterpTime = FMath::Min(1.f, CrouchSpeed * DeltaTime);
 	float const CurrentCapsuleHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
-	//UE_LOG(LogTemp, Display, TEXT("%f"), CharacterMovementComponent->Velocity.Size());
-	
 	if( bIsCrouching && CurrentCapsuleHeight > 56 )
 	{
 		if( CharacterMovementComponent->Velocity.Size() > 400 )
@@ -119,15 +116,15 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetComponentLocation(), FirstPersonCameraComponent->GetComponentLocation().ForwardVector * 100, ECC_WorldDynamic) )
-	{
-		AActor* HitActor = LookHit.GetActor();
+	//if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetComponentLocation(), FirstPersonCameraComponent->GetComponentLocation().ForwardVector * 100, ECC_WorldDynamic) )
+	//{
+	//	AActor* HitActor = LookHit.GetActor();
 
-		if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
-		{
-			UE_LOG(LogTemp, Display, TEXT("ammo station"));
-		}
-	}
+	//	if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
+	//	{
+	//		UE_LOG(LogTemp, Display, TEXT("ammo station"));
+	//	}
+	//}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -160,7 +157,6 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
-
 	}
 }
 
@@ -246,8 +242,8 @@ void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		AddControllerYawInput(LookAxisVector.X * MouseSensitivity);
+		AddControllerPitchInput(LookAxisVector.Y * MouseSensitivity);
 	}
 }
 
@@ -342,9 +338,3 @@ void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
 }
-
-bool AAcopalypsCharacter::GetHasRifle()
-{
-	return bHasRifle;
-}
-

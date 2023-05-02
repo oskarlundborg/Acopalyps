@@ -77,7 +77,10 @@ class AAcopalypsCharacter : public ACharacter
 	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
 	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
 	
-	FHitResult LookHit;
+	//FHitResult LookHit;
+
+	UPROPERTY(EditAnywhere)
+	float MouseSensitivity = 0.6;
 	
 	public:
 	AAcopalypsCharacter();
@@ -105,10 +108,6 @@ public:
 	/** Setter to set the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	void SetHasRifle(bool bNewHasRifle);
-
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
 
 	/** Triggered on collision hit event between leg hitbox and enemies*/
 	UFUNCTION()
@@ -151,16 +150,18 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const;
 
+	UFUNCTION(BlueprintCallable)
+	void RefillHealth() { Health = MaxHealth; }
 	
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-	// Crouching funtions
+	// Crouching functions
 	void StartCrouch();
 	void EndCrouch();
 	
-	// Crouching funtions
+	// Crouching functions
 	void StartSprint();
 	void EndSprint();
 
@@ -189,7 +190,6 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
 	TSubclassOf<class AActor> AmmoStationClass;
 	
@@ -197,7 +197,7 @@ public:
 	
 	// Gun variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
-		TSubclassOf<class AGun> GunClass;
+		TSubclassOf<AGun> GunClass;
 	UPROPERTY(BlueprintReadOnly)
 		AGun* Gun;
 	

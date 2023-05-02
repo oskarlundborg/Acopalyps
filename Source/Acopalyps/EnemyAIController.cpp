@@ -1,16 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "EnemyAIController.h"
-
 #include "AcopalypsCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "ProfilingDebugging/CookStats.h"
-
 
 void AEnemyAIController::BeginPlay()
 {
@@ -18,7 +14,20 @@ void AEnemyAIController::BeginPlay()
 
 	PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	//PlayerCharacter = Cast<AApocalypsCharacter>(PlayerPawn);
-	
+}
+
+void AEnemyAIController::SetAim()
+{
+	FRotator AimRotation;
+	const ACharacter* Player = UGameplayStatics::GetPlayerCharacter(this, 0);
+	if( GetBlackboardComponent()->GetValueAsBool("CanSeePlayer") && Player != nullptr )
+	{
+		AimRotation = UKismetMathLibrary::FindLookAtRotation(
+				GetCharacter()->GetActorLocation() + GetCharacter()->GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+				Player->GetActorLocation()
+				);
+	}
+	GetCharacter()->SetActorRotation(AimRotation);
 }
 
 void AEnemyAIController::Initialize()
@@ -29,22 +38,6 @@ void AEnemyAIController::Initialize()
 	GetBlackboardComponent()->SetValueAsObject(TEXT("Player"), UGameplayStatics::GetPlayerCharacter(this, 0));
 	SetIsRagdoll(false);
 }
-
-
-void AEnemyAIController::SetAim()
-{
-	FRotator AimRotation;
-	if( GetBlackboardComponent()->GetValueAsBool("CanSeePlayer"))
-	{
-		AimRotation = UKismetMathLibrary::FindLookAtRotation(
-				GetCharacter()->GetActorLocation() + GetCharacter()->GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-				UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation()
-				);
-	}
-	GetCharacter()->SetActorRotation(AimRotation);
-}
-
-
 
 void AEnemyAIController::Tick(float DeltaSeconds)
 {

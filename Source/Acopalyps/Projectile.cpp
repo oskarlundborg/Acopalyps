@@ -2,6 +2,8 @@
 
 
 #include "Projectile.h"
+
+#include "AcopalypsCharacter.h"
 #include "Gun.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
@@ -44,6 +46,7 @@ void AProjectile::BeginPlay()
 	{
 		DrawDebugSphere(GetWorld(), GetActorLocation(),10,10,FColor::Red,true,5);
 	}
+	CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
 }
 
 void AProjectile::OnHit(

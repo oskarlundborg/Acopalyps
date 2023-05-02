@@ -27,4 +27,10 @@ public:
 	virtual USphereComponent* GetCollisionComp() const override;
 
 	virtual UProjectileMovementComponent* GetProjectileMovement() const override;
+
+	UPROPERTY(EditAnywhere)
+	float ExplosionRadius = 360.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UExplosiveDamageType> ExplosiveDamageType;
 };

@@ -2,13 +2,12 @@
 
 
 #include "EnemyAICharacter.h"
+
+#include "AcopalypsCharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAIController.h"
 #include "HealthComponent.h"
-
-#include "AcopalypsProjectile.h"
 #include "CombatManager.h"
-#include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -20,8 +19,6 @@ AEnemyAICharacter::AEnemyAICharacter()
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-	
 }
 
 // Called when the game starts or when spawned
@@ -97,7 +94,7 @@ void AEnemyAICharacter::Shoot()
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
 	FireEnemyTriggerEvent();
 	Cast<AEnemyAIController>(GetController())->SetAim();
-	Gun->FireEnemy();
+	Gun->Fire(Regular);
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {
@@ -133,4 +130,3 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
-

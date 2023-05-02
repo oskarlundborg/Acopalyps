@@ -7,20 +7,12 @@
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
-
 class ACombatManager;
 UCLASS()
 class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/*
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AGun> GunClass;
-
-	/** Gun object to be attached to enemy character*/
-	//UPROPERTY()
-	//AGun* Gun;
 	void UnRagDoll();
 		
 	/** Pawn mesh: 3st person view */
@@ -29,8 +21,6 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category=Health)
 	class UHealthComponent* HealthComponent;
-
-	
 	
 public:
 	// Sets default values for this character's properties
@@ -81,17 +71,11 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		AGun* Gun;
 
-	// Map of Ammo types and their current amount
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun|Ammo")
-		TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap = {
-			// Left Barrel
-			{ Regular,   100 },
-			{ Bouncing,  100 },
-			{ Rapid,	  300 },
-			// Right Barrel
-			{ Explosive, 100 },
-			{ Flare,     100 },
-			{ BeanBag,	  100 },
-		};
+	UPROPERTY(EditAnywhere)
+	int32 CurrentMag = 1000;
+	int32 MaxMagSize = 1000;
 
+	UPROPERTY(EditAnywhere)
+	int32 AmmoCapacity = 10000;
+	int32 MaxAmmoCapacity = 10000;
 };
