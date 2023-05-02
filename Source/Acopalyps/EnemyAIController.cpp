@@ -39,22 +39,6 @@ void AEnemyAIController::Initialize()
 	SetIsRagdoll(false);
 }
 
-
-void AEnemyAIController::SetAim()
-{
-	FRotator AimRotation;
-	if( GetBlackboardComponent()->GetValueAsBool("CanSeePlayer"))
-	{
-		AimRotation = UKismetMathLibrary::FindLookAtRotation(
-				GetCharacter()->GetActorLocation() + GetCharacter()->GetActorRotation().RotateVector(FVector(-10, 0, 8)),
-				UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation()
-				);
-	}
-	GetCharacter()->SetActorRotation(AimRotation);
-}
-
-
-
 void AEnemyAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
