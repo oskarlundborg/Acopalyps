@@ -22,7 +22,7 @@ enum AMMO_TYPES
 	Explosive,
 	Flare,
 	Rapid,
-	BeanBag,
+	Shotgun,
 };
 
 USTRUCT(BlueprintType)
@@ -180,7 +180,7 @@ public:
 		{ Rapid,     { nullptr,	50,  0.f  } },
 		{ Explosive, { nullptr,	500, 2.5f } },
 		{ Flare,     { nullptr,	200, 2.f  } },
-		{ BeanBag,   { nullptr,	300, 1.f  } },
+		{ Shotgun,   { nullptr,	300, 0.8f  } },
 	}; // Choose class in editor
 
 	UFUNCTION()
@@ -220,7 +220,10 @@ private:
 	ACharacter* Character;
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
-	float InaccuracyModifier = 8.0;
+	float InaccuracyModifier = 5.0;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Properties")
+	float ShotgunSpread = 4.0;
 
 	/** Weapon Max Range */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
