@@ -50,11 +50,7 @@ float AExplosiveObject::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		OnDeathTriggerEvent();
 		TArray<FOverlapResult> Overlaps;
 		//blow up, deal radial damage.
-		if(bDrawDebugSphere)
-		{
-			DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 10, FColor::Red, true, 5);
-		}
-		
+		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 10, FColor::Red, true, 5);
 		UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(),
 			100.0,
 			35.0,
