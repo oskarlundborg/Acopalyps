@@ -4,6 +4,7 @@
 #include "CombatManager.h"
 
 #include "AIController.h"
+#include "CombatTrigger.h"
 #include "EnemyAICharacter.h"
 #include "SpawnZone.h"
 #include "AI/NavigationSystemBase.h"
@@ -33,7 +34,7 @@ void ACombatManager::BeginPlay()
 		WavesQueue.Enqueue(Wave);
 	}
 	//TODO Remove the following call before merging
-	StartCombatMode();
+	//StartCombatMode();
 }
 
 // Called every frame
@@ -46,6 +47,10 @@ void ACombatManager::Tick(float DeltaTime)
 void ACombatManager::StartCombatMode()
 {
 	GetWorldTimerManager().SetTimer(RecurringSpawnCheckTimerHandle, this, &ACombatManager::RunSpawnWave, 1.f, true);
+	for(ACombatTrigger* Trigger : CombatTriggers)
+	{
+		Trigger->TriggerBox->Deactivate();
+	}
 	StartOfCombat();
 }
 
@@ -67,7 +72,7 @@ void ACombatManager::RunSpawnWave()
 		{
 			if (CurrentWave.StartSoundWave)
 			{
-				UGameplayStatics::PlaySound2D(GetWorld(), Cast<USoundBase>(CurrentWave.StartSoundWave), CurrentWave.VolumeMultiplyer, CurrentWave.PitchMultiplyer, 0.1f);
+				UGameplayStatics::PlaySound2D(GetWorld(), CurrentWave.StartSoundWave, CurrentWave.VolumeMultiplyer, CurrentWave.PitchMultiplyer, 0.1f);
 			}	
 			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies);
 		}
@@ -101,6 +106,19 @@ void ACombatManager::GatherOverlappingActors()
 			ensure(Enemy != nullptr);
 			AddEnemy(Enemy);
 			ActiveEnemiesCount++;
+		}
+	}
+	// populate array with all overlapping combat triggers
+	TArray<AActor*> OverlappingCombatTriggers;
+	ManagementZone->GetOverlappingActors(OverlappingCombatTriggers, ACombatTrigger::StaticClass());
+	for(AActor* CombatTrigger : OverlappingCombatTriggers)
+	{
+		ACombatTrigger* Trigger = Cast<ACombatTrigger>(CombatTrigger);
+		if(Trigger)
+		{
+			ensure(Trigger != nullptr);
+			CombatTriggers.Add(Trigger);
+			Trigger->Manager = this;
 		}
 	}
 }
