@@ -13,10 +13,7 @@ UCLASS()
 class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 {
 	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere)
-	FString PlayerName;
-
+	
 	UPROPERTY(VisibleAnywhere)
 	FString SaveSlotName;
 
@@ -28,5 +25,12 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 	UAcopalypsSaveGame();
 	UAcopalypsSaveGame(FString SaveSlotName);
 
+public:
 	void SaveGameInstances();
+	
+	// Player Info
+	UPROPERTY(BlueprintReadWrite, Category=PlayerInfo)
+	FString PlayerName;
+	UPROPERTY(BlueprintReadWrite, Category=PlayerInfo)
+	FTransform PlayerTransform;
 };
