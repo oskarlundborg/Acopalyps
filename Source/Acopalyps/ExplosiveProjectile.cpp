@@ -40,12 +40,15 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			);
 		for( FOverlapResult Overlap : Overlaps )
 		{
-			if( Overlap.GetComponent()->IsSimulatingPhysics() )
+			
+			if(Overlap.GetActor()!=nullptr && Overlap.GetComponent()->IsSimulatingPhysics() )
 			{
 				Overlap.GetComponent()->AddImpulseAtLocation(GetActorLocation() + GetVelocity().Size() * 20.f, GetActorLocation());
 				ExplostionOverlapActorEvent(Overlap.GetActor());
 			}
+			
 		}
+		
 	}
 	Destroy();
 }
