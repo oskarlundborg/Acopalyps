@@ -50,6 +50,6 @@ public:
 	UPROPERTY(EditAnywhere)
 		bool bDrawDebugSphere;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 		UStaticMeshComponent* Mesh;
 };
