@@ -79,13 +79,6 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	TSubclassOf<ASpawnPoint> SpawnPointClass;
-	SpawnPoint = GetWorld()->SpawnActor<ASpawnPoint>(
-		SpawnPointClass,
-		GetActorLocation(),
-		GetActorRotation(),
-		FActorSpawnParameters()
-		);
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -164,19 +157,7 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 void AAcopalypsCharacter::Respawn()
 {
-	if( AGameModeBase* GameMode = GetWorld()->GetAuthGameMode() )
-	{
-		if( SpawnPoint != nullptr )
-		{
-			GameMode->RestartPlayerAtPlayerStart(GetController(), SpawnPoint);
-		} else
-		{
-			UE_LOG(LogTemp, Display, TEXT("no spawn point"))
-		}
-	} else
-	{
-		UE_LOG(LogTemp, Display, TEXT("no game mode"))
-	}
+
 }
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)

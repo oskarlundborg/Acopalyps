@@ -2,8 +2,8 @@
 
 
 #include "AcopalypsPrototypeGameModeBase.h"
-
 #include "AcopalypsCharacter.h"
+#include "AcopalypsSaveGame.h"
 #include "EngineUtils.h"
 
 void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled)
@@ -40,5 +40,4 @@ void AAcopalypsPrototypeGameModeBase::EndGame(bool bPlayerWon)
 
 void AAcopalypsPrototypeGameModeBase::SaveLevelData()
 {
-	
 }

@@ -15,10 +15,27 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
+USTRUCT(BlueprintType)
+struct FPlayerInstance
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	FVector Location;
+	UPROPERTY(VisibleAnywhere)
+	FRotator Rotation;
+	UPROPERTY(VisibleAnywhere)
+	int32 Health;
+	UPROPERTY(VisibleAnywhere)
+	AGun* Gun;
+};
+
 UCLASS(config=Game)
 class AAcopalypsCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	FPlayerInstance PlayerInstance;
 
 	/** Timer handle for all timers*/
 	FTimerHandle TimerHandle;
@@ -86,8 +103,6 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere)
 	float MouseSensitivity = 0.6;
 
-	AActor* SpawnPoint;
-	
 	public:
 	AAcopalypsCharacter();
 

@@ -23,9 +23,10 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 	UPROPERTY(VisibleAnywhere)
 	uint32 UserIndex;
 
-	UPROPERTY(VisibleAnywhere)
-	UGameInstance* Instance;
+	TArray<UGameInstance*> SavedInstances;
 
 	UAcopalypsSaveGame();
 	UAcopalypsSaveGame(FString SaveSlotName);
+
+	void SaveGameInstances();
 };
