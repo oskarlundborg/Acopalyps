@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
@@ -27,7 +28,10 @@ public:
 	AEnemyAICharacter();
 	
 	UFUNCTION(BlueprintImplementableEvent)
-		void FireEnemyTriggerEvent();
+	void FireEnemyTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void TakeDamageTriggerEvent(const float& DamageAmount, const FVector& HitLocation, const FDamageEvent& Damage, const AController* EventInstigator, const AActor* DamageCauser);
 
 protected:
 	// Called when the game starts or when spawned

@@ -26,7 +26,7 @@ void AFlareProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	{
 		const AActor* ConstHitActor = HitActor;
 		AttachToActor(HitActor, FAttachmentTransformRules::KeepWorldTransform, "NAME_None");
-		UGameplayStatics::ApplyDamage(HitActor, 1.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		UGameplayStatics::ApplyPointDamage(HitActor, 1.f, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
 	}
 	if( bDrawDebugSphere )
 	{

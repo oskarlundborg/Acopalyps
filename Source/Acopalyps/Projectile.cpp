@@ -61,8 +61,7 @@ void AProjectile::OnHit(
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr )
 	{
-		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
-		const AActor* ConstHitActor = HitActor;
+		UGameplayStatics::ApplyPointDamage(HitActor, 50.f, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		if( bDrawDebugSphere )
 		{
 			DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
