@@ -30,6 +30,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
+	bool bDrawDebugSphere;
+
+	UPROPERTY(EditAnywhere)
 	float ExplosionRadius = 360.0;
 	
 	/** Returns if object is dead*/
