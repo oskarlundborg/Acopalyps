@@ -22,9 +22,15 @@ public:
 	bool ExplosionTrace(TArray<struct FOverlapResult>& Overlaps);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ExplostionOverlapActorEvent(const AActor* Actor);
+	void ExplostionOverlapActorEvent(const AActor* Actor);
 	
 	virtual USphereComponent* GetCollisionComp() const override;
 
 	virtual UProjectileMovementComponent* GetProjectileMovement() const override;
+
+	UPROPERTY(EditAnywhere)
+	float ExplosionRadius = 360.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UExplosiveDamageType> ExplosiveDamageType;
 };

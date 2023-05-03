@@ -2,13 +2,12 @@
 
 
 #include "EnemyAICharacter.h"
+
+#include "AcopalypsCharacter.h"
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAIController.h"
 #include "HealthComponent.h"
-
-#include "AcopalypsProjectile.h"
 #include "CombatManager.h"
-#include "Algo/Rotate.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -19,7 +18,6 @@ AEnemyAICharacter::AEnemyAICharacter()
 
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
-
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
@@ -35,17 +33,16 @@ void AEnemyAICharacter::BeginPlay()
 	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
 	AIController->Initialize();
 	
+	
 	if( GunClass != nullptr )
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		Gun->AttachToActor(
-			this,
-			AttachmentRules,
-			FName(TEXT("GunSocket"))
-			);
-		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
+		Gun->AttachToComponent(GetMesh(), AttachmentRules, TEXT("GunSocket"));
 		Gun->SetOwner(this);
+		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
+		//Gun->SetActorRelativeRotation(GetActorForwardVector().Rotation());
+		
 	}
 }
 
@@ -69,7 +66,6 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
-
 	
 	if(IsDead())
 	{
@@ -84,6 +80,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
+	TakeDamageTriggerEvent(DamageAmount, DamageCauser->GetActorLocation(), DamageEvent, EventInstigator, DamageCauser);
 	return DamageApplied;
 }
 
@@ -95,7 +92,9 @@ bool AEnemyAICharacter::IsDead() const
 void AEnemyAICharacter::Shoot()
 {
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
-	Gun->FireEnemy();
+	FireEnemyTriggerEvent();
+	Cast<AEnemyAIController>(GetController())->SetAim();
+	Gun->Fire(Regular);
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {
@@ -131,4 +130,3 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
-

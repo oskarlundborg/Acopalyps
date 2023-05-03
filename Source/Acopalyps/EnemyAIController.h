@@ -21,10 +21,10 @@ public:
 
 	void Initialize();
 
+	void SetAim();
+
 protected:
 	void BeginPlay() override;
-
-
 
 private:
 	//class AApocalypsCharacter* PlayerCharacter;

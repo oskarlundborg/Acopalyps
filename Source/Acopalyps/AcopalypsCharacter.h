@@ -66,12 +66,21 @@ class AAcopalypsCharacter : public ACharacter
 	/** Kick Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
+
+	/** Kick Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 	FVector KickForce = FVector(0, 0, 5000);
 	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
 	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
+	
+	//FHitResult LookHit;
+
+	UPROPERTY(EditAnywhere)
+	float MouseSensitivity = 0.6;
 	
 	public:
 	AAcopalypsCharacter();
@@ -100,10 +109,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	void SetHasRifle(bool bNewHasRifle);
 
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
-
 	/** Triggered on collision hit event between leg hitbox and enemies*/
 	UFUNCTION()
 	void OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -131,6 +136,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ResumeTimeTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void InteractTriggerEvent();
 	
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -141,16 +149,19 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const;
+
+	UFUNCTION(BlueprintCallable)
+	void RefillHealth() { Health = MaxHealth; }
 	
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-	// Crouching funtions
+	// Crouching functions
 	void StartCrouch();
 	void EndCrouch();
 	
-	// Crouching funtions
+	// Crouching functions
 	void StartSprint();
 	void EndSprint();
 
@@ -178,31 +189,17 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-	/** Returns AmmoCountMap TMap<AMMO_TYPES, int32> **/
-	TMap<TEnumAsByte<AMMO_TYPES>, int32>* GetAmmoCountMap() { return &AmmoCountMap; }
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
+	TSubclassOf<class AActor> AmmoStationClass;
 	
 	// ---- GUN ---- //
 	
 	// Gun variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
-		TSubclassOf<class AGun> GunClass;
+		TSubclassOf<AGun> GunClass;
 	UPROPERTY(BlueprintReadOnly)
 		AGun* Gun;
-
-	// Map of Ammo types and their current amount
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun|Ammo")
-		TMap<TEnumAsByte<AMMO_TYPES>, int32> AmmoCountMap = {
-			// Left Barrel
-			{ Regular,   100 },
-			{ Bouncing,  100 },
-			{ Rapid,	  300 },
-			// Right Barrel
-			{ Explosive, 100 },
-			{ Flare,     100 },
-			{ BeanBag,	  100 },
-		};
-
 	
 	// ---- MOVEMENT ---- //
 	

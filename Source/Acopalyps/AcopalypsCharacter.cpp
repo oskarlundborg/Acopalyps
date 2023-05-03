@@ -80,10 +80,6 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->AttachWeaponInputs(this);
 	}
 	
-	for( auto& t : AmmoCountMap )
-	{
-		UE_LOG(LogTemp, Display, TEXT("Key: %d, Value: %i"), t.Key, t.Value);
-	}
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -93,8 +89,6 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 	CrouchInterpTime = FMath::Min(1.f, CrouchSpeed * DeltaTime);
 	float const CurrentCapsuleHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
-	//UE_LOG(LogTemp, Display, TEXT("%f"), CharacterMovementComponent->Velocity.Size());
-	
 	if( bIsCrouching && CurrentCapsuleHeight > 56 )
 	{
 		if( CharacterMovementComponent->Velocity.Size() > 400 )
@@ -121,6 +115,16 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 			CharacterMovementComponent->GroundFriction += 0.1f;
 		}
 	}
+
+	//if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetComponentLocation(), FirstPersonCameraComponent->GetComponentLocation().ForwardVector * 100, ECC_WorldDynamic) )
+	//{
+	//	AActor* HitActor = LookHit.GetActor();
+
+	//	if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
+	//	{
+	//		UE_LOG(LogTemp, Display, TEXT("ammo station"));
+	//	}
+	//}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -238,8 +242,8 @@ void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		AddControllerYawInput(LookAxisVector.X * MouseSensitivity);
+		AddControllerPitchInput(LookAxisVector.Y * MouseSensitivity);
 	}
 }
 
@@ -333,9 +337,4 @@ float AAcopalypsCharacter::GetHealthPercent() const
 void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
-}
-
-bool AAcopalypsCharacter::GetHasRifle()
-{
-	return bHasRifle;
 }

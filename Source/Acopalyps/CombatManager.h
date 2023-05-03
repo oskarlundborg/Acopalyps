@@ -27,6 +27,16 @@ struct FCombatWave
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn Wave")
 	int CurrentEnemyCountMaxForNextWave;
 
+	UPROPERTY(EditAnywhere, Category= "Sound")
+	USoundWave* StartSoundWave;
+
+	UPROPERTY(EditAnywhere, Category= "Sound")
+	float VolumeMultiplyer;
+
+	UPROPERTY(EditAnywhere, Category= "Sound")
+	float PitchMultiplyer;
+
+
 	//TODO: Tillgång till spawnZone, för spawnpoints, timer för spawn, decrement numBasicEnemy, 
 };
 

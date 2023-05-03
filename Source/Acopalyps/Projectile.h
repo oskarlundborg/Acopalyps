@@ -27,6 +27,8 @@ protected:
 public:
 	AProjectile();
 
+	virtual void BeginPlay() override;
+
 	/** called when projectile hits something */
 	UFUNCTION()
 		virtual void OnHit(
@@ -48,6 +50,6 @@ public:
 	UPROPERTY(EditAnywhere)
 		bool bDrawDebugSphere;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 		UStaticMeshComponent* Mesh;
 };
