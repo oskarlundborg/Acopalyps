@@ -30,8 +30,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireEnemyTriggerEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void TakeDamageTriggerEvent(const float& DamageAmount, const FVector& HitLocation, const FDamageEvent& Damage, const AController* EventInstigator, const AActor* DamageCauser);
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void TakeDamageTriggerEvent(const float& DamageAmount, const FVector& HitLocation, const FDamageEvent& Damage, const AController* EventInstigator, const AActor* DamageCauser);
 
 protected:
 	// Called when the game starts or when spawned

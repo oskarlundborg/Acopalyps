@@ -20,6 +20,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category=Settings)
 	class UAcopalypsSaveGame* SaveGameObject;
 
+	UFUNCTION(BlueprintCallable, Category=GameManager)
 	void LoadGame();
+	UFUNCTION(BlueprintCallable, Category=GameManager)
 	void SaveGame();
 };

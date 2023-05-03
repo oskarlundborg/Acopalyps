@@ -3,20 +3,6 @@
 
 #include "AcopalypsSaveGame.h"
 #include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
 
-UAcopalypsSaveGame::UAcopalypsSaveGame() :
-	SaveSlotName("TestSaveSlot"),
-	UserIndex(0) {}
-
-UAcopalypsSaveGame::UAcopalypsSaveGame(FString SaveSlotName) :
-	SaveSlotName(SaveSlotName),
-	UserIndex(0) {}
-
-void UAcopalypsSaveGame::SaveGameInstances()
-{
-	SavedInstances.Add(GetWorld()->GetGameInstance());
-	for( AController* Controller : TActorRange<AController>(GetWorld()) )
-	{
-		SavedInstances.Add(Controller->GetGameInstance());
-	}
-}
+UAcopalypsSaveGame::UAcopalypsSaveGame() {}

@@ -80,7 +80,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
-	TakeDamageTriggerEvent(DamageAmount, DamageCauser->GetActorLocation(), DamageEvent, EventInstigator, DamageCauser);
+	//TakeDamageTriggerEvent(DamageAmount, DamageCauser->GetActorLocation(), DamageEvent, EventInstigator, DamageCauser);
 	return DamageApplied;
 }
 

@@ -9,6 +9,7 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AcopalypsPlatformGameInstance.h"
 #include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,6 +80,7 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
+	Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->SaveGame();
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -157,7 +159,7 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 void AAcopalypsCharacter::Respawn()
 {
-
+	Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
 }
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)

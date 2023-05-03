@@ -14,19 +14,8 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(VisibleAnywhere)
-	FString SaveSlotName;
-
-	UPROPERTY(VisibleAnywhere)
-	uint32 UserIndex;
-
-	TArray<UGameInstance*> SavedInstances;
-
-	UAcopalypsSaveGame();
-	UAcopalypsSaveGame(FString SaveSlotName);
-
 public:
-	void SaveGameInstances();
+	UAcopalypsSaveGame();
 	
 	// Player Info
 	UPROPERTY(BlueprintReadWrite, Category=PlayerInfo)
