@@ -9,7 +9,6 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "AcopalypsPlatformGameInstance.h"
 #include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -154,6 +153,8 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
 		//Respawn
 		EnhancedInputComponent->BindAction(RespawnAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Respawn);
+		//Reset Level
+		EnhancedInputComponent->BindAction(ResetLevelAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::ResetLevel);
 	}
 }
 
@@ -165,6 +166,11 @@ void AAcopalypsCharacter::Respawn()
 	Health = MaxHealth;
 	SetActorLocation(SpawnPosition);
 	EnableInput(Cast<APlayerController>(GetController()));
+}
+
+void AAcopalypsCharacter::ResetLevel()
+{
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)

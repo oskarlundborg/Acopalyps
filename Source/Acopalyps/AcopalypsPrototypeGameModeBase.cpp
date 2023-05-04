@@ -17,6 +17,7 @@ void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled)
 		UE_LOG(LogTemp, Display, TEXT("Player Killed"))
 		//RestartPlayer(PlayerController);
 		UGameplayStatics::GetGameMode(this)->RestartPlayer(PlayerController);
+		//RestartPlayer(PlayerController);
 		//EndGame(false);
 	}
 
@@ -37,7 +38,6 @@ void AAcopalypsPrototypeGameModeBase::BeginPlay()
 void AAcopalypsPrototypeGameModeBase::RestartPlayer(AController* NewPlayer)
 {
 	UE_LOG(LogTemp, Display, TEXT("Calling RestartPlayer"))
-	ensure(NewPlayer);
 	Super::RestartPlayer(NewPlayer);
 }
 

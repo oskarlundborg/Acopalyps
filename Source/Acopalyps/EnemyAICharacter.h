@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
-#include "Engine/DamageEvents.h"
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
@@ -29,10 +28,7 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireEnemyTriggerEvent();
-
-	//UFUNCTION(BlueprintImplementableEvent)
-	//void TakeDamageTriggerEvent(const float& DamageAmount, const FVector& HitLocation, const FDamageEvent& Damage, const AController* EventInstigator, const AActor* DamageCauser);
-
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -76,10 +72,10 @@ public:
 		AGun* Gun;
 
 	UPROPERTY(EditAnywhere)
-	int32 CurrentMag = 1000;
-	int32 MaxMagSize = 1000;
+	int32 CurrentMag = 99999999;//1000;
+	int32 MaxMagSize = 99999999;//1000;
 
 	UPROPERTY(EditAnywhere)
-	int32 AmmoCapacity = 10000;
-	int32 MaxAmmoCapacity = 10000;
+	int32 AmmoCapacity = 99999999;//10000;
+	int32 MaxAmmoCapacity = 99999999;//10000;
 };
