@@ -20,12 +20,15 @@ void UAcopalypsPlatformGameInstance::SaveGame()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("Error: Save failed."));
 	}
+	ensure(SaveGameObject);
 }
 
 void UAcopalypsPlatformGameInstance::LoadGame()
 {
 	USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(SaveGameSlotName, 0);
+	ensure(LoadedGame);
 	SaveGameObject = Cast<UAcopalypsSaveGame>(LoadedGame);
+	ensure(SaveGameObject);
 	
 	if( !SaveGameObject )
 	{

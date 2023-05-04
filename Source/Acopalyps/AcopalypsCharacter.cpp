@@ -80,7 +80,7 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->SaveGame();
+	SpawnPosition = GetActorLocation();
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -159,7 +159,12 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 void AAcopalypsCharacter::Respawn()
 {
-	Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
+	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
+	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
+	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
+	Health = MaxHealth;
+	SetActorLocation(SpawnPosition);
+	EnableInput(Cast<APlayerController>(GetController()));
 }
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)
@@ -319,9 +324,11 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		{
 			PrototypeGameModeBase->PawnKilled(this);
 		}
-		DetachFromControllerPendingDestroy();
-		GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
+		//DetachFromControllerPendingDestroy();
+		DisableInput(Cast<APlayerController>(GetController()));
+		//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
 		HideLeg();
+		GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AAcopalypsCharacter::Respawn, 1);
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
 	return DamageApplied;

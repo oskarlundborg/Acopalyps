@@ -16,7 +16,7 @@ class ACOPALYPS_API UAcopalypsPlatformGameInstance : public UPlatformGameInstanc
 
 public:
 	UPROPERTY(BlueprintReadOnly)
-	FString SaveGameSlotName;
+	FString SaveGameSlotName = TEXT("Test");
 	UPROPERTY(BlueprintReadWrite, Category=Settings)
 	class UAcopalypsSaveGame* SaveGameObject;
 

@@ -108,6 +108,11 @@ class AAcopalypsCharacter : public ACharacter
 
 	void Respawn();
 
+	UPROPERTY(VisibleAnywhere)
+	FVector SpawnPosition;
+	UPROPERTY()
+	FTimerHandle RespawnTimer;
+
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay();

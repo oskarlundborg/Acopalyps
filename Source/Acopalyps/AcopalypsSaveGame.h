@@ -16,10 +16,15 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 	
 public:
 	UAcopalypsSaveGame();
+
+	void SaveActor(AActor* Actor, FObjectRef& ActorRef);
+	
+	UPROPERTY(VisibleAnywhere)
+	FString SlotName;
+	UPROPERTY(VisibleAnywhere)
+	uint32 UserIndex;
 	
 	// Player Info
-	UPROPERTY(BlueprintReadWrite, Category=PlayerInfo)
-	FString PlayerName;
 	UPROPERTY(BlueprintReadWrite, Category=PlayerInfo)
 	FTransform PlayerTransform;
 };
