@@ -178,7 +178,7 @@ public:
 		{ Regular,   { nullptr,	100, .3f  } },
 		{ Bouncing,  { nullptr,	150, 0.1f } },
 		{ Rapid,     { nullptr,	50,  0.f  } },
-		{ Explosive, { nullptr,	500, 2.5f } },
+		{ Explosive, { nullptr,	0, 2.5f } },
 		{ Flare,     { nullptr,	200, 2.f  } },
 		{ Shotgun,   { nullptr,	300, 0.8f  } },
 	}; // Choose class in editor
@@ -191,13 +191,13 @@ public:
 	int32 MaxMagSize = 1000;
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 AmmoCapacity = 10000;
-	int32 MaxAmmoCapacity = 10000;
+	int32 AmmoCapacity = 2147483647;
+	int32 MaxAmmoCapacity = 2147483647;
 
 	UPROPERTY(BlueprintReadWrite)
 	FTimerHandle ReloadTimerHandle;
-	UPROPERTY(BlueprintReadOnly)
-	float ReloadTime = 3.0;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Weapon Properties")
+	float ReloadTime = 1.5;
 	
 	UFUNCTION(BlueprintCallable, Category=Delay)
 	void ToggleCanFirePrimary(AMMO_TYPES AmmoType) { Projectiles.Find(AmmoType)->bCanFire ^= true; }
