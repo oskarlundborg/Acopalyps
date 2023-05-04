@@ -92,6 +92,10 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* RespawnAction;
 	
+	/** Reset Level Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* ResetLevelAction;
+	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 	FVector KickForce = FVector(0, 0, 5000);
@@ -113,6 +117,9 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
 
+	UFUNCTION()
+	void ResetLevel();
+
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay();
@@ -120,11 +127,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float MaxHealth = 100.f;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	float Health;
 
 public:
-		
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;

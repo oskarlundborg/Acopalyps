@@ -264,5 +264,3 @@ void AGun::RotateAlternateAmmoType()
 		SetAlternateAmmoType(AlternateAmmoTypes[(AlternateAmmoTypes.IndexOfByKey(CurrentAlternateAmmoType)+1)]);
 	}
 }
-
-
