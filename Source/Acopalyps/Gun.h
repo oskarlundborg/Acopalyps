@@ -223,7 +223,7 @@ private:
 	float InaccuracyModifier = 5.0;
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
-	float ShotgunSpread = 4.0;
+	float ShotgunSpread = 1.0;
 
 	/** Weapon Max Range */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
