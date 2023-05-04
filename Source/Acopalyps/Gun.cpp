@@ -148,6 +148,10 @@ void AGun::AttachWeaponInputs(ACharacter* TargetCharacter)
 			// Reload
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AGun::AttemptReload);
 			// Change ammo type
+			
+			EnhancedInputComponent->BindAction<AGun>(RotateRegularAmmo, ETriggerEvent::Started, this, &AGun::RotateAmmoType);
+			EnhancedInputComponent->BindAction<AGun>(RotateAlternateAmmo, ETriggerEvent::Started, this, &AGun::RotateAlternateAmmoType);
+			
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRegularAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Regular);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBouncingAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Bouncing);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRapidAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Rapid);
@@ -216,7 +220,8 @@ FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval)
 {
 	const float NewPitch = FMath::FRandRange(Pitch-Interval,Pitch+Interval);
 	const float NewYaw = FMath::FRandRange(Yaw-Interval,Yaw+Interval);
-	return FRotator(NewPitch,NewYaw,Roll);
+	const float NewRoll = FMath::FRandRange(Roll-Interval,Roll+Interval);
+	return FRotator(NewPitch,NewYaw,NewRoll);
 }
 
 void AGun::SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
@@ -228,3 +233,33 @@ void AGun::SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
 	CurrentAlternateAmmoType = AmmoType;
 }
+
+void AGun::RotateAmmoType()
+{
+	if(AmmoTypes.Find(CurrentAmmoType) == AmmoTypes.Num()-1)
+	{
+		UE_LOG(LogTemp,Display,TEXT("LAST AMMOTYPE"))
+		SetPrimaryAmmoType(AmmoTypes[0]);
+	}
+	else
+	{
+		UE_LOG(LogTemp,Display,TEXT("NOT LAST AMMOTYPE"))
+		SetPrimaryAmmoType(AmmoTypes[(AmmoTypes.IndexOfByKey(CurrentAmmoType)+1)]);
+	}
+}
+
+void AGun::RotateAlternateAmmoType()
+{
+	if(AlternateAmmoTypes.Find(CurrentAlternateAmmoType) == AlternateAmmoTypes.Num()-1)
+	{
+		UE_LOG(LogTemp,Display,TEXT("LAST AMMOTYPE"))
+		SetAlternateAmmoType(AlternateAmmoTypes[0]);
+	}
+	else
+	{
+		UE_LOG(LogTemp,Display,TEXT("NOT LAST AMMOTYPE"))
+		SetAlternateAmmoType(AlternateAmmoTypes[(AlternateAmmoTypes.IndexOfByKey(CurrentAlternateAmmoType)+1)]);
+	}
+}
+
+
