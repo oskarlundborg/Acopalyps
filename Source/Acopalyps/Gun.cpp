@@ -14,9 +14,13 @@
 void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
 	FProjectileInfo* Projectile = Projectiles.Find(AmmoType);
-	if( Projectile->Class != nullptr && CurrentMag >= Projectile->Cost && bCanReload && GetOwner() != nullptr )
+	if( Projectile->Class != nullptr && (CurrentMag > 0 || Projectile->Cost == 0) && bCanReload && GetOwner() != nullptr )
 	{
 		CurrentMag -= Projectile->Cost;
+		if(CurrentMag < 0)
+		{
+			CurrentMag = 0;
+		}
 		FHitResult Hit;
 		FVector ShotDirection;
 		FRotator SpawnRotation;
