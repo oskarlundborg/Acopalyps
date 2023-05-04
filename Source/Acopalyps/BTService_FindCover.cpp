@@ -7,6 +7,7 @@
 #include "CoverPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
+#include "EnemyAICharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 UBTService_FindCover::UBTService_FindCover()
@@ -22,10 +23,14 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 
 	if (OwnerComp.GetAIOwner() == nullptr) return;
 
+	EnemyAICharacter = Cast<AEnemyAICharacter>(OwnerComp.GetAIOwner()->GetCharacter());
+
+	if (EnemyAICharacter == nullptr) return;
+
 	ACoverPoint* CurrentCover = Cast<ACoverPoint>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Cover"));
 	if(CurrentCover)
 	{
-		if(IsCoverValid(CurrentCover) && FVector::Distance(OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation(), CurrentCover->GetActorLocation()) < FVector::Distance(PlayerPawn->GetActorLocation(), OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation()) / 3)
+		if(IsCoverValid(CurrentCover) && FVector::Distance(EnemyAICharacter->GetActorLocation(), CurrentCover->GetActorLocation()) < FVector::Distance(PlayerPawn->GetActorLocation(), EnemyAICharacter->GetActorLocation()) / 3)
 			return;
 		CurrentCover->bIsOccupied = false;
 		OwnerComp.GetBlackboardComponent()->ClearValue("Cover");
@@ -47,17 +52,29 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 	if(bOverlaps)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("overlaps: %i"), OverlapResults.Num());
-		
+
+		float ClosestToPlayerDistance = 0;
+		ACoverPoint* NextCoverPoint = nullptr;
 		for(FOverlapResult Overlap : OverlapResults)
 		{
 			ACoverPoint* CoverPoint = Cast<ACoverPoint>(Overlap.GetActor());
-			if(CoverPoint && !CoverPoint->bIsOccupied && IsCoverValid(CoverPoint))
+			if(CoverPoint && !CoverPoint->bIsOccupied && IsCoverValid(CoverPoint) && CoverPoint->LastVisitedCharacter != EnemyAICharacter)
 			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", CoverPoint);
-				UE_LOG(LogTemp, Warning, TEXT("HAs found cover %i"), OverlapResults.Num());
-				CoverPoint->bIsOccupied = true;
-				break;
+				if (CoverPoint->DistanceToPlayer() < ClosestToPlayerDistance)
+				{
+					NextCoverPoint = NextCoverPoint;
+				}
 			}
+		}
+		if (NextCoverPoint)
+		{
+			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", NextCoverPoint);
+			NextCoverPoint->bIsOccupied = true;
+			NextCoverPoint->LastVisitedCharacter = EnemyAICharacter;
+		}
+		else
+		{
+			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", NextCoverPoint);
 		}
 	}
 	

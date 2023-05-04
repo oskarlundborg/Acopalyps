@@ -19,4 +19,11 @@ public:
 	
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	
+
+	UPROPERTY()
+	class AEnemyAICharacter* EnemyAICharacter;
+
+	UPROPERTY()
+	APawn* PlayerPawn;
 };

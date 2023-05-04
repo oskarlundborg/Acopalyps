@@ -16,5 +16,6 @@ EBTNodeResult::Type UBTTask_Shoot::ExecuteTask(UBehaviorTreeComponent& ownerComp
 	Super::ExecuteTask(ownerComp, nodeMemory);
 
 	Cast<AEnemyAICharacter>(ownerComp.GetAIOwner()->GetPawn())->Shoot();
+	UE_LOG(LogTemp, Warning, TEXT("Shooting tast"));
 	return EBTNodeResult::Succeeded;
 }

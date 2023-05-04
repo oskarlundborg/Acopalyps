@@ -23,4 +23,6 @@ protected:
 
 private:
 	bool IsCoverValid(ACoverPoint* Cover);
+
+	class AEnemyAICharacter* EnemyAICharacter;
 };
