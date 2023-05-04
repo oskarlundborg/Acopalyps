@@ -9,6 +9,7 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AcopalypsPlatformGameInstance.h"
 #include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	
+	SpawnPosition = GetActorLocation();
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -137,27 +138,33 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		//Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Move);
-
 		//Sprinting
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndSprint);
-
 		//Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartCrouch);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndCrouch);
-
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Look);
-
 		//Kicking
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Kick);
-		
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
+		//Respawn
+		EnhancedInputComponent->BindAction(RespawnAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Respawn);
 	}
+}
+
+void AAcopalypsCharacter::Respawn()
+{
+	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
+	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
+	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
+	Health = MaxHealth;
+	SetActorLocation(SpawnPosition);
+	EnableInput(Cast<APlayerController>(GetController()));
 }
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)
@@ -311,15 +318,17 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	const AActor* ConstDamageCauser = DamageCauser;
 	TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
 	
-	if(IsDead())
+	if( IsDead() )
 	{
 		if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
 		{
 			PrototypeGameModeBase->PawnKilled(this);
 		}
-		DetachFromControllerPendingDestroy();
-		GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
+		//DetachFromControllerPendingDestroy();
+		DisableInput(Cast<APlayerController>(GetController()));
+		//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
 		HideLeg();
+		GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AAcopalypsCharacter::Respawn, 1);
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
 	return DamageApplied;

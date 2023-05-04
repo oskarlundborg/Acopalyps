@@ -15,10 +15,27 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
+USTRUCT(BlueprintType)
+struct FPlayerInstance
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	FVector Location;
+	UPROPERTY(VisibleAnywhere)
+	FRotator Rotation;
+	UPROPERTY(VisibleAnywhere)
+	int32 Health;
+	UPROPERTY(VisibleAnywhere)
+	AGun* Gun;
+};
+
 UCLASS(config=Game)
 class AAcopalypsCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	FPlayerInstance PlayerInstance;
 
 	/** Timer handle for all timers*/
 	FTimerHandle TimerHandle;
@@ -67,9 +84,13 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
 
-	/** Kick Input Action */
+	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
+	
+	/** Respawn Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* RespawnAction;
 	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
@@ -81,9 +102,16 @@ class AAcopalypsCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere)
 	float MouseSensitivity = 0.6;
-	
+
 	public:
 	AAcopalypsCharacter();
+
+	void Respawn();
+
+	UPROPERTY(VisibleAnywhere)
+	FVector SpawnPosition;
+	UPROPERTY()
+	FTimerHandle RespawnTimer;
 
 	virtual void Tick(float DeltaTime) override;
 protected:

@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "AcopalypsPrototypeGameModeBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerDiedSignature, ACharacter*, Character);
+
 /**
  * 
  */
@@ -15,10 +17,28 @@ class ACOPALYPS_API AAcopalypsPrototypeGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-
+	virtual void RestartPlayer(AController* NewPlayer) override;
+	
 	/** Run when a pawn is killed, enemy or player*/
 	void PawnKilled(APawn* PawnKilled);
 
+protected:
+	virtual void BeginPlay() override;
+
 	/** Ends game depending on who won - enemy or player*/
 	void EndGame(bool bPlayerWon);
+
+	void SaveLevelData();
+
+	UFUNCTION()
+	virtual void PlayerDied(ACharacter* Character);
+private:
+	UPROPERTY()
+	FOnPlayerDiedSignature OnPlayerDied;
+	
+	//TArray<AActor*> ActorDestroyed;
+	//TMap<AActor*, FCompressedTransform> ActorsMove;
+	//TMap<AActor*, FCompressedTransform> ActorsSpawned;
+
+	//FVector SpawnPoint;
 };
