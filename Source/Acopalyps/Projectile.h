@@ -24,6 +24,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		UProjectileMovementComponent* ProjectileMovement;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UStaticMeshComponent* Mesh;
+
 public:
 	AProjectile();
 
@@ -49,7 +52,4 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		bool bDrawDebugSphere;
-
-	UPROPERTY(BlueprintReadWrite)
-		UStaticMeshComponent* Mesh;
 };

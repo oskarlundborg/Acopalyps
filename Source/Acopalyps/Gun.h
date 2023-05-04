@@ -133,6 +133,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeAmmoBeanBagAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* RotateRegularAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* RotateAlternateAmmo;
+
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void AttachWeaponInputs(ACharacter* TargetCharacter);
@@ -166,6 +172,8 @@ public:
 	UFUNCTION()
 	void Reload();
 
+	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
+	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun, Flare};
 	/** Equiped Ammo Type */
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
@@ -223,7 +231,7 @@ private:
 	float InaccuracyModifier = 5.0;
 
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
-	float ShotgunSpread = 4.0;
+	float ShotgunSpread = 2.0;
 
 	/** Weapon Max Range */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
@@ -245,6 +253,9 @@ private:
 	/** Ammo Setter Functions */
 	void SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType);
 	void SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType);
+
+	void RotateAmmoType();
+	void RotateAlternateAmmoType();
 
 	bool bCanReload = true;
 
