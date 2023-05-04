@@ -220,8 +220,7 @@ FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval)
 {
 	const float NewPitch = FMath::FRandRange(Pitch-Interval,Pitch+Interval);
 	const float NewYaw = FMath::FRandRange(Yaw-Interval,Yaw+Interval);
-	const float NewRoll = FMath::FRandRange(Roll-Interval,Roll+Interval);
-	return FRotator(NewPitch,NewYaw,NewRoll);
+	return FRotator(NewPitch,NewYaw,Roll);
 }
 
 void AGun::SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
