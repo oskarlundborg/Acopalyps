@@ -20,6 +20,7 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 		FHitResult Hit;
 		FVector ShotDirection;
 		FRotator SpawnRotation;
+		int8 ProjectilesToSpawn = 1;
 		if( HitTrace(Hit, ShotDirection) )
 		{
 			SpawnRotation = UKismetMathLibrary::FindLookAtRotation(
@@ -40,16 +41,29 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 		{
 			SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,InaccuracyModifier);
 		}
+		if(AmmoType == Shotgun)
+		{
+			ProjectilesToSpawn = 8;
+		}
 		FActorSpawnParameters ActorSpawnParameters;
-		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		ActorSpawnParameters.Owner = this;
 
-		GetWorld()->SpawnActor<AProjectile>(
+		for(int i = 0; i<ProjectilesToSpawn;i++)
+		{
+			if(AmmoType == Shotgun)
+			{
+				SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,ShotgunSpread);
+			}
+			GetWorld()->SpawnActor<AProjectile>(
 			Projectile->Class,
 			GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
 			SpawnRotation,
 			ActorSpawnParameters
 			);
+		}
+		
 		FireTriggerEvent(Hit, ShotDirection, AmmoType);
 	}
 }
@@ -139,7 +153,7 @@ void AGun::AttachWeaponInputs(ACharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRapidAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Rapid);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoExplosiveAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Explosive);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoFlareAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Flare);
-			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBeanBagAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, BeanBag);
+			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBeanBagAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Shotgun);
 		}
 	}
 }
