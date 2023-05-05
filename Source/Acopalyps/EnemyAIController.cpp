@@ -2,10 +2,12 @@
 
 #include "EnemyAIController.h"
 #include "AcopalypsCharacter.h"
+#include "EditorClassUtils.h"
 #include "NavigationSystem.h"
-#include "NavigationData.h"
+#include "NavFilters/NavigationQueryFilter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "EnvironmentQuery/EnvQueryTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -14,9 +16,10 @@
 void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
-
 	PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	//PlayerCharacter = Cast<AApocalypsCharacter>(PlayerPawn);
+	const int32 FilterArrayIndex = UKismetMathLibrary::RandomIntegerInRange(0, NavigationFiltersClasses.Num() -1);
+	
+	//FilterClass = NavigationFiltersClasses[FilterArrayIndex];
 }
 
 void AEnemyAIController::SetAim()
@@ -40,15 +43,6 @@ void AEnemyAIController::Initialize()
 	GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), this->GetPawn()->GetActorLocation());
 	GetBlackboardComponent()->SetValueAsObject(TEXT("Player"), UGameplayStatics::GetPlayerCharacter(this, 0));
 	SetIsRagdoll(false);
-
-	/*
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
-	if (NavSystem)
-	{
-		APawn* MyPawn = GetPawn();
-		const ANavigationData* NavData = NavSystem->GetNavDataForProps(MyPawn->GetNavAgentPropertiesRef());
-	}
-	*/
 }
 
 void AEnemyAIController::Tick(float DeltaSeconds)
@@ -61,24 +55,30 @@ void AEnemyAIController::SetIsRagdoll(bool val)
 	GetBlackboardComponent()->SetValueAsBool("IsRagdoll", val);
 }
 
-
-
-bool AEnemyAIController::HitTraceAtPLayerSuccess()
+bool AEnemyAIController::HitTraceAtPLayerSuccess() const
 {
 
 	FHitResult HitResult;
 	FVector Origin, Extent;
 	PlayerPawn->GetActorBounds(true, Origin, Extent);
 
-	bool bHit = GetWorld()->SweepSingleByChannel(HitResult, GetCharacter()->GetActorLocation(), GetCharacter()->GetActorLocation() + GetCharacter()->GetCharacterMovement()->Velocity.GetSafeNormal() * (GetCharacter()->GetCharacterMovement()->Velocity.Size()), FQuat::Identity, ECC_Pawn,FCollisionShape::MakeCapsule(Extent), FCollisionQueryParams("BoxSweep", false, this));
+	const bool bHit = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		GetCharacter()->GetActorLocation(),
+		GetCharacter()->GetActorLocation() + GetCharacter()->GetCharacterMovement()->Velocity.GetSafeNormal() * (GetCharacter()->GetCharacterMovement()->Velocity.Size()),
+		FQuat::Identity,
+		ECC_Pawn,FCollisionShape::MakeCapsule(Extent),
+		FCollisionQueryParams("BoxSweep", false, this)
+		);
 
-	if (bHit)
+	if (bHit && Cast<AAcopalypsCharacter>(HitResult.GetActor()))
 	{
-		AAcopalypsCharacter* HitCharacter = Cast<AAcopalypsCharacter>(HitResult.GetActor());
-		if(HitCharacter)
-		{
-			return true;
-		}
+		return true;
 	}
 	return false;
+}
+
+void AEnemyAIController::MoveToActorFilter(AActor* Goal)
+{
+	MoveToActor(Goal, -1.0f, true, true, true, FilterClass, true);
 }
