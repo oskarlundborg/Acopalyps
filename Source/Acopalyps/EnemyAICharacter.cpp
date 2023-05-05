@@ -66,6 +66,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
+
 	
 	if(IsDead())
 	{

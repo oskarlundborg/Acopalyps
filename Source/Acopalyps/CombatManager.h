@@ -7,6 +7,7 @@
 #include "Containers/Queue.h"
 #include "CombatManager.generated.h"
 
+class ACombatTrigger;
 class UBoxComponent;
 class AAIController;
 class AEnemyAICharacter;
@@ -69,12 +70,12 @@ public:
 
 	void AddEnemy(AEnemyAICharacter* Enemy);
 
+	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
+	void StartCombatMode();
+
 private:
 
 	void RunSpawnWave();
-
-	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
-	void StartCombatMode();
 
 	FTimerHandle RecurringSpawnCheckTimerHandle;
 
@@ -83,6 +84,9 @@ private:
 	
 	UPROPERTY(VisibleAnywhere)
 	TArray<ASpawnZone*> SpawnZones = TArray<ASpawnZone*>();
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<ACombatTrigger*> CombatTriggers = TArray<ACombatTrigger*>();
 
 	UPROPERTY(EditAnywhere)
 	TArray<FCombatWave> CombatWaves = TArray<FCombatWave>();

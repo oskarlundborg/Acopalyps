@@ -25,7 +25,7 @@ void ABeanBagProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	TArray<FOverlapResult> Overlaps;
 	if( HitActor != nullptr && HitActor != this )
 	{
-		UGameplayStatics::ApplyPointDamage(HitActor, 1.f, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		UGameplayStatics::ApplyDamage(HitActor, 1.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		
 		if( OtherActor->ActorHasTag(TEXT("Enemy")) )
 		{
