@@ -174,6 +174,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void InteractTriggerEvent();
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnTriggerEvent();
+	
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
