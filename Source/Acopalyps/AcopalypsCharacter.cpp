@@ -344,6 +344,7 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		}
 	return DamageApplied;
 	}
+	return 0;
 }
 
 bool AAcopalypsCharacter::IsDead() const
