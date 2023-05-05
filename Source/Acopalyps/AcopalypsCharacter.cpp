@@ -166,6 +166,7 @@ void AAcopalypsCharacter::Respawn()
 	Health = MaxHealth;
 	SetActorLocation(SpawnPosition);
 	EnableInput(Cast<APlayerController>(GetController()));
+	SpawnTriggerEvent();
 }
 
 void AAcopalypsCharacter::ResetLevel()
