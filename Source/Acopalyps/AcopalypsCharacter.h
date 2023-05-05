@@ -259,5 +259,8 @@ public:
 		bool bIsSprinting;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Sprint")
 		float SprintMovementSpeed = 1000.f;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsDead;
 };
 
