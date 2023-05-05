@@ -27,6 +27,8 @@ public:
 	void SetAim();
 
 	bool HitTraceAtPLayerSuccess();
+
+	
 	/*
 	UPROPERTY(EditAnywhere, Category = Navigation)
 	TSubclassOf<UNavigationQueryFilter> MyNavigationQueryFilterClass;

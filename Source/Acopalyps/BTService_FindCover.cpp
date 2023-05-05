@@ -33,6 +33,7 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 		if(IsCoverValid(CurrentCover) && FVector::Distance(EnemyAICharacter->GetActorLocation(), CurrentCover->GetActorLocation()) < FVector::Distance(PlayerPawn->GetActorLocation(), EnemyAICharacter->GetActorLocation()) / 3)
 			return;
 		CurrentCover->bIsOccupied = false;
+		CurrentCover->LastVisitedCharacter = nullptr;
 		OwnerComp.GetBlackboardComponent()->ClearValue("Cover");
 	}
 	FVector MyLocation = OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation();
@@ -53,29 +54,38 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 	{
 		UE_LOG(LogTemp, Warning, TEXT("overlaps: %i"), OverlapResults.Num());
 
-		float ClosestToPlayerDistance = 0;
-		ACoverPoint* NextCoverPoint = nullptr;
+		//float ClosestToPlayerDistance = 0.f;
+		//ACoverPoint* NextCoverPoint = nullptr;
 		for(FOverlapResult Overlap : OverlapResults)
 		{
 			ACoverPoint* CoverPoint = Cast<ACoverPoint>(Overlap.GetActor());
 			if(CoverPoint && !CoverPoint->bIsOccupied && IsCoverValid(CoverPoint) && CoverPoint->LastVisitedCharacter != EnemyAICharacter)
 			{
+				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", CoverPoint);
+				UE_LOG(LogTemp, Warning, TEXT("Cover is set"));
+				CoverPoint->bIsOccupied = true;
+				CoverPoint->LastVisitedCharacter = EnemyAICharacter;
+				/*
 				if (CoverPoint->DistanceToPlayer() < ClosestToPlayerDistance)
 				{
-					NextCoverPoint = NextCoverPoint;
-				}
+					NextCoverPoint = CoverPoint;
+				}*/
 			}
 		}
+		/*
 		if (NextCoverPoint)
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", NextCoverPoint);
+			UE_LOG(LogTemp, Warning, TEXT("Cover is set"));
 			NextCoverPoint->bIsOccupied = true;
 			NextCoverPoint->LastVisitedCharacter = EnemyAICharacter;
 		}
 		else
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", NextCoverPoint);
+			UE_LOG(LogTemp, Warning, TEXT("Cover is not set"));
 		}
+		*/
 	}
 	
 	//OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsBool("HasCover", true);

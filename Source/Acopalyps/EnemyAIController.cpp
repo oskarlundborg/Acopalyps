@@ -79,10 +79,6 @@ bool AEnemyAIController::HitTraceAtPLayerSuccess()
 		{
 			return true;
 		}
-		else
-		{
-			return false;
-		}
 	}
 	return false;
 }

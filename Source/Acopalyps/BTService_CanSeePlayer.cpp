@@ -47,9 +47,13 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	{
 		if (EnemyAICharacter->GetController())
 		{
-			if (Cast<AEnemyAIController>(EnemyAICharacter->GetController()))
-			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+			AEnemyAIController* OwnerController = Cast<AEnemyAIController>(EnemyAICharacter->GetController());
+			if (OwnerController){
+			
+				if (OwnerController->HitTraceAtPLayerSuccess())
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+				}
 			}
 		}
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
