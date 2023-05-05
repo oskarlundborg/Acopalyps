@@ -91,11 +91,16 @@ bool AEnemyAICharacter::IsDead() const
 
 void AEnemyAICharacter::Shoot()
 {
+	if( Gun->CurrentMag <= 0 )
+	{
+		Gun->Reload();
+	}
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
 	if(CurrentMag <= 0) Gun->Reload();
 	FireEnemyTriggerEvent();
 	Cast<AEnemyAIController>(GetController())->SetAim();
 	Gun->Fire(Regular);
+	FireEnemyTriggerEvent();
 }
 float AEnemyAICharacter::GetHealthPercent() const
 {
