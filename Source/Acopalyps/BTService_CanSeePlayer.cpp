@@ -3,9 +3,13 @@
 
 #include "BTService_CanSeePlayer.h"
 
+#include "AcopalypsCharacter.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
+#include "EnemyAICharacter.h"
+#include "EnemyAIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 UBTService_CanSeePlayer::UBTService_CanSeePlayer()
@@ -17,7 +21,7 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (!PlayerPawn)
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
@@ -25,36 +29,33 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	}
 	if (OwnerComp.GetAIOwner() == nullptr) return;
 
-	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn, OwnerComp.GetAIOwner()->GetCharacter()->GetActorLocation() + FVector(0, 0, 60)))
+	EnemyAICharacter = Cast<AEnemyAICharacter>(OwnerComp.GetAIOwner()->GetCharacter());
+
+	if (EnemyAICharacter == nullptr) return;
+
+	FVector StartLineOfSight = FVector(0, 0, 60);
+	if (EnemyAICharacter->GetCharacterMovement()->IsCrouching())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Sees player"), true);
+		StartLineOfSight = FVector(0, 0, 120);
+	}
+	
+	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn, EnemyAICharacter->GetActorLocation() + StartLineOfSight))
+	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
 	}
 	else
 	{
+		if (EnemyAICharacter->GetController())
+		{
+			AEnemyAIController* OwnerController = Cast<AEnemyAIController>(EnemyAICharacter->GetController());
+			if (OwnerController){
+			
+				if (OwnerController->HitTraceAtPLayerSuccess())
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+				}
+			}
+		}
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
 	}
-	/*
-	else
-	{
-		OwnerComp.GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
-		OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("CanSeePlayer"), SeesPlayer);
-	}
-	/*
-	//APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-
-	//if(!PlayerController)
-	//{
-	//	OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("CanSeePlayer"), false);
-	//	return;
-	//}
-
-	bool SeesPlayer = OwnerComp.GetAIOwner()->LineOfSightTo(PlayerController);
-	if (SeesPlayer)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("YAy sees blayer"));
-		
-	}
-	OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("CanSeePlayer"), SeesPlayer);
-	*/
 }

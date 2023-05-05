@@ -5,6 +5,8 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+
+#include "NavFilters/NavigationQueryFilter.h"
 #include "EnemyAIController.generated.h"
 
 /**
@@ -14,6 +16,7 @@ UCLASS()
 class ACOPALYPS_API AEnemyAIController : public AAIController
 {
 	GENERATED_BODY()
+	
 
 public:
 	virtual void Tick(float DeltaSeconds) override;
@@ -23,6 +26,16 @@ public:
 
 	void SetAim();
 
+	bool HitTraceAtPLayerSuccess();
+
+	
+	/*
+	UPROPERTY(EditAnywhere, Category = Navigation)
+	TSubclassOf<UNavigationQueryFilter> MyNavigationQueryFilterClass;
+
+	UNavigationQueryFilter* Filter;
+
+	*/
 protected:
 	void BeginPlay() override;
 
@@ -32,4 +45,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* BehaviorTree;
+
+	
 };

@@ -92,6 +92,7 @@ bool AEnemyAICharacter::IsDead() const
 void AEnemyAICharacter::Shoot()
 {
 	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
+	if(CurrentMag <= 0) Gun->Reload();
 	FireEnemyTriggerEvent();
 	Cast<AEnemyAIController>(GetController())->SetAim();
 	Gun->Fire(Regular);
@@ -130,3 +131,4 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
+

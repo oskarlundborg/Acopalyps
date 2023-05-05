@@ -7,6 +7,7 @@
 #include "Microsoft/AllowMicrosoftPlatformTypes.h"
 #include "CoverPoint.generated.h"
 
+class AEnemyAICharacter;
 class UBoxComponent;
 UCLASS()
 class ACOPALYPS_API ACoverPoint : public AActor
@@ -28,5 +29,13 @@ public:
 	bool bIsOccupied = false;
 
 	UPROPERTY(EditAnywhere)
+	class AAcopalypsCharacter* PlayerCharacter;
+
+	AEnemyAICharacter* LastVisitedCharacter;
+
+	float DistanceToPlayer();
+
+	UPROPERTY(EditAnywhere)
 	UBoxComponent* CoverBox;
+
 };
