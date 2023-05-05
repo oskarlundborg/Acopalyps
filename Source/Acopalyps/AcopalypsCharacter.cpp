@@ -166,6 +166,7 @@ void AAcopalypsCharacter::Respawn()
 	Health = MaxHealth;
 	SetActorLocation(SpawnPosition);
 	EnableInput(Cast<APlayerController>(GetController()));
+	bIsDead = false;
 	SpawnTriggerEvent();
 }
 
@@ -317,28 +318,32 @@ void AAcopalypsCharacter::OnKickAttackOverlap(UPrimitiveComponent* OverlappedCom
 
 float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	DamageApplied = FMath::Min(Health, DamageApplied);
-	Health -= DamageApplied;
-	UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
-
-	const AActor* ConstDamageCauser = DamageCauser;
-	TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
-	
-	if( IsDead() )
+	if( !bIsDead )
 	{
-		if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
+		float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		DamageApplied = FMath::Min(Health, DamageApplied);
+		Health -= DamageApplied;
+		UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
+
+		const AActor* ConstDamageCauser = DamageCauser;
+		TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
+	
+		if( IsDead() )
 		{
-			PrototypeGameModeBase->PawnKilled(this);
+			if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
+			{
+				PrototypeGameModeBase->PawnKilled(this);
+			}
+			//DetachFromControllerPendingDestroy();
+			DisableInput(Cast<APlayerController>(GetController()));
+			//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
+			HideLeg();
+			GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AAcopalypsCharacter::Respawn, 1);
+			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
+			bIsDead = true;
 		}
-		//DetachFromControllerPendingDestroy();
-		DisableInput(Cast<APlayerController>(GetController()));
-		//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
-		HideLeg();
-		GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AAcopalypsCharacter::Respawn, 1);
-		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
-	}
 	return DamageApplied;
+	}
 }
 
 bool AAcopalypsCharacter::IsDead() const
