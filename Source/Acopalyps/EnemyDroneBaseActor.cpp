@@ -65,6 +65,7 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	EngageTargetLocation = GetActorLocation() + PlayerCharacter->GetActorForwardVector() * 20 + PlayerCharacter->GetActorLocation().Y + 20;
+	DrawDebugSphere(GetWorld(), EngageTargetLocation, 100, 40, FColor::Red);
 	PlayerHeight = PlayerCharacter->GetActorLocation().Z + 20;
 	
 	//float AngleToPlayer = FMath::DegreesToRadians(45.f); // Set the desired angle from the player here

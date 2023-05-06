@@ -78,7 +78,4 @@ bool AEnemyAIController::HitTraceAtPLayerSuccess() const
 	return false;
 }
 
-void AEnemyAIController::MoveToActorFilter(AActor* Goal)
-{
-	MoveToActor(Goal, -1.0f, true, true, true, FilterClass, true);
-}
+
