@@ -17,7 +17,7 @@ void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	const int32 FilterArrayIndex = UKismetMathLibrary::RandomIntegerInRange(0, NavigationFiltersClasses.Num() -1);
+	//const int32 FilterArrayIndex = UKismetMathLibrary::RandomIntegerInRange(0, NavigationFiltersClasses.Num() -1);
 	
 	//FilterClass = NavigationFiltersClasses[FilterArrayIndex];
 }

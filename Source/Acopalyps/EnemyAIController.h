@@ -51,10 +51,11 @@ public:
 	//virtual void MoveToActor(AActor* Goal, float AcceptanceRadius = 0.f, bool bStopOnOverlap = true, bool bUsePathfinding = true, bool bCanStrafe = false, TSubclassOf<UNavigationQueryFilter> FilterClass = NULL, bool bAllowPartialPath = true);
 
 	/** Array of navigation query filters */
-	TArray<TSubclassOf<UNavigationQueryFilter>>NavigationFiltersClasses;
-
-	/** Navigation filter class, set with pseudorandom */
+	//TArray<TSubclassOf<UNavigationQueryFilter>>NavigationFiltersClasses;
+	
+	/** Navigation filter class, set with pseudorandom 
 	TSubclassOf<UNavigationQueryFilter> FilterClass;
+	*/
 	
 protected:
 	void BeginPlay() override;
