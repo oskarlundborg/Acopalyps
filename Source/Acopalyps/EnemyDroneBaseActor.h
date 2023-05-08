@@ -38,7 +38,10 @@ public:
 	float GetHealthPercent() const;
 	*/
 	UPROPERTY(EditAnywhere)
-	float Speed;
+	float InitialSpeed = 300.f;
+
+	UPROPERTY(EditAnywhere)
+	float AttackSpeed = 600.f;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,16 +51,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	/*
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	UCurveFloat* MovementCurve;
-
-	UFUNCTION()
-	void OnTimelineUpdate(float Value);
-
-	FOnTimeLineFloat* InterpFunction{};
-
-	*/
+	
 private:
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
@@ -67,19 +61,53 @@ private:
 	FVector AttackTargetLocation;
 
 	FVector PlayerLocation;
-	float PlayerHeight;
+
+	FRotator PlayerRotation;
 
 	FVector Direction;
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float DistanceToPlayer = 100.f; // Set the desired distance from the player here
+	float HeightAbovePlayer = 200.0f; // example height
+	
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float DistanceFromPlayer = 500.0f; // example distance; // Set the desired distance from the player here
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double MoveToEngagedTargetDelay = 0.5f;
 	//double TimeSinceLastMove = 0.f;
 
-	FTimerHandle MoveTimer;
+	FTimerHandle UpdateEngagedLocationTimerHandle;
+
+	/** Moves actor towards the approximate location from which to start attack*/
 	void MoveTowardsEngagedLocation();
+
+	/** Updates location from which to start attack*/
+	void UpdateEngagedLocation();
+
+	/** Updates bounds for location to move toward*/
+	void UpdateEngagedLocationBounds();
+
+	/** Checks if drone location is in range to initiate attack*/
+	bool IsWithinAttackArea() const;
+
+	/** Define the distance and height of the bounds relative to the player character */
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float BoundDistance = 500.0f;
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float BoundHeight = 400.0f;
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float BoundWidth = 200.0f;
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float BoundRadius = 200.0f;
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float BoundLength = 200.0f;
+
+	/** Attack area bounds */
+	FVector BoundTopPosition;
+	FVector BoundBottomPosition;
+	FVector BoundLeftEdge;
+	FVector BoundRightEdge;
+
 
 	UPROPERTY(EditAnywhere)
 	class UTimelineComponent* TimeLine;

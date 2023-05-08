@@ -4,6 +4,7 @@
 #include "EnemyDroneBaseActor.h"
 
 #include "AcopalypsCharacter.h"
+#include "FileCache.h"
 #include "HealthComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SphereComponent.h"
@@ -23,7 +24,7 @@ AEnemyDroneBaseActor::AEnemyDroneBaseActor()
 	DroneMesh->SetupAttachment(RootComponent);
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	SphereColliderComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereColliderComponent"));
-	SphereColliderComponent->InitSphereRadius(20.f);
+	SphereColliderComponent->InitSphereRadius(40.f);
 	SphereColliderComponent->SetupAttachment(RootComponent);
 	SphereColliderComponent->SetCollisionProfileName("Drone");
 	
@@ -43,19 +44,15 @@ void AEnemyDroneBaseActor::BeginPlay()
 	
 	PlayerCharacter = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	SetActorRotation(UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), PlayerCharacter->GetActorLocation()));
+	SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCharacter->GetActorLocation()));
 
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (PlayerController)
-	{
-		APawn* PlayerPawn = PlayerController->GetPawn();
-		if (PlayerPawn)
-		{
-			// Use the player location and height to calculate the desired location for the AI character
-			PlayerLocation = PlayerPawn->GetActorLocation();
-			PlayerHeight = PlayerPawn->GetActorLocation().Z;
-		}
-	}
+	// Calculate the location of the AI character relative to the player, and rotation
+	FVector DirectionToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	FRotator InitialRotation = DirectionToPlayer.ToOrientationRotator();
+	SetActorRotation(InitialRotation);
+
+	GetWorldTimerManager().SetTimer(UpdateEngagedLocationTimerHandle, this, &AEnemyDroneBaseActor::UpdateEngagedLocationBounds, MoveToEngagedTargetDelay, true, 0.1f);
+
 	
 }
 
@@ -64,58 +61,95 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	EngageTargetLocation = GetActorLocation() + PlayerCharacter->GetActorForwardVector() * 20 + PlayerCharacter->GetActorLocation().Y + 20;
-	DrawDebugSphere(GetWorld(), EngageTargetLocation, 100, 40, FColor::Red);
-	PlayerHeight = PlayerCharacter->GetActorLocation().Z + 20;
-	
-	//float AngleToPlayer = FMath::DegreesToRadians(45.f); // Set the desired angle from the player here
+	/*
+	Direction = EngageTargetLocation - GetActorLocation();
+	Direction.Normalize();
 
+	// Calculate the distance between the current location and the target location.
+	float Distance = FVector::Distance(EngageTargetLocation, GetActorLocation());
 
-	// Calculate the location of the AI character relative to the player
-	//FVector RelativeLocation = FVector(DistanceToPlayer * FMath::Cos(AngleToPlayer), DistanceToPlayer * FMath::Sin(AngleToPlayer), 0.f);
-
-	// Add the player's location and height to the relative location to get the absolute location for the AI character
-	//FVector DesiredLocation = PlayerLocation + RelativeLocation + FVector(0.f, 0.f, PlayerHeight);
-
-	//EngageTargetLocation += DesiredLocation;
-	
-	GetWorldTimerManager().SetTimer(MoveTimer, this, &AEnemyDroneBaseActor::MoveTowardsEngagedLocation, MoveToEngagedTargetDelay, true);
+	// Calculate the actual distance the actor can move in this step based on the speed variable.
+	float MoveDistance = InitialSpeed * DeltaTime;
+	MoveDistance = FMath::Min(MoveDistance, Distance);
+	FVector NewLocation = GetActorLocation() + Direction * MoveDistance;
+	SetActorLocation(NewLocation);
+	*/
 }
 
 void AEnemyDroneBaseActor::MoveTowardsEngagedLocation()
 {
-	Direction = (EngageTargetLocation - GetActorLocation()).GetSafeNormal();
-
-	const FVector CurrentLocation = Direction * Speed * GetWorld()->DeltaTimeSeconds;
+	const FVector CurrentLocation = Direction * InitialSpeed * GetWorld()->DeltaTimeSeconds;
 
 	SetActorLocation(CurrentLocation);
-	/*
+
+}
+
+void AEnemyDroneBaseActor::UpdateEngagedLocation()
+{	
+	PlayerLocation = PlayerCharacter->GetActorLocation();
+	PlayerRotation = PlayerCharacter->GetActorRotation();
 	
-	if ((EngageTargetLocation - GetActorLocation()).Size() > Movement.Size())
-	{
-		AddActorWorldOffset(Movement);
-	}
-	else
-	{
-		SetActorLocation(EngageTargetLocation);
-		GetWorldTimerManager().ClearTimer(MoveTimer);
-	}
+	EngageTargetLocation  = PlayerLocation + PlayerRotation.Vector() * DistanceFromPlayer + FVector(0, 0, HeightAbovePlayer);
+	const FVector DirectionToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	const FRotator InitialRotation = DirectionToPlayer.ToOrientationRotator();
+	SetActorRotation(InitialRotation);
+	DrawDebugSphere(GetWorld(), EngageTargetLocation, 100, 40, FColor::Red, false, 0.5f );
+}
+
+void AEnemyDroneBaseActor::UpdateEngagedLocationBounds()
+{
+
+	PlayerLocation = PlayerCharacter->GetActorLocation();
+	PlayerRotation = PlayerCharacter->GetActorRotation();
+
+	// Calculate the boundaries of the box
+	//FVector BoxPosition = PlayerLocation + PlayerRotation.Vector() * DistanceFromPlayer + FVector(0, 0, HeightAbovePlayer);
+	const FVector BoundPosition = PlayerLocation + PlayerRotation.Vector() * BoundDistance;
+	BoundTopPosition = BoundPosition + FVector(0.0f, BoundHeight, 0.0f);
+	BoundBottomPosition = BoundPosition - FVector(0.0f, BoundHeight, 0.0f);
+	BoundLeftEdge = BoundPosition - PlayerRotation.RotateVector(FVector(BoundWidth, 0.0f, 0.0f));
+	BoundRightEdge = BoundPosition + PlayerRotation.RotateVector(FVector(BoundWidth, 0.0f, 0.0f));
+
+	FVector BoxExtent = FVector(BoundWidth, BoundHeight, BoundWidth);
+	BoxExtent = BoxExtent.RotateAngleAxis(PlayerRotation.Yaw, FVector(0.0f, 0.0f, 1.0f));
+	const FColor BoxColor = FColor::Green;
+	DrawDebugBox(GetWorld(), BoundPosition, BoxExtent, BoxColor, false, 0.5f);
+	
+	// Calculate the boundaries of the box.
+	//const FVector BoundPosition = PlayerLocation + PlayerRotation.Vector() * DistanceFromPlayer + FVector(0, 0, HeightAbovePlayer);
+
+	/*
+	const FVector BoundPosition = PlayerLocation + PlayerRotation.Vector() * BoundDistance;
+	
+	BoundTopPosition = BoundPosition + FVector(0.0f, BoundHeight, 0.0f) + FVector(0, 0, HeightAbovePlayer);
+	BoundBottomPosition = BoundPosition - FVector(0.0f, BoundHeight, 0.0f);
+	BoundLeftEdge = BoundPosition - FVector(BoundWidth, 0.0f, BoundWidth);
+	BoundRightEdge = BoundPosition + FVector(BoundWidth, 0.0f, BoundWidth);
+
+	const FVector BoxExtent = FVector(BoundWidth, BoundHeight, BoundWidth);
+	const FColor BoxColor = FColor::Green;
+	DrawDebugBox(GetWorld(), BoundPosition, BoxExtent, BoxColor, false, 0.5f);
 	*/
+	
+	// Draw a debug sphere around the player character to show the box radius.
+	const FColor SphereColor = FColor::Blue;
+	DrawDebugSphere(GetWorld(), PlayerLocation, BoundRadius, 12, SphereColor, false, 0.5f);
 }
 
-/*
-void AEnemyDroneBaseActor::OnTimelineUpdate(float Value)
+bool AEnemyDroneBaseActor::IsWithinAttackArea() const
 {
-	// Calculate the new location of the actor based on the timeline value and move it there
-	FVector CurrentLocation = GetActorLocation();
-	FVector NewLocation = FMath::Lerp(CurrentLocationLocation, TargetLocation, Value);
-	SetActorLocation(NewLocation);
+	const FVector CurrentLocation = GetActorLocation();
+	const float DistanceToLocation = FVector::Distance(PlayerLocation, CurrentLocation);
+	if (DistanceToLocation <= BoundRadius &&
+		CurrentLocation.X >= BoundLeftEdge.X && CurrentLocation .X <= BoundRightEdge.X &&
+		CurrentLocation.Z >= BoundLeftEdge.Z && CurrentLocation .Z <= BoundRightEdge.Z &&
+		CurrentLocation.Y >= BoundBottomPosition.Y && CurrentLocation .Y <= BoundTopPosition.Y)
+	{
+		return true;
+	}
+	return false;
 }
 
-FOnTimelineFloat AEnemyDroneBaseActor::InterpFunction()
-{
-}
-*/
 void AEnemyDroneBaseActor::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
