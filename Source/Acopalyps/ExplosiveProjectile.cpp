@@ -72,14 +72,14 @@ bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
 
 	if( bDrawDebugSphere )
 	{
-		DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
+		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 10, FColor::Red, true, 5);
 	}
 	return GetWorld()->OverlapMultiByChannel(
 		Overlaps,
 		GetActorLocation(),
 		FQuat::Identity,
 		ECollisionChannel::ECC_GameTraceChannel1,
-		FCollisionShape::MakeSphere(240),
+		FCollisionShape::MakeSphere(ExplosionRadius),
 		Params
 		);
 }

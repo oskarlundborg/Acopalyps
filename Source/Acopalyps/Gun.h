@@ -168,6 +168,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReloadCompletedEvent();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void EmptyMagFireAttemptEvent();
+
 	/** Reloading */
 	UFUNCTION()
 	void Reload();

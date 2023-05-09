@@ -14,6 +14,10 @@
 void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
 	FProjectileInfo* Projectile = Projectiles.Find(AmmoType);
+	if(CurrentMag==0)
+	{
+		EmptyMagFireAttemptEvent();
+	}
 	if( Projectile->Class != nullptr && (CurrentMag > 0 || Projectile->Cost == 0) && bCanReload && GetOwner() != nullptr )
 	{
 		CurrentMag -= Projectile->Cost;
