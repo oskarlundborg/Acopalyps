@@ -37,16 +37,25 @@ float UHealthComponent::GetHealth() const
 	return CurrentHealth;
 }
 
-void UHealthComponent::SetHealth(float NewHealth)
-{
-	CurrentHealth = FMath::Min(MaxHealth, FMath::Max(0, NewHealth));
-}
-
 float UHealthComponent::GetHealthPercent() const
 {
 	return CurrentHealth / MaxHealth;
 }
 
+void UHealthComponent::SetHealth(float NewHealth)
+{
+	CurrentHealth = FMath::Min(MaxHealth, FMath::Max(0, NewHealth));
+}
+
+void UHealthComponent::SetMaxHealth(float NewHealth)
+{
+	MaxHealth = NewHealth;
+}
+
+void UHealthComponent::RefillHealth()
+{
+	CurrentHealth = MaxHealth;
+}
 
 bool UHealthComponent::IsDead() const
 {

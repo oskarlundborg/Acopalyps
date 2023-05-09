@@ -52,6 +52,7 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 
 void AEnemyAIController::SetIsRagdoll(bool val)
 {
+	// TODO: Crash on shot with explosive when already dead after load game.
 	GetBlackboardComponent()->SetValueAsBool("IsRagdoll", val);
 }
 
