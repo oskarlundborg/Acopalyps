@@ -124,7 +124,7 @@ class AAcopalypsCharacter : public ACharacter
 protected:
 	virtual void BeginPlay();
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	float MaxHealth = 100.f;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
@@ -188,7 +188,7 @@ public:
 	float GetHealthPercent() const;
 
 	UFUNCTION(BlueprintCallable)
-	void RefillHealth() { Health = MaxHealth; }
+	void RefillHealth(float AmountToHeal) { Health +=AmountToHeal; }
 	
 protected:
 	/** Called for movement input */
@@ -226,9 +226,6 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gun")
-	TSubclassOf<class AActor> AmmoStationClass;
 	
 	// ---- GUN ---- //
 	
