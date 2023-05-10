@@ -4,148 +4,180 @@
 #include "AcopalypsSaveGame.h"
 
 #include "AcopalypsCharacter.h"
-#include "CombatManager.h"
 #include "EnemyAICharacter.h"
-#include "AI/NavigationSystemBase.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/SkeletalMeshActor.h"
+#include "Engine/StaticMeshActor.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-UAcopalypsSaveGame::UAcopalypsSaveGame() :
-	SlotName("test_save"),
-	UserIndex(0) {}
-
-void UAcopalypsSaveGame::SaveGameInstance(TArray<AActor*> Actors)
+void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> Actors)
 {
-	WorldName = FName(FNavigationSystem::GetWorldFromContextObject(Actors.Last())->GetName());
+	// Save level name
+	WorldName = FName(World->GetName());
+
+	// Store data from actors in scene
 	for( AActor* Actor : Actors )
 	{
-		if( Actor != nullptr && Actor->ActorHasTag("Player") )
+		// Get iteration's actor class
+		const auto ActorClass = Actor->GetClass();
+		UE_LOG(LogTemp, Display, TEXT("Actor Class: %s"), *Actor->GetClass()->GetName())
+		
+		// Save player specific data
+		if( ActorClass == PlayerClass )
 		{
-			const AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(Actor);
+			const AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(World->GetFirstPlayerController()->GetCharacter());
 			PlayerInstance = {
-				Actor,
-				Player->GetTransform(),
-				Player->GetVelocity(),
-				Player->GetFirstPersonCameraComponent()->GetComponentRotation(),
-				Player->HealthComponent->IsDead(),
-				Player->HealthComponent->GetHealth(),
-				Player->Gun->CurrentMag
+				.Class		= ActorClass,
+				.Transform  = Player->GetTransform(),
+				.Rotation	= Player->GetController()->GetControlRotation(),
+				.Velocity	= Player->GetVelocity(),
+				.bIsDead	= Player->HealthComponent->IsDead(),
+				.Health		= Player->HealthComponent->GetHealth(),
+				.GunMag		= Player->Gun->CurrentMag,
 			};
-			UE_LOG(LogTemp, Display, TEXT("Player: %p"), PlayerInstance.Object)
-			UE_LOG(LogTemp, Display, TEXT("Player Transform: %s"), *PlayerInstance.Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Player Saved ###########################"))
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *PlayerInstance.Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *PlayerInstance.Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("IsDead: %i"), PlayerInstance.bIsDead)
+			UE_LOG(LogTemp, Display, TEXT("Health: %f"), PlayerInstance.Health)
+			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), PlayerInstance.GunMag)
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 		}
-		else if( Actor != nullptr && (Actor->ActorHasTag("Enemy") && !Cast<AEnemyAICharacter>(Actor)->IsDead()) )
+		// Save enemy specific data
+		if( ActorClass == EnemyClass )
 		{
-			if( const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor) )
-			{
-				ActorsInWorld.Add({
-					Actor,
-					Enemy->GetTransform(),
-					Enemy->GetVelocity(),
-					Enemy->GetController()->GetControlRotation(),
-					Enemy->IsDead(),
-					Enemy->HealthComponent->GetHealth(),
-					Enemy->Gun->CurrentMag,
-					Enemy->Manager
-				});
-				UE_LOG(LogTemp, Display, TEXT("Enemy: %p"), ActorsInWorld.Last().Object)
-				UE_LOG(LogTemp, Display, TEXT("Enemy Transform: %s"), *ActorsInWorld.Last().Transform.ToString())
-			}
-		}
-		else if( Actor->IsRootComponentMovable() )
-		{
+			const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
 			ActorsInWorld.Add({
-				Actor,
-				Actor->GetActorTransform(),
-				Actor->GetVelocity()
+				.Class		= ActorClass,
+				.Transform	= Enemy->GetTransform(),
+				.bIsDead	= Enemy->IsDead(),
+				.Health		= Enemy->HealthComponent->GetHealth(),
+				.GunMag		= Enemy->Gun->CurrentMag,
 			});
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Enemy Saved ############################"))
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *ActorsInWorld.Last().Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *ActorsInWorld.Last().Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("IsDead: %i"), ActorsInWorld.Last().bIsDead)
+			UE_LOG(LogTemp, Display, TEXT("Health: %f"), ActorsInWorld.Last().Health)
+			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), ActorsInWorld.Last().GunMag)
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+		}
+		// Save non static actors data
+		else if( ActorClass == StaticMeshClass && Actor->GetRootComponent() != nullptr && Actor->GetRootComponent()->IsSimulatingPhysics() && Actor->Owner == nullptr )
+		{
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *ActorClass->GetName())
+			const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor);
+			ActorsInWorld.Add({
+				.Class		= ActorClass,
+				.Transform	= StaticMeshActor->GetActorTransform(),
+				.Mesh		= StaticMeshActor->GetStaticMeshComponent()->GetStaticMesh(),
+			});
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Actor Saved ¤###########################"))
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *ActorsInWorld.Last().Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *ActorsInWorld.Last().Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 		}
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game Saved!"));
 }
 
-void UAcopalypsSaveGame::LoadGameInstance()
+void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors)
 {
-	if( WorldName != FName(FNavigationSystem::GetWorldFromContextObject(ActorsInWorld.Last().Object)->GetName()) )
-	{
-		UGameplayStatics::OpenLevel(this, WorldName, false);
-	}
+	// Open the saved world
+	if( WorldName != FName(World->GetName()) )
+		UGameplayStatics::OpenLevel(World, WorldName, false);
+	
+	// Set for deletion.
+	DestroySceneActors(Actors);
+	
+	// Recreate saved state.
 	for( const FActorInstance Actor : ActorsInWorld )
 	{
-		if( Actor.Object != nullptr )
+		// If actor is enemy, set specific data
+		if( Actor.Class == EnemyClass )
 		{
-			if( Actor.Object->ActorHasTag("Player") )
-			{
-				AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(Actor.Object);
-				Player->SetActorTransform(Actor.Transform);
-				Player->GetCharacterMovement()->Velocity = Actor.Velocity;
-				if( Actor.ControllerRotation.IsSet() )
-				{
-					Player->GetController()->SetControlRotation(Actor.ControllerRotation.GetValue());
-				}
-				if( Actor.Health.IsSet() )
-				{
-					Player->HealthComponent->SetHealth(Actor.Health.GetValue());
-				}
-				if( Actor.GunMag.IsSet() )
-				{
-					Player->Gun->CurrentMag = Actor.GunMag.GetValue();
-				}
-			}
-			else if( Actor.Object->ActorHasTag("Enemy") )
-			{
-				AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor.Object);
-				if( Enemy->IsDead() )
-				{
-					if( !Actor.bIsDead )
-					{
-						//AEnemyAICharacter* RespawnedEnemy = GetWorld()->SpawnActor<AEnemyAICharacter>(
-						//	AEnemyAICharacter::StaticClass(),
-						//	Actor.Transform.GetLocation(),
-						//	Actor.Transform.Rotator()
-						//	);
-						if( Actor.Health.IsSet() )
-						{
-							Enemy->HealthComponent->SetHealth(Actor.Health.GetValue());
-						}
-						if( Actor.GunMag.IsSet() )
-						{
-							Enemy->Gun->CurrentMag = Actor.GunMag.GetValue();
-						}
-						if( Actor.Manager.IsSet() )
-						{
-							Enemy->Manager = Actor.Manager.GetValue();
-							Enemy->Manager->AddEnemy(Enemy);
-						}
-					}
-				} else
-				{
-					Enemy->SetActorTransform(Actor.Transform);
-					Enemy->GetCharacterMovement()->Velocity = Actor.Velocity;
-					if( Actor.Health.IsSet() )
-					{
-						Enemy->HealthComponent->SetHealth(Actor.Health.GetValue());
-					}
-					if( Actor.GunMag.IsSet() )
-					{
-						Enemy->Gun->CurrentMag = Actor.GunMag.GetValue();
-					}
-					if( Actor.Manager.IsSet() )
-					{
-						Enemy->Manager = Actor.Manager.GetValue();
-					}
-				}
-			} else if( Actor.Object->Owner == nullptr )
-			{
-				Actor.Object->SetActorTransform(Actor.Transform);
-				if( UPrimitiveComponent* Comp = Cast<UPrimitiveComponent>(Actor.Object) )
-				{
-					Comp->SetSimulatePhysics(false);
-					Comp->SetSimulatePhysics(true);
-				}
-			}
+			if( Actor.bIsDead ) continue;
+			
+			AEnemyAICharacter* Enemy = World->SpawnActor<AEnemyAICharacter>(
+				Actor.Class,
+				Actor.Transform.GetLocation(),
+				Actor.Transform.Rotator()
+				);
+			Enemy->HealthComponent->SetHealth(Actor.Health);
+			Enemy->Gun->CurrentMag = Actor.GunMag;
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Enemy Loaded ###########################"))
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *Actor.Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *Actor.Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("IsDead: %i"), Actor.bIsDead)
+			UE_LOG(LogTemp, Display, TEXT("Health: %f"), Actor.Health)
+			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), Actor.GunMag)
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+		}
+		else if( Actor.Class == StaticMeshClass ) // Handle all static mesh data in scene
+		{
+			AStaticMeshActor* StaticMesh = World->SpawnActor<AStaticMeshActor>(
+				Actor.Class,
+				Actor.Transform.GetLocation(),
+				Actor.Transform.Rotator()
+				);
+			StaticMesh->SetMobility(EComponentMobility::Movable);
+			StaticMesh->GetStaticMeshComponent()->SetStaticMesh(Actor.Mesh);
+			StaticMesh->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
+			StaticMesh->GetStaticMeshComponent()->SetRelativeTransform(Actor.Transform);
+			StaticMesh->GetStaticMeshComponent()->SetSimulatePhysics(true);
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Static Mesh Loaded #####################"))
+			UE_LOG(LogTemp, Display, TEXT("Static Mesh: %s"), *StaticMesh->GetClass()->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *Actor.Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *Actor.Transform.ToString())
+			DrawDebugBox(World, Actor.Transform.GetLocation(), FVector(10, 10, 10), FColor::Red, false, 5);
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 		}
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game Loaded."));
+	
+	// Set player data.
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(World->GetFirstPlayerController()->GetCharacter());
+	Player->SetActorTransform(PlayerInstance.Transform);
+	Player->GetController()->SetControlRotation(PlayerInstance.Rotation);
+	Player->HealthComponent->SetHealth(PlayerInstance.Health);
+	Player->Gun->CurrentMag = PlayerInstance.GunMag;
+	Player->GetMovementComponent()->Velocity = PlayerInstance.Velocity;
+	UE_LOG(LogTemp, Display, TEXT("###########################################"))
+	UE_LOG(LogTemp, Display, TEXT("## Player Loaded ##########################"))
+	UE_LOG(LogTemp, Display, TEXT("Class: %s"), *PlayerInstance.Class->GetName())
+	UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *PlayerInstance.Transform.ToString())
+	UE_LOG(LogTemp, Display, TEXT("IsDead: %i"), PlayerInstance.bIsDead)
+	UE_LOG(LogTemp, Display, TEXT("Health: %f"), PlayerInstance.Health)
+	UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), PlayerInstance.GunMag)
+	UE_LOG(LogTemp, Display, TEXT("###########################################"))
+	
+	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Cyan, TEXT("Game Loaded."));
+}
+
+void UAcopalypsSaveGame::DestroySceneActors(TArray<AActor*>& Actors)
+{
+	for( AActor* Actor : Actors )
+	{
+		if( !Actor || !Actor->IsValidLowLevel() || Actor->ActorHasTag("Player") ) continue;
+		
+		if( Actor->ActorHasTag("Enemy") )
+		{
+			AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
+			Enemy->Gun->Owner = nullptr;
+			Enemy->DetachFromControllerPendingDestroy();
+			Enemy->Destroy();
+		}
+		else if( Actor->GetClass() == StaticMeshClass && Actor->IsRootComponentMovable() )
+		{
+			Actor->Destroy();
+		}
+		else if( ClassesToDelete.Find(Actor->GetClass()) != INDEX_NONE && Actor->Owner.GetClass() != PlayerClass )
+		{
+			Actor->Destroy();
+		}
+	}
 }

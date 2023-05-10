@@ -8,6 +8,7 @@
 #include "InputActionValue.h"
 #include "AcopalypsCharacter.generated.h"
 
+class UAcopalypsSaveGame;
 class UInputComponent;
 class USkeletalMeshComponent;
 class USceneComponent;
@@ -123,6 +124,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	UPROPERTY(BlueprintReadOnly)
+	FHitResult LookHit;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> AmmoStationClass;
+	UPROPERTY(VisibleAnywhere)
+	FVector ViewpointLocation;
+	UPROPERTY(VisibleAnywhere)
+	FRotator ViewpointRotation;
+
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
@@ -203,6 +213,9 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
 
 public:
 	/** Returns Mesh1P subobject **/

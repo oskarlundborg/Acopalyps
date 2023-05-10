@@ -44,6 +44,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Health, meta=(AllowPrivateAccess = true))
 	float MaxHealth = 100;
-
-		
 };

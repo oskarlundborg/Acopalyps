@@ -118,15 +118,16 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	//if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetComponentLocation(), FirstPersonCameraComponent->GetComponentLocation().ForwardVector * 100, ECC_WorldDynamic) )
+	//GetController()->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
+	//if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetRelativeLocation(), FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 1000, ECC_WorldDynamic) )
 	//{
-	//	AActor* HitActor = LookHit.GetActor();
-
+	//	const AActor* HitActor = LookHit.GetActor();
 	//	if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
 	//	{
-	//		UE_LOG(LogTemp, Display, TEXT("ammo station"));
+	//		UE_LOG(LogTemp, Display, TEXT("looking at ammo station"));
 	//	}
 	//}
+	//DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointLocation + ViewpointRotation.Vector() * 1000, FColor::Magenta);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -359,31 +360,20 @@ void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 
 void AAcopalypsCharacter::Save()
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(UAcopalypsSaveGame::StaticClass()));
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
 	TArray<AActor*> AllActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-	SaveGame->SaveGameInstance(AllActors);
+	SaveGame->SaveGameInstance(GetWorld(), AllActors);
 	UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
-	UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
+	//UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
 }
 
 void AAcopalypsCharacter::Load()
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(UAcopalypsSaveGame::StaticClass()));
-	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
-	SaveGame->LoadGameInstance();
-	SetActorTransform(SaveGame->PlayerInstance.Transform);
-	GetCharacterMovement()->Velocity = SaveGame->PlayerInstance.Velocity;
-	if( SaveGame->PlayerInstance.ControllerRotation.IsSet() )
-	{
-		FirstPersonCameraComponent->SetWorldRotation(SaveGame->PlayerInstance.ControllerRotation.GetValue());
-	}
-	if( SaveGame->PlayerInstance.Health.IsSet() )
-	{
-		HealthComponent->SetHealth(SaveGame->PlayerInstance.Health.GetValue());
-	}
-	if( SaveGame->PlayerInstance.GunMag.IsSet() )
-	{
-		Gun->CurrentMag = SaveGame->PlayerInstance.GunMag.GetValue();
-	}
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	if( SaveGame != nullptr ) {
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		SaveGame->LoadGameInstance(GetWorld(), AllActors);
+	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("No Game To Load...")); }
 }

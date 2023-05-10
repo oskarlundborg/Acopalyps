@@ -6,24 +6,34 @@
 #include "GameFramework/SaveGame.h"
 #include "AcopalypsSaveGame.generated.h"
 
+class ASkeletalMeshActor;
+class AProjectile;
+class AStaticMeshActor;
+class AAcopalypsCharacter;
+class AEnemyAICharacter;
+
+
 USTRUCT()
 struct FActorInstance
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category=ActorInfo)
-	AActor* Object;
-	UPROPERTY(EditDefaultsOnly, Category=ActorInfo)
+	TSubclassOf<AActor> Class;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	FTransform Transform;
-	UPROPERTY(EditDefaultsOnly, Category=ActorInfo)
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	FRotator Rotation;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	FVector Velocity;
-
-	// Variables not needed on all Actors
-	TOptional<FRotator> ControllerRotation = TOptional<FRotator>();
-	TOptional<bool> bIsDead = TOptional<bool>();
-	TOptional<float> Health = TOptional<float>();
-	TOptional<int32> GunMag = TOptional<int32>();
-	TOptional<class ACombatManager*> Manager = TOptional<ACombatManager*>();
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	float Health;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	int32 GunMag;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UStaticMesh* Mesh;
 };
 
 /**
@@ -35,12 +45,13 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 	GENERATED_BODY()
 	
 public:
-	UAcopalypsSaveGame();
+	UFUNCTION()
+	void SaveGameInstance(const UWorld* World, TArray<AActor*> Actors);
+	UFUNCTION()
+	void LoadGameInstance(UWorld* World, TArray<AActor*>& Actors);
 
 	UFUNCTION()
-	void SaveGameInstance(TArray<AActor*> Actors);
-	UFUNCTION()
-	void LoadGameInstance();
+	void DestroySceneActors(TArray<AActor*>& Actors);
 	
 	UPROPERTY(VisibleAnywhere)
 	FString SlotName;
@@ -48,15 +59,27 @@ public:
 	uint32 UserIndex;
 
 	// World Info
+	UPROPERTY(VisibleAnywhere, Category=World)
 	FName WorldName;
 	
 	// Player Info
-	UPROPERTY(EditDefaultsOnly, Category=Player)
+	UPROPERTY(EditDefaultsOnly, Category="Instances")
 	FActorInstance PlayerInstance;
-	UPROPERTY(VisibleAnywhere)
-	bool bPlayerSaved;
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AAcopalypsCharacter> PlayerClass;
 
+	// Enemies In World Info
+	UPROPERTY(EditDefaultsOnly, Category="Instances")
+	TArray<FActorInstance> EnemiesInWorld;
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AEnemyAICharacter> EnemyClass;
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AStaticMeshActor> StaticMeshClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TArray<TSubclassOf<AActor>> ClassesToDelete;
+	
 	// Actors In World Info
-	UPROPERTY(EditDefaultsOnly, Category=Actors)
+	UPROPERTY(EditDefaultsOnly, Category="Instances")
 	TArray<FActorInstance> ActorsInWorld;
 };

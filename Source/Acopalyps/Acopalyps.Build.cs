@@ -9,5 +9,7 @@ public class Acopalyps : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "GameplayTasks", "UMG", "Niagara" });
+
+		CppStandard = CppStandardVersion.Cpp20;
 	}
 }
