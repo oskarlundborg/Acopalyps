@@ -30,17 +30,17 @@ struct FProjectileInfo
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AProjectile> Class;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 Cost;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Delay;
 
 	FTimerHandle TimerHandle = FTimerHandle();
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bCanFire = true;
 };
 
@@ -164,6 +164,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReloadTriggerEvent();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCanFire(AMMO_TYPES AmmoType);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReloadCompletedEvent();
@@ -194,7 +197,7 @@ public:
 		{ Shotgun,   { nullptr,	300, 0.8f  } },
 	}; // Choose class in editor
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FProjectileInfo GetProjectileInfoByKey(AMMO_TYPES AmmoType) { return *Projectiles.Find(AmmoType); }
 	
 	UPROPERTY(BlueprintReadWrite)
@@ -211,10 +214,19 @@ public:
 	float ReloadTime = 1.5;
 	
 	UFUNCTION(BlueprintCallable, Category=Delay)
-	void ToggleCanFirePrimary(AMMO_TYPES AmmoType) { Projectiles.Find(AmmoType)->bCanFire ^= true; }
+	void ToggleCanFirePrimary(AMMO_TYPES AmmoType)
+	{
+		Projectiles.Find(AmmoType)->bCanFire ^= true;
+		if( Projectiles.Find(AmmoType)->bCanFire == true ) OnCanFire(AmmoType);
+	}
 	FTimerDelegate CanFirePrimaryDelegate;
+	
 	UFUNCTION(BlueprintCallable, Category=Delay)
-	void ToggleCanFireAlternate(AMMO_TYPES AmmoType) { Projectiles.Find(AmmoType)->bCanFire ^= true; }
+	void ToggleCanFireAlternate(AMMO_TYPES AmmoType)
+	{
+		Projectiles.Find(AmmoType)->bCanFire ^= true;
+		if( Projectiles.Find(AmmoType)->bCanFire == true ) OnCanFire(AmmoType);
+	}
 	FTimerDelegate CanFireAlternateDelegate;
 
 	UFUNCTION(BlueprintCallable)
