@@ -64,6 +64,8 @@ public:
 	
 	void UnRagDoll();
 
+	void InitializeController();
+
 	ACombatManager* Manager;
 
 	// Gun variables

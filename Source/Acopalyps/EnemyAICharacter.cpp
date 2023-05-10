@@ -30,8 +30,6 @@ void AEnemyAICharacter::BeginPlay()
 	{
 		SpawnDefaultController();
 	}
-	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
-	AIController->Initialize();
 	
 	
 	if( GunClass != nullptr )
@@ -122,6 +120,16 @@ void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
 	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
+
+void AEnemyAICharacter::InitializeController()
+{
+	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
+	if(AIController)
+	{
+		AIController->Initialize();
+	}
+}
+
 
 void AEnemyAICharacter::UnRagDoll()
 {
