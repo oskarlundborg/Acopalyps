@@ -28,20 +28,6 @@ public:
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
-	/** called when drone hits something */
-	UFUNCTION()
-		virtual void OnHit(
-			UPrimitiveComponent* HitComponent,
-			AActor* OtherActor,
-			UPrimitiveComponent* OtherComp,
-			FVector NormalImpulse,
-			const FHitResult& Hit
-			);
-
-	/** Called when drone starts overlapping something */
-	UFUNCTION()
-	virtual void OnDroneHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
-	
 	/** Event when drone is prepared to attack player */
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPrepareForAttackEvent();
@@ -50,9 +36,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAttackEvent();
 
-	/** Event when drone starts attack*/
+	/** Event when drone stops attack*/
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnEndAttackEvent();
+	void OnRetreatEvent();
 
 	/** Method for blueprint when drone is flying*/
 	UFUNCTION(BlueprintImplementableEvent)
@@ -112,7 +98,6 @@ private:
 	/** Player character location and rotation*/
 	FVector PlayerLocation;
 	FRotator PlayerRotation;
-
 	
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess = true))
 	float CurrentSpeed = 0;
@@ -150,7 +135,7 @@ private:
 	double CheckDroneStateDelay = 0.2f;
 
 	/** Time delay before attack */
-	//UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double AttackDelay = 1.2f;
 
 	/** Time delay before retreat*/
