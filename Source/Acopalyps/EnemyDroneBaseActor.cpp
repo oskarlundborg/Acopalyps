@@ -44,8 +44,8 @@ void AEnemyDroneBaseActor::BeginPlay()
 	SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCharacter->GetActorLocation()));
 
 	// Calculate the location of the AI character relative to the player, and rotation
-	FVector DirectionToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
-	FRotator InitialRotation = DirectionToPlayer.ToOrientationRotator();
+	const FVector DirectionToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	const FRotator InitialRotation = DirectionToPlayer.ToOrientationRotator();
 	SetActorRotation(InitialRotation);
 
 	// Start timers to update target location and to check for current state
@@ -53,10 +53,6 @@ void AEnemyDroneBaseActor::BeginPlay()
 	
 	// Binding function to start of overlap with player
 	SphereColliderComponent->OnComponentBeginOverlap.AddDynamic(this, &AEnemyDroneBaseActor::OnOverlapBegin);
-
-	
-	SphereColliderComponent->OnComponentHit.AddDynamic(this, &AEnemyDroneBaseActor::OnHit);
-	this->OnActorHit.AddDynamic(this, &AEnemyDroneBaseActor::OnDroneHit);
 	
 	CurrentSpeed = InitialSpeed;
 
@@ -92,7 +88,7 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 void AEnemyDroneBaseActor::MoveTowardsLocation(float DeltaTime)
 {
 	OnDroneMovement();
-
+	
 	Direction = TargetLocation - GetActorLocation();
 	Direction.Normalize();
 
@@ -135,10 +131,7 @@ void AEnemyDroneBaseActor::GenerateNewRelativePosition()
 /** Updates bounds for location to move toward*/
 void AEnemyDroneBaseActor::UpdateTargetLocation()
 {
-	//BoundCenterPosition = PlayerLocation + PlayerCharacter->GetActorForwardVector() * OuterBoundRadius + FVector(0, 0, MinHeightAbovePlayer);
 	BoundCenterPosition = PlayerLocation;
-	const FColor SphereColor = FColor::Green;
-
 	TargetLocation = GetNewEngagedLocation();
 }
 
@@ -167,7 +160,6 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector NewLocation)
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3)); // Enemy
-	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel9)); //Drone
 
 	TArray<AActor*> IgnoreActors = TArray<AActor*>();
 	IgnoreActors.Add(this);
@@ -235,6 +227,7 @@ void AEnemyDroneBaseActor::PrepareForAttack()
 
 void AEnemyDroneBaseActor::Attack()
 {
+	OnAttackEvent();
 	CurrentSpeed = AttackSpeed;
 	TargetLocation = PlayerLocation;
 	bAttackState = true;
@@ -243,7 +236,7 @@ void AEnemyDroneBaseActor::Attack()
 
 void AEnemyDroneBaseActor::Retreat()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, FString::Printf(TEXT("retreat!!!")));
+	OnRetreatEvent();
 	CurrentSpeed = InitialSpeed;
 	bIdleState = false;
 	bAttackState = false;
@@ -269,56 +262,12 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 {
 	if (OtherActor != nullptr)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Overlapping start with: %s"), *OtherActor->GetClass()->GetName());
+		UE_LOG(LogTemp, Display, TEXT("Overlapping start with WORKING FUNC: %s"), *OtherActor->GetClass()->GetName());
 
 		if (Cast<AAcopalypsCharacter>(OtherActor))
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
-			//UE_LOG(LogTemp, Display, TEXT("Overlapping start with: %s"), *OtherActor->GetClass()->GetName());
 		}
-	}
-}
-
-
-void AEnemyDroneBaseActor::OnHit(
-	UPrimitiveComponent* HitComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse,
-	const FHitResult& Hit
-	)
-{
-	//HitTriggerEvent(Hit);
-	AActor* HitActor = Hit.GetActor();
-	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(OtherActor);
-	if (Player)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player hit")));	
-
-	}
-	if(HitActor != nullptr && HitActor != this)
-	{
-		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
-		//const AActor* ConstHitActor = HitActor;
-		UE_LOG(LogTemp, Display, TEXT("Hit with drone: %s"), *OtherActor->GetClass()->GetName());
-	}
-}
-
-void AEnemyDroneBaseActor::OnDroneHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse,
-	const FHitResult& Hit)
-{
-	AActor* HitActor = Hit.GetActor();
-	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(OtherActor);
-	if (Player)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player hit")));	
-
-	}
-	if(HitActor != nullptr && HitActor != this)
-	{
-		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
-		//const AActor* ConstHitActor = HitActor;
-		UE_LOG(LogTemp, Display, TEXT("Hit with drone: %s"), *OtherActor->GetClass()->GetName());
 	}
 }
 
@@ -339,15 +288,12 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	if(IsDead()) return DamageApplied;
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
-	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
 	
 	if(IsDead())
 	{
 		OnDeathEvent();
 		Destroy();
-		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
-	//TakeDamageTriggerEvent(DamageAmount, DamageCauser->GetActorLocation(), DamageEvent, EventInstigator, DamageCauser);
 	return DamageApplied;
 }
 
