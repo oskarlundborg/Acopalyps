@@ -126,12 +126,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	FHitResult InteractHit;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bHasInteractHit;
 	
 	UPROPERTY(BlueprintReadOnly)
 	FHitResult LookHit;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bHasLookHit;
 	
 	UPROPERTY(EditDefaultsOnly)

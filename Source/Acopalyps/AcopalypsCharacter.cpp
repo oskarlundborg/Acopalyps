@@ -11,6 +11,7 @@
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
+#include "Kismet/KismetMathLibrary.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AAcopalypsCharacter
@@ -119,11 +120,12 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 	}
 
 	GetController()->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
+	
 	// Interact distance cast
 	bHasInteractHit = GetWorld()->LineTraceSingleByChannel(
 		InteractHit,
-		FirstPersonCameraComponent->GetRelativeLocation(),
-		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 100,
+		ViewpointLocation,
+		ViewpointRotation.Vector() * 1000,
 		ECC_WorldDynamic
 		);
 	if( bHasInteractHit )
@@ -134,14 +136,28 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 			UE_LOG(LogTemp, Display, TEXT("looking at ammo station"));
 		}
 	}
+	DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointRotation.Vector() * 1000, FColor::Blue, false, 1);
+	DrawDebugLine(GetWorld(), FirstPersonCameraComponent->GetRelativeLocation(), FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 1000, FColor::Black, false, 1);
+	
 	// Camera view cast
 	bHasLookHit = GetWorld()->LineTraceSingleByChannel(
 		LookHit,
-		FirstPersonCameraComponent->GetRelativeLocation(),
-		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 10000,
+		ViewpointLocation,
+		ViewpointRotation.Vector() * 10000,
 		ECC_WorldDynamic
 		);
-	DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointLocation + ViewpointRotation.Vector() * 10000, FColor::Magenta);
+	DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointRotation.Vector() * 10000, FColor::Red, false, 1);
+	DrawDebugLine(GetWorld(), FirstPersonCameraComponent->GetRelativeLocation(), FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 10000, FColor::Yellow, false, 1);
+	if( bHasLookHit )
+	{
+		Gun->FlashlightRotation = UKismetMathLibrary::FindLookAtRotation(
+		   GetActorLocation() + GetActorRotation().RotateVector(FVector(-10, 0, 8)),
+		   LookHit.Location
+		   );
+	} else
+	{
+		Gun->FlashlightRotation = GetOwner()->GetActorForwardVector().Rotation();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
