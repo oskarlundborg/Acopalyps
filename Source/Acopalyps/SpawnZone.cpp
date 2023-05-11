@@ -52,6 +52,7 @@ void ASpawnZone::Spawn()
 			AEnemyAICharacter* SpawnedEnemy = SpawnPoint->Spawn();
 			if(SpawnedEnemy)
 			{
+				SpawnedEnemy->InitializeController();
 				CombatManager->AddEnemy(SpawnedEnemy);
 				NumberOfEnemiesLeftToSpawn--;
 			}

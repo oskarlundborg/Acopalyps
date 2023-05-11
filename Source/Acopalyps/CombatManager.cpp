@@ -46,6 +46,10 @@ void ACombatManager::Tick(float DeltaTime)
 
 void ACombatManager::StartCombatMode()
 {
+	for(AEnemyAICharacter* Enemy : ManagedEnemies)
+	{
+		Enemy->InitializeController();
+	}
 	GetWorldTimerManager().SetTimer(RecurringSpawnCheckTimerHandle, this, &ACombatManager::RunSpawnWave, 1.f, true);
 	for(ACombatTrigger* Trigger : CombatTriggers)
 	{

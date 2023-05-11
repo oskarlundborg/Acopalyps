@@ -30,8 +30,6 @@ void AEnemyAICharacter::BeginPlay()
 	{
 		SpawnDefaultController();
 	}
-	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
-	AIController->Initialize();
 	
 	
 	if( GunClass != nullptr )
@@ -61,6 +59,7 @@ void AEnemyAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	InitializeController();
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if(IsDead()) return DamageApplied;
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
@@ -122,6 +121,18 @@ void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
 	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
+
+void AEnemyAICharacter::InitializeController()
+{
+	if(bIsInitialized) return;
+	bIsInitialized = true;
+	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
+	if(AIController)
+	{
+		AIController->Initialize();
+	}
+}
+
 
 void AEnemyAICharacter::UnRagDoll()
 {

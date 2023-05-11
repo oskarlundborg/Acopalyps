@@ -11,7 +11,7 @@ void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled)
 {
 	// if pawn killed has playerController as controller it is the player
 	APlayerController* PlayerController = Cast<APlayerController>(PawnKilled->GetController());
-	ensure(PlayerController);
+	//ensure(PlayerController);
 	if (PlayerController)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Player Killed"))
