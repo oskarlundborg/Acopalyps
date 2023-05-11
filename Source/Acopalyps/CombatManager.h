@@ -26,6 +26,9 @@ struct FCombatWave
 	int NumberOfBasicEnemies;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn Wave")
+	int NumberOfDrones;
+
+	UPROPERTY(EditAnywhere, Category = "Enemy Spawn Wave")
 	int CurrentEnemyCountMaxForNextWave;
 
 	UPROPERTY(EditAnywhere, Category= "Sound")

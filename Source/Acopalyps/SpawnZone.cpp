@@ -36,9 +36,10 @@ void ASpawnZone::Tick(float DeltaTime)
 }
 
 
-void ASpawnZone::HandleWave(int EnemiesToSpawn)
+void ASpawnZone::HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn)
 {
-	NumberOfEnemiesLeftToSpawn += EnemiesToSpawn;
+	NumberOfBasicEnemiesLeftToSpawn += BasicEnemiesToSpawn;
+	NumberOfDronesLeftToSpawn += DronesToSpawn;
 	if(!GetWorldTimerManager().TimerExists(SpawnTimerHandle))
 		Spawn();
 }
@@ -47,18 +48,25 @@ void ASpawnZone::Spawn()
 {
 	for(ASpawnPoint* SpawnPoint : SpawnPoints)
 	{
-		if(NumberOfEnemiesLeftToSpawn > 0 && !SpawnPoint->IsVisibleToPlayer())
+		if(NumberOfBasicEnemiesLeftToSpawn > 0 && !SpawnPoint->IsVisibleToPlayer())
 		{
 			AEnemyAICharacter* SpawnedEnemy = SpawnPoint->Spawn();
 			if(SpawnedEnemy)
 			{
 				SpawnedEnemy->InitializeController();
 				CombatManager->AddEnemy(SpawnedEnemy);
-				NumberOfEnemiesLeftToSpawn--;
+				NumberOfBasicEnemiesLeftToSpawn--;
+			}
+		} else if(NumberOfDronesLeftToSpawn > 0 && !SpawnPoint->IsVisibleToPlayer())
+		{
+			AEnemyDroneBaseActor* SpawnedDrone = SpawnPoint->SpawnDrone();
+			if(SpawnedDrone)
+			{
+				
 			}
 		}
 	}
-	if(NumberOfEnemiesLeftToSpawn > 0)
+	if(NumberOfBasicEnemiesLeftToSpawn > 0)
 	{
 		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, 2.f, false);
 	} else

@@ -29,7 +29,7 @@ public:
 
 	ACombatManager* CombatManager = nullptr;
 
-	void HandleWave(int EnemiesToSpawn);
+	void HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn);
 
 	UPROPERTY(EditAnywhere)
 	int SpawnZoneID;
@@ -51,5 +51,6 @@ private:
 	UPROPERTY(EditAnywhere, Category="Spawning")
 	int SpawnDelay;
 
-	int NumberOfEnemiesLeftToSpawn = 0;
+	int NumberOfBasicEnemiesLeftToSpawn = 0;
+	int NumberOfDronesLeftToSpawn = 0;
 };
