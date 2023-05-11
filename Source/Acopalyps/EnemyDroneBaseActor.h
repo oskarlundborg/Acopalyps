@@ -60,7 +60,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 	UPROPERTY(EditAnywhere)
-	float InitialSpeed = 200.f;
+	float InitialSpeed = 600.f;
 
 	UPROPERTY(EditAnywhere)
 	float AttackSpeed = 800.f;
@@ -92,7 +92,7 @@ private:
 	/** Location to move towards during attack*/
 	FVector AttackLocation = FVector::ZeroVector;
 
-	/** Location to check collision agains*/  //NOT IN USE RN
+	/** Location to check collision agains*/  
 	FVector CollisionCheckLocation;
 
 	/** Player character location and rotation*/
