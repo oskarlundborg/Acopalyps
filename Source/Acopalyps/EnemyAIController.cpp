@@ -38,7 +38,10 @@ void AEnemyAIController::SetAim()
 
 void AEnemyAIController::Initialize()
 {
-	if(BehaviorTree) RunBehaviorTree(BehaviorTree);
+	if(BehaviorTree)
+	{
+		RunBehaviorTree(BehaviorTree);
+	}
 	UE_LOG(LogTemp, Warning, TEXT("BehaviourTReetorun %s"), *BehaviorTree->GetName());
 	GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), this->GetPawn()->GetActorLocation());
 	GetBlackboardComponent()->SetValueAsObject(TEXT("Player"), UGameplayStatics::GetPlayerCharacter(this, 0));
@@ -52,6 +55,7 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 
 void AEnemyAIController::SetIsRagdoll(bool val)
 {
+	// TODO: Crash on shot with explosive when already dead after load game.
 	GetBlackboardComponent()->SetValueAsBool("IsRagdoll", val);
 }
 

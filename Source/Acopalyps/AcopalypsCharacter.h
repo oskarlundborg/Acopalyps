@@ -8,6 +8,7 @@
 #include "InputActionValue.h"
 #include "AcopalypsCharacter.generated.h"
 
+class UAcopalypsSaveGame;
 class UInputComponent;
 class USkeletalMeshComponent;
 class USceneComponent;
@@ -15,27 +16,10 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
-USTRUCT(BlueprintType)
-struct FPlayerInstance
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere)
-	FVector Location;
-	UPROPERTY(VisibleAnywhere)
-	FRotator Rotation;
-	UPROPERTY(VisibleAnywhere)
-	int32 Health;
-	UPROPERTY(VisibleAnywhere)
-	AGun* Gun;
-};
-
 UCLASS(config=Game)
 class AAcopalypsCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-	FPlayerInstance PlayerInstance;
 
 	/** Timer handle for all timers*/
 	FTimerHandle TimerHandle;
@@ -96,6 +80,14 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* ResetLevelAction;
 	
+	/** Save Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* SaveAction;
+	
+	/** Load Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* LoadAction;
+	
 	/** Kick force to add on other object on kick-hitbox-overlap*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 	FVector KickForce = FVector(0, 0, 5000);
@@ -124,16 +116,31 @@ class AAcopalypsCharacter : public ACharacter
 protected:
 	virtual void BeginPlay();
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	float MaxHealth = 100.f;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	float Health;
-
 public:
+	UPROPERTY(BlueprintReadOnly, Category=Health)
+	class UHealthComponent* HealthComponent;
+	
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+
+	UPROPERTY(BlueprintReadOnly)
+	FHitResult InteractHit;
+	UPROPERTY(VisibleAnywhere)
+	bool bHasInteractHit;
+	
+	UPROPERTY(BlueprintReadOnly)
+	FHitResult LookHit;
+	UPROPERTY(VisibleAnywhere)
+	bool bHasLookHit;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> AmmoStationClass;
+	
+	UPROPERTY(VisibleAnywhere)
+	FVector ViewpointLocation;
+	UPROPERTY(VisibleAnywhere)
+	FRotator ViewpointRotation;
 
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
@@ -180,15 +187,10 @@ public:
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	/** Returns if charachter is dead*/
-	UFUNCTION(BlueprintPure)
-	bool IsDead() const;
-
-	UFUNCTION(BlueprintPure)
-	float GetHealthPercent() const;
-
 	UFUNCTION(BlueprintCallable)
-	void RefillHealth(float AmountToHeal) { Health +=AmountToHeal; }
+	void Save();
+	UFUNCTION(BlueprintCallable)
+	void Load();
 	
 protected:
 	/** Called for movement input */
@@ -220,6 +222,9 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
 
 public:
 	/** Returns Mesh1P subobject **/

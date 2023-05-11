@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
+#include "HealthComponent.h"
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
@@ -12,15 +13,10 @@ UCLASS()
 class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-	void UnRagDoll();
 		
 	/** Pawn mesh: 3st person view */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* CharacterMesh;
-
-	UPROPERTY(VisibleAnywhere, Category=Health)
-	class UHealthComponent* HealthComponent;
 	
 public:
 	// Sets default values for this character's properties
@@ -28,6 +24,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void FireEnemyTriggerEvent();
+
+	UPROPERTY(VisibleAnywhere, Category=Health)
+	class UHealthComponent* HealthComponent;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -62,6 +61,8 @@ public:
 	void RagDoll();
 
 	void RagDoll(FVector ForceDirection);
+	
+	void UnRagDoll();
 
 	ACombatManager* Manager;
 
@@ -72,8 +73,8 @@ public:
 		AGun* Gun;
 
 	UPROPERTY(EditAnywhere)
-	int32 CurrentMag = 99999999;//1000;
-	int32 MaxMagSize = 99999999;//1000;
+	int32 CurrentMag = 1000;
+	int32 MaxMagSize = 1000;
 
 	UPROPERTY(EditAnywhere)
 	int32 AmmoCapacity = 99999999;//10000;

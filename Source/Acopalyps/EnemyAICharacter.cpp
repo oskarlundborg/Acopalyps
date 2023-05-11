@@ -113,7 +113,6 @@ void AEnemyAICharacter::RagDoll()
 	RagDoll(FVector::ZeroVector);
 }
 
-
 void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 {
 	GetMesh()->SetSimulatePhysics(true);
@@ -123,7 +122,6 @@ void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 	Cast<AEnemyAIController>(GetController())->SetIsRagdoll(true);
 	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
-
 
 void AEnemyAICharacter::UnRagDoll()
 {
@@ -137,4 +135,3 @@ void AEnemyAICharacter::UnRagDoll()
 	GetMesh()->SetRelativeRotation(FRotator(0, -90, 0), false, nullptr, ETeleportType::ResetPhysics);
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -90), false, nullptr, ETeleportType::ResetPhysics);
 }
-

@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "AcopalypsPrototypeGameModeBase.h"
+#include "AcopalypsSaveGame.h"
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
@@ -23,6 +24,9 @@ AAcopalypsCharacter::AAcopalypsCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
 	CharacterMovementComponent = GetCharacterMovement();
+	
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	HealthComponent->SetMaxHealth(1000);
 		
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -63,9 +67,7 @@ void AAcopalypsCharacter::BeginPlay()
 	// Sets methods to be run when LegCollision hits enemies
 	//LegMesh->OnComponentHit.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackHit);
 	LegMesh->OnComponentBeginOverlap.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackOverlap);
-
-	Health = MaxHealth;
-
+	
 	if( GunClass != nullptr )
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
@@ -116,15 +118,30 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	//if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetComponentLocation(), FirstPersonCameraComponent->GetComponentLocation().ForwardVector * 100, ECC_WorldDynamic) )
-	//{
-	//	AActor* HitActor = LookHit.GetActor();
-
-	//	if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
-	//	{
-	//		UE_LOG(LogTemp, Display, TEXT("ammo station"));
-	//	}
-	//}
+	GetController()->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
+	// Interact distance cast
+	bHasInteractHit = GetWorld()->LineTraceSingleByChannel(
+		InteractHit,
+		FirstPersonCameraComponent->GetRelativeLocation(),
+		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 100,
+		ECC_WorldDynamic
+		);
+	if( bHasInteractHit )
+	{
+		const AActor* HitActor = InteractHit.GetActor();
+		if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
+		{
+			UE_LOG(LogTemp, Display, TEXT("looking at ammo station"));
+		}
+	}
+	// Camera view cast
+	bHasLookHit = GetWorld()->LineTraceSingleByChannel(
+		LookHit,
+		FirstPersonCameraComponent->GetRelativeLocation(),
+		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 10000,
+		ECC_WorldDynamic
+		);
+	DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointLocation + ViewpointRotation.Vector() * 10000, FColor::Magenta);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -155,6 +172,9 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		EnhancedInputComponent->BindAction(RespawnAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Respawn);
 		//Reset Level
 		EnhancedInputComponent->BindAction(ResetLevelAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::ResetLevel);
+		//Save & Load
+		EnhancedInputComponent->BindAction(SaveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Save);
+		EnhancedInputComponent->BindAction(LoadAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Load);
 	}
 }
 
@@ -163,7 +183,7 @@ void AAcopalypsCharacter::Respawn()
 	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
 	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
 	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
-	Health = MaxHealth;
+	HealthComponent->RefillHealth();
 	SetActorLocation(SpawnPosition);
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
@@ -321,14 +341,14 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	if( !bIsDead )
 	{
 		float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-		DamageApplied = FMath::Min(Health, DamageApplied);
-		Health -= DamageApplied;
-		UE_LOG(LogTemp, Display, TEXT("health: %f"), Health);
+		DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
+		HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
+		UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
 
 		const AActor* ConstDamageCauser = DamageCauser;
 		TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
 	
-		if( IsDead() )
+		if( HealthComponent->IsDead() )
 		{
 			if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
 			{
@@ -347,16 +367,27 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return 0;
 }
 
-bool AAcopalypsCharacter::IsDead() const
-{
-	return Health <= 0;
-}
-
-float AAcopalypsCharacter::GetHealthPercent() const
-{
-	return Health/MaxHealth;
-}
 void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
+}
+
+void AAcopalypsCharacter::Save()
+{
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	TArray<AActor*> AllActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+	SaveGame->SaveGameInstance(GetWorld(), AllActors);
+	UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
+	//UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
+}
+
+void AAcopalypsCharacter::Load()
+{
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	if( SaveGame != nullptr ) {
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		SaveGame->LoadGameInstance(GetWorld(), AllActors);
+	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("No Game To Load...")); }
 }
