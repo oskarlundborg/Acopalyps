@@ -39,6 +39,15 @@ struct FProjectileInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Delay;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 ProjectilesToFire;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float BurstDelay;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ChargeDelay;
+	
 	FTimerHandle TimerHandle = FTimerHandle();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bCanFire = true;
@@ -150,6 +159,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire(TEnumAsByte<AMMO_TYPES> AmmoType);
 
+	UFUNCTION(BlueprintCallable, Category=Weapon)
+	void SpawnProjectile(AMMO_TYPES AmmoType, FProjectileInfo& Projectile, FRotator SpawnRotation);
+	FTimerDelegate SpawnProjectileDelegate;
+
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void PrimaryFire();
 	
@@ -180,6 +193,8 @@ public:
 	/** Reloading */
 	UFUNCTION()
 	void Reload();
+	
+	FTimerHandle ChargeTimerHandle;
 
 	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
 	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun, Flare};
@@ -191,13 +206,13 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Ammo")
 	TMap<TEnumAsByte<AMMO_TYPES>, FProjectileInfo> Projectiles = {
-	   // { Name, { Class, Cost, Delay } },
-		{ Regular,   { nullptr,	100, .3f  } },
-		{ Bouncing,  { nullptr,	150, 0.1f } },
-		{ Rapid,     { nullptr,	50,  0.f  } },
-		{ Explosive, { nullptr,	0, 2.5f } },
-		{ Flare,     { nullptr,	200, 2.f  } },
-		{ Shotgun,   { nullptr,	300, 0.8f  } },
+	   // { Name, { Class, Cost, Delay, ProjectilesToFire, BurstDelay, ChargeDelay } },
+		{ Regular,   { nullptr,	100, .3f,   1, 0,   0   } },
+		{ Bouncing,  { nullptr,	150, 0.1f,  3, .6f, 1   } },
+		{ Rapid,     { nullptr,	50,  0.f,   1, 0,   0   } },
+		{ Explosive, { nullptr,	0,   2.5f,  1, 0,   0   } },
+		{ Flare,     { nullptr,	200, 2.f,   1, 0,   0   } },
+		{ Shotgun,   { nullptr,	300, 0.8f,  8, 0,   0   } },
 	}; // Choose class in editor
 
 	UFUNCTION(BlueprintCallable)
