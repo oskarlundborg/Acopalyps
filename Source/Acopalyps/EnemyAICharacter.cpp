@@ -59,6 +59,7 @@ void AEnemyAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	InitializeController();
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if(IsDead()) return DamageApplied;
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
@@ -123,6 +124,8 @@ void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 
 void AEnemyAICharacter::InitializeController()
 {
+	if(bIsInitialized) return;
+	bIsInitialized = true;
 	AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
 	if(AIController)
 	{

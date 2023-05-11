@@ -130,7 +130,6 @@ void ACombatManager::GatherOverlappingActors()
 void ACombatManager::AddEnemy(AEnemyAICharacter* Enemy)
 {
 	ManagedEnemies.Add(Enemy);
-	Enemy->InitializeController();
 	Enemy->Manager = this;
 }
 

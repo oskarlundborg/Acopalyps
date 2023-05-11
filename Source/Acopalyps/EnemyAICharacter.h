@@ -37,6 +37,8 @@ protected:
 	FVector LastPositionBeforeRagdoll;
 	FRotator LastRotationBeforeRagdoll;
 
+	bool bIsInitialized = false;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
