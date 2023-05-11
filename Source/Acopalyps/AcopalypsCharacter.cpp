@@ -11,6 +11,7 @@
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
+#include "Kismet/KismetMathLibrary.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AAcopalypsCharacter
@@ -117,31 +118,6 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 			CharacterMovementComponent->GroundFriction += 0.1f;
 		}
 	}
-
-	GetController()->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
-	// Interact distance cast
-	bHasInteractHit = GetWorld()->LineTraceSingleByChannel(
-		InteractHit,
-		FirstPersonCameraComponent->GetRelativeLocation(),
-		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 100,
-		ECC_WorldDynamic
-		);
-	if( bHasInteractHit )
-	{
-		const AActor* HitActor = InteractHit.GetActor();
-		if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
-		{
-			UE_LOG(LogTemp, Display, TEXT("looking at ammo station"));
-		}
-	}
-	// Camera view cast
-	bHasLookHit = GetWorld()->LineTraceSingleByChannel(
-		LookHit,
-		FirstPersonCameraComponent->GetRelativeLocation(),
-		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 10000,
-		ECC_WorldDynamic
-		);
-	DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointLocation + ViewpointRotation.Vector() * 10000, FColor::Magenta);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input

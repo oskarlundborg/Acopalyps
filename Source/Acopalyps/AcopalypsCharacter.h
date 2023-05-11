@@ -123,24 +123,9 @@ public:
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
-
-	UPROPERTY(BlueprintReadOnly)
-	FHitResult InteractHit;
-	UPROPERTY(VisibleAnywhere)
-	bool bHasInteractHit;
-	
-	UPROPERTY(BlueprintReadOnly)
-	FHitResult LookHit;
-	UPROPERTY(VisibleAnywhere)
-	bool bHasLookHit;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> AmmoStationClass;
-	
-	UPROPERTY(VisibleAnywhere)
-	FVector ViewpointLocation;
-	UPROPERTY(VisibleAnywhere)
-	FRotator ViewpointRotation;
 
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
