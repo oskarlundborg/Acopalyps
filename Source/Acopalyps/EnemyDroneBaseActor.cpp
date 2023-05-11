@@ -227,14 +227,12 @@ void AEnemyDroneBaseActor::PrepareForAttack()
 	bIdleState = false;
 	CurrentSpeed = 0.1f;
 	//logic for when drone is standing still
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Prepare attack")));	
 	StopTimers();
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyDroneBaseActor::Attack, 0.1f, false, AttackDelay);
 }
 
 void AEnemyDroneBaseActor::Attack()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, FString::Printf(TEXT("attack!!!")));
 	CurrentSpeed = AttackSpeed;
 	TargetLocation = PlayerLocation;
 	bAttackState = true;
@@ -290,6 +288,12 @@ void AEnemyDroneBaseActor::OnHit(
 {
 	//HitTriggerEvent(Hit);
 	AActor* HitActor = Hit.GetActor();
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(OtherActor);
+	if (Player)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player hit")));	
+
+	}
 	if(HitActor != nullptr)
 	{
 		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
