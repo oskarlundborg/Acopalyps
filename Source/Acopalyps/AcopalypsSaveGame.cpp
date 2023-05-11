@@ -6,7 +6,6 @@
 #include "AcopalypsCharacter.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
-#include "Animation/SkeletalMeshActor.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -106,9 +105,11 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 
 void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors)
 {
-	// Open the saved world
+	// Open the saved world if different
 	if( WorldName != FName(World->GetName()) )
+	{
 		UGameplayStatics::OpenLevel(World, WorldName, false);
+	}
 	
 	// Set for deletion.
 	DestroySceneActors(Actors);
