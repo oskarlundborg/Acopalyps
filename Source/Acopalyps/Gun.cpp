@@ -49,37 +49,24 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 			SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,InaccuracyModifier);
 		}
 		
-		CanFirePrimaryDelegate.BindUFunction(this, FName("SpawnProjectile"), AmmoType, Projectile, SpawnRotation);
-		for(int i = 0; i< Projectile->ProjectilesToFire ;i++)
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		ActorSpawnParameters.Owner = this;
+		for(int i = 0; i<Projectile->ProjectilesToFire;i++)
 		{
-			GetWorldTimerManager().SetTimer(
-				ChargeTimerHandle,
-				SpawnProjectileDelegate,
-				Projectile->BurstDelay,
-				false,
-				Projectile->ChargeDelay
+			if(AmmoType == Shotgun)
+			{
+				SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,ShotgunSpread);
+			}
+			GetWorld()->SpawnActor<AProjectile>(
+				Projectile->Class,
+				GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
+				SpawnRotation,
+				ActorSpawnParameters
 				);
 		}
-		
 		FireTriggerEvent(Hit, ShotDirection, AmmoType);
 	}
-}
-
-void AGun::SpawnProjectile(AMMO_TYPES AmmoType, FProjectileInfo& Projectile, FRotator SpawnRotation)
-{
-	FActorSpawnParameters ActorSpawnParameters;
-	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	ActorSpawnParameters.Owner = this;
-	if(AmmoType == Shotgun)
-	{
-		SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,ShotgunSpread);
-	}
-	GetWorld()->SpawnActor<AProjectile>(
-		Projectile.Class,
-		GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
-		SpawnRotation,
-		ActorSpawnParameters
-		);
 }
 
 void AGun::PrimaryFire()

@@ -159,10 +159,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire(TEnumAsByte<AMMO_TYPES> AmmoType);
 
-	UFUNCTION(BlueprintCallable, Category=Weapon)
-	void SpawnProjectile(AMMO_TYPES AmmoType, FProjectileInfo& Projectile, FRotator SpawnRotation);
-	FTimerDelegate SpawnProjectileDelegate;
-
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void PrimaryFire();
 	
@@ -194,8 +190,6 @@ public:
 	UFUNCTION()
 	void Reload();
 	
-	FTimerHandle ChargeTimerHandle;
-
 	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
 	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun, Flare};
 	/** Equiped Ammo Type */
