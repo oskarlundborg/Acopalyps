@@ -42,7 +42,7 @@ class AAcopalypsCharacter : public ACharacter
 	FTimerHandle TimeTimerHandle;
 	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
 
 	/** Leg mesh: visible only when kicking */
