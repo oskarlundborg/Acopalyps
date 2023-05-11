@@ -78,7 +78,7 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 
 void AGun::PrimaryFire()
 {
-	AMMO_TYPES AmmoToFire = CurrentAmmoType; // For TimerHandle to handle same ammo when switching mid delay
+	const AMMO_TYPES AmmoToFire = CurrentAmmoType; // For TimerHandle to handle same ammo when switching mid delay
 	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
 	if( Projectiles.Find(AmmoToFire)->bCanFire )
 	{
