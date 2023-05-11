@@ -78,7 +78,7 @@ void ACombatManager::RunSpawnWave()
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), CurrentWave.StartSoundWave, CurrentWave.VolumeMultiplyer, CurrentWave.PitchMultiplyer, 0.1f);
 			}	
-			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies);
+			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies, CurrentWave.NumberOfDrones);
 		}
 	}
 	

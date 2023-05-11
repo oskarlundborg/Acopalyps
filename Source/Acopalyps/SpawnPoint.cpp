@@ -5,6 +5,7 @@
 
 #include "CombatManager.h"
 #include "EnemyAICharacter.h"
+#include "EnemyDroneBaseActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -40,6 +41,16 @@ AEnemyAICharacter* ASpawnPoint::Spawn()
 		EnemyAICharacter = GetWorld()->SpawnActor<AEnemyAICharacter>(DefaultEnemyClass, GetActorLocation(), GetActorRotation());
 	}
 	return EnemyAICharacter;
+}
+
+AEnemyDroneBaseActor* ASpawnPoint::SpawnDrone()
+{
+	AEnemyDroneBaseActor* Drone = nullptr;
+	if(IsValid(DroneEnemyClass))
+	{
+		Drone = GetWorld()->SpawnActor<AEnemyDroneBaseActor>(DroneEnemyClass, GetActorLocation(), GetActorRotation());
+	}
+	return Drone;
 }
 
 bool ASpawnPoint::IsVisibleToPlayer()

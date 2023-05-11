@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "SpawnPoint.generated.h"
 
+class AEnemyDroneBaseActor;
 class UCapsuleComponent;
 class ACombatManager;
 class AEnemyAICharacter;
@@ -29,7 +30,12 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AEnemyAICharacter> DefaultEnemyClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AEnemyDroneBaseActor> DroneEnemyClass;
+
 	AEnemyAICharacter* Spawn();
+
+	AEnemyDroneBaseActor* SpawnDrone();
 
 	bool IsVisibleToPlayer();
 
