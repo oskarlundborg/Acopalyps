@@ -189,6 +189,9 @@ public:
 	/** Reloading */
 	UFUNCTION()
 	void Reload();
+
+	UPROPERTY()
+	FTimerHandle BurstTimerHandle;
 	
 	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
 	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun, Flare};

@@ -58,12 +58,15 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 			{
 				SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,ShotgunSpread);
 			}
-			GetWorld()->SpawnActor<AProjectile>(
-				Projectile->Class,
-				GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
-				SpawnRotation,
-				ActorSpawnParameters
-				);
+			//GetWorld()->GetTimerManager().SetTimer(BurstTimerHandle, FTimerDelegate::CreateLambda([this, Projectile, SpawnRotation, ActorSpawnParameters]
+			//{
+				GetWorld()->SpawnActor<AProjectile>(
+					Projectile->Class,
+					GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
+					SpawnRotation,
+					ActorSpawnParameters
+					);
+			//}), 5.0f, false);
 		}
 		FireTriggerEvent(Hit, ShotDirection, AmmoType);
 	}
