@@ -23,14 +23,15 @@ AEnemyDroneBaseActor::AEnemyDroneBaseActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	DroneMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Drone Mesh"));
-	DroneMesh->SetupAttachment(RootComponent);
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	RootComponent = DroneMesh;
+	
 	SphereColliderComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereColliderComponent"));
-	SphereColliderComponent->InitSphereRadius(40.f);
+	SphereColliderComponent->InitSphereRadius(60.f);
+	SphereColliderComponent->SetCollisionProfileName("Drone");
+	SphereColliderComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("NAME_None"));
 	SphereColliderComponent->SetupAttachment(RootComponent);
-	SphereColliderComponent->SetCollisionProfileName("Drone");
-
-	SphereColliderComponent->SetCollisionProfileName("Drone");
+	
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -55,6 +56,7 @@ void AEnemyDroneBaseActor::BeginPlay()
 
 	
 	SphereColliderComponent->OnComponentHit.AddDynamic(this, &AEnemyDroneBaseActor::OnHit);
+	this->OnActorHit.AddDynamic(this, &AEnemyDroneBaseActor::OnDroneHit);
 	
 	CurrentSpeed = InitialSpeed;
 
@@ -294,11 +296,29 @@ void AEnemyDroneBaseActor::OnHit(
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player hit")));	
 
 	}
-	if(HitActor != nullptr)
+	if(HitActor != nullptr && HitActor != this)
 	{
 		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		//const AActor* ConstHitActor = HitActor;
-		UE_LOG(LogTemp, Display, TEXT("Hit with: %s"), *OtherActor->GetClass()->GetName());
+		UE_LOG(LogTemp, Display, TEXT("Hit with drone: %s"), *OtherActor->GetClass()->GetName());
+	}
+}
+
+void AEnemyDroneBaseActor::OnDroneHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse,
+	const FHitResult& Hit)
+{
+	AActor* HitActor = Hit.GetActor();
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(OtherActor);
+	if (Player)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player hit")));	
+
+	}
+	if(HitActor != nullptr && HitActor != this)
+	{
+		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		//const AActor* ConstHitActor = HitActor;
+		UE_LOG(LogTemp, Display, TEXT("Hit with drone: %s"), *OtherActor->GetClass()->GetName());
 	}
 }
 

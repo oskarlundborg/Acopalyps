@@ -37,6 +37,10 @@ public:
 			FVector NormalImpulse,
 			const FHitResult& Hit
 			);
+
+	/** Called when drone starts overlapping something */
+	UFUNCTION()
+	virtual void OnDroneHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 	
 	/** Event when drone is prepared to attack player */
 	UFUNCTION(BlueprintImplementableEvent)
