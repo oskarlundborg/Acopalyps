@@ -52,6 +52,9 @@ void AEnemyDroneBaseActor::BeginPlay()
 	
 	// Binding function to start of overlap with player
 	SphereColliderComponent->OnComponentBeginOverlap.AddDynamic(this, &AEnemyDroneBaseActor::OnOverlapBegin);
+
+	
+	SphereColliderComponent->OnComponentHit.AddDynamic(this, &AEnemyDroneBaseActor::OnHit);
 	
 	CurrentSpeed = InitialSpeed;
 
@@ -113,8 +116,6 @@ FVector AEnemyDroneBaseActor::GetNewEngagedLocation()
 		Counter++;
 	}
 	while (IsTargetLocationValid(NewLocation) && Counter <=10);
-	DrawDebugSphere(GetWorld(), NewLocation, 100, 40, FColor::Red, false, 0.5f );
-	
 	
 	if (CollisionOnPathToTarget(NewLocation))
 	{
@@ -135,8 +136,6 @@ void AEnemyDroneBaseActor::UpdateTargetLocation()
 	//BoundCenterPosition = PlayerLocation + PlayerCharacter->GetActorForwardVector() * OuterBoundRadius + FVector(0, 0, MinHeightAbovePlayer);
 	BoundCenterPosition = PlayerLocation;
 	const FColor SphereColor = FColor::Green;
-	DrawDebugSphere(GetWorld(), BoundCenterPosition, InnerBoundRadius, 12, SphereColor, false, 0.5f);
-	DrawDebugSphere(GetWorld(), BoundCenterPosition, OuterBoundRadius, 12, FColor::Blue, false, 0.5f);
 
 	TargetLocation = GetNewEngagedLocation();
 }
@@ -172,8 +171,8 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector NewLocation)
 	IgnoreActors.Add(this);
 
 	if (UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), GetActorLocation(),
-		NewLocation, DroneRadius , ObjectTypes, true, IgnoreActors, EDrawDebugTrace::Persistent,
-		HitResult, true, FColor::Red, FLinearColor::Green,  1.f)
+		NewLocation, DroneRadius , ObjectTypes, true, IgnoreActors, EDrawDebugTrace::None,
+		HitResult, true, FColor::Transparent, FLinearColor::Transparent,  1.f)
 )
 	{
 		SweepHitResult = HitResult;
@@ -186,7 +185,6 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation()
 {
 	// Get the hit point and surface normal
 	const FVector HitPoint = SweepHitResult.ImpactPoint;
-	DrawDebugSphere(GetWorld(), HitPoint, 50, 40, FColor::Orange, false, 0.5f );
 
 	// Calculate a location around collision
 	const FVector SurfaceNormal = SweepHitResult.ImpactNormal;
@@ -209,7 +207,6 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation()
 	const FVector AdjustedDirection = DroneToPlayer + SurfaceNormal * DistanceMagnitude * ProjectionOnSurfNorm;
 	AdjustedLocation += AdjustedDirection;
 	
-	DrawDebugSphere(GetWorld(), AdjustedLocation, 50, 40, FColor::Black, false, 0.5f );
 	return AdjustedLocation;
 }
 
@@ -230,21 +227,15 @@ void AEnemyDroneBaseActor::PrepareForAttack()
 	bIdleState = false;
 	CurrentSpeed = 0.1f;
 	//logic for when drone is standing still
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Prepare attack")));	
 	StopTimers();
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyDroneBaseActor::Attack, 0.1f, false, AttackDelay);
 }
 
 void AEnemyDroneBaseActor::Attack()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, FString::Printf(TEXT("attack!!!")));
 	CurrentSpeed = AttackSpeed;
-	//TargetLocation = AttackLocation;
 	TargetLocation = PlayerLocation;
 	bAttackState = true;
-	DrawDebugSphere(GetWorld(), AttackLocation, 50, 40, FColor::Purple, false, 0.5f );
-	DrawDebugSphere(GetWorld(), PlayerLocation, 50, 40, FColor::Blue, false, 0.5f );
-	//AttackLocation = TargetLocation;
 	GetWorldTimerManager().SetTimer(RetreatTimerHandle, this, &AEnemyDroneBaseActor::Retreat, 0.1f, false, RetreatDelay);
 }
 
@@ -283,6 +274,31 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 			//UE_LOG(LogTemp, Display, TEXT("Overlapping start with: %s"), *OtherActor->GetClass()->GetName());
 		}
+	}
+}
+
+
+void AEnemyDroneBaseActor::OnHit(
+	UPrimitiveComponent* HitComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse,
+	const FHitResult& Hit
+	)
+{
+	//HitTriggerEvent(Hit);
+	AActor* HitActor = Hit.GetActor();
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(OtherActor);
+	if (Player)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player hit")));	
+
+	}
+	if(HitActor != nullptr)
+	{
+		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		//const AActor* ConstHitActor = HitActor;
+		UE_LOG(LogTemp, Display, TEXT("Hit with: %s"), *OtherActor->GetClass()->GetName());
 	}
 }
 

@@ -21,14 +21,23 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	class USphereComponent* SphereColliderComponent;
 	
-
-	UPROPERTY(EditAnywhere, Category=Collision)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Collision)
 	UStaticMeshComponent* DroneMesh;
 	
 	/** Called when drone starts overlapping something */
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	
+	/** called when drone hits something */
+	UFUNCTION()
+		virtual void OnHit(
+			UPrimitiveComponent* HitComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			FVector NormalImpulse,
+			const FHitResult& Hit
+			);
+	
 	/** Event when drone is prepared to attack player */
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPrepareForAttackEvent();
