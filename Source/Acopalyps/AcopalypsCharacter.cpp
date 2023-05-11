@@ -118,16 +118,30 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	//GetController()->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
-	//if( GetWorld()->LineTraceSingleByChannel(LookHit, FirstPersonCameraComponent->GetRelativeLocation(), FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 1000, ECC_WorldDynamic) )
-	//{
-	//	const AActor* HitActor = LookHit.GetActor();
-	//	if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
-	//	{
-	//		UE_LOG(LogTemp, Display, TEXT("looking at ammo station"));
-	//	}
-	//}
-	//DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointLocation + ViewpointRotation.Vector() * 1000, FColor::Magenta);
+	GetController()->GetPlayerViewPoint(ViewpointLocation, ViewpointRotation);
+	// Interact distance cast
+	bHasInteractHit = GetWorld()->LineTraceSingleByChannel(
+		InteractHit,
+		FirstPersonCameraComponent->GetRelativeLocation(),
+		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 100,
+		ECC_WorldDynamic
+		);
+	if( bHasInteractHit )
+	{
+		const AActor* HitActor = InteractHit.GetActor();
+		if( HitActor != nullptr && HitActor->GetClass() == AmmoStationClass )
+		{
+			UE_LOG(LogTemp, Display, TEXT("looking at ammo station"));
+		}
+	}
+	// Camera view cast
+	bHasLookHit = GetWorld()->LineTraceSingleByChannel(
+		LookHit,
+		FirstPersonCameraComponent->GetRelativeLocation(),
+		FirstPersonCameraComponent->GetRelativeLocation().ForwardVector * 10000,
+		ECC_WorldDynamic
+		);
+	DrawDebugLine(GetWorld(), ViewpointLocation, ViewpointLocation + ViewpointRotation.Vector() * 10000, FColor::Magenta);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input

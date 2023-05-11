@@ -125,9 +125,18 @@ public:
 	UInputAction* LookAction;
 
 	UPROPERTY(BlueprintReadOnly)
+	FHitResult InteractHit;
+	UPROPERTY(VisibleAnywhere)
+	bool bHasInteractHit;
+	
+	UPROPERTY(BlueprintReadOnly)
 	FHitResult LookHit;
+	UPROPERTY(VisibleAnywhere)
+	bool bHasLookHit;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> AmmoStationClass;
+	
 	UPROPERTY(VisibleAnywhere)
 	FVector ViewpointLocation;
 	UPROPERTY(VisibleAnywhere)
