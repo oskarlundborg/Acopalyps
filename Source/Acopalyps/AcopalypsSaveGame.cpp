@@ -5,6 +5,7 @@
 
 #include "AcopalypsCharacter.h"
 #include "EnemyAICharacter.h"
+#include "EnemyDroneBaseActor.h"
 #include "Animation/SkeletalMeshActor.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
@@ -45,7 +46,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 		}
 		// Save enemy specific data
-		if( ActorClass == EnemyClass )
+		else if( ActorClass == EnemyClass )
 		{
 			const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
 			ActorsInWorld.Add({
@@ -54,6 +55,25 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 				.bIsDead	= Enemy->IsDead(),
 				.Health		= Enemy->HealthComponent->GetHealth(),
 				.GunMag		= Enemy->Gun->CurrentMag,
+			});
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Enemy Saved ############################"))
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *ActorsInWorld.Last().Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *ActorsInWorld.Last().Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("IsDead: %i"), ActorsInWorld.Last().bIsDead)
+			UE_LOG(LogTemp, Display, TEXT("Health: %f"), ActorsInWorld.Last().Health)
+			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), ActorsInWorld.Last().GunMag)
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+		}
+		else if( ActorClass == EnemyDroneClass )
+		{
+			const AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor);
+			ActorsInWorld.Add({
+				.Class		= ActorClass,
+				.Transform	= Drone->GetTransform(),
+				.bIsDead	= Drone->IsDead(),
+				.Health		= Drone->HealthComponent->GetHealth(),
+				.MeshComp	= Drone->DroneMesh,
 			});
 			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 			UE_LOG(LogTemp, Display, TEXT("## Enemy Saved ############################"))
@@ -117,6 +137,26 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), Actor.GunMag)
 			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 		}
+		else if( Actor.Class == EnemyDroneClass )
+		{
+			if( Actor.bIsDead ) continue;
+			
+			AEnemyDroneBaseActor* Drone = World->SpawnActor<AEnemyDroneBaseActor>(
+				Actor.Class,
+				Actor.Transform.GetLocation(),
+				Actor.Transform.Rotator()
+				);
+			Drone->HealthComponent->SetHealth(Actor.Health);
+			Drone->DroneMesh = Actor.MeshComp;
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			UE_LOG(LogTemp, Display, TEXT("## Drone Loaded ###########################"))
+			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *Actor.Class->GetName())
+			UE_LOG(LogTemp, Display, TEXT("Transform: %s"), *Actor.Transform.ToString())
+			UE_LOG(LogTemp, Display, TEXT("IsDead: %i"), Actor.bIsDead)
+			UE_LOG(LogTemp, Display, TEXT("Health: %f"), Actor.Health)
+			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), Actor.GunMag)
+			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+		}
 		else if( Actor.Class == StaticMeshClass ) // Handle all static mesh data in scene
 		{
 			AStaticMeshActor* StaticMesh = World->SpawnActor<AStaticMeshActor>(
@@ -164,7 +204,7 @@ void UAcopalypsSaveGame::DestroySceneActors(TArray<AActor*>& Actors)
 	{
 		if( !Actor || !Actor->IsValidLowLevel() || Actor->ActorHasTag("Player") ) continue;
 		
-		if( Actor->ActorHasTag("Enemy") )
+		if( Actor->GetClass() == EnemyClass )
 		{
 			AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
 			Enemy->Gun->Owner = nullptr;

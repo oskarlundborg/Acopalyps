@@ -6,6 +6,7 @@
 #include "GameFramework/SaveGame.h"
 #include "AcopalypsSaveGame.generated.h"
 
+class AEnemyDroneBaseActor;
 class ASkeletalMeshActor;
 class AProjectile;
 class AStaticMeshActor;
@@ -34,6 +35,8 @@ struct FActorInstance
 	int32 GunMag;
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	UStaticMesh* Mesh;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UStaticMeshComponent* MeshComp;
 };
 
 /**
@@ -74,7 +77,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AEnemyAICharacter> EnemyClass;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AEnemyDroneBaseActor> EnemyDroneClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AStaticMeshActor> StaticMeshClass;
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AActor> ResupplyStationClass;
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AActor> AmmoPickupClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TArray<TSubclassOf<AActor>> ClassesToDelete;
