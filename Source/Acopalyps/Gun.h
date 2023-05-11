@@ -92,6 +92,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* ImpactSoundFlareAmmo;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FRotator FlashlightRotation;
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* FireMappingContext;
