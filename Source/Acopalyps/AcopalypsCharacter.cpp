@@ -11,7 +11,6 @@
 #include "EnemyAICharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
-#include "Kismet/KismetMathLibrary.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AAcopalypsCharacter
@@ -25,6 +24,7 @@ AAcopalypsCharacter::AAcopalypsCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
 	CharacterMovementComponent = GetCharacterMovement();
+	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComponent->SetMaxHealth(1000);
@@ -41,12 +41,7 @@ AAcopalypsCharacter::AAcopalypsCharacter()
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
-	// Create a mesh component that will be used to kick
-	LegMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Leg"));
-	LegMesh->SetupAttachment(GetCapsuleComponent());
 }
 
 void AAcopalypsCharacter::BeginPlay()
@@ -62,12 +57,6 @@ void AAcopalypsCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	// method call to hide and disable leg mesh and leg hitbox
-	HideLeg();
-	
-	// Sets methods to be run when LegCollision hits enemies
-	//LegMesh->OnComponentHit.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackHit);
-	LegMesh->OnComponentBeginOverlap.AddDynamic(this, &AAcopalypsCharacter::OnKickAttackOverlap);
 	
 	if( GunClass != nullptr )
 	{
@@ -91,32 +80,19 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 
 	CrouchInterpTime = FMath::Min(1.f, CrouchSpeed * DeltaTime);
 	float const CurrentCapsuleHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-
-	if( bIsCrouching && CurrentCapsuleHeight > 56 )
+	if( bIsCrouching && CurrentCapsuleHeight > CrouchHeight )
 	{
-		if( CharacterMovementComponent->Velocity.Size() > 400 )
-		{
-			CharacterMovementComponent->GroundFriction = 0.f;
-			if( CharacterMovementComponent->Velocity.Size() > 800 )
-			{
-				Kick();
-			}
-		}
-		else
-		{
-			CharacterMovementComponent->GroundFriction = 8.f;
-		}
-		GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 32, CrouchInterpTime));
+		GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 24, CrouchInterpTime));
 	} else if ( !bIsCrouching )
 	{
 		if( CurrentCapsuleHeight < 98 )
 		{
 			GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 122, CrouchInterpTime));
 		}
-		if ( CharacterMovementComponent->GroundFriction < 8.f )
-		{
-			CharacterMovementComponent->GroundFriction += 0.1f;
-		}
+	}
+	if( bRequestStopCrouching )
+	{
+		EndCrouch();
 	}
 }
 
@@ -132,16 +108,11 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Move);
-		//Sprinting
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartSprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndSprint);
 		//Crouching
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::StartCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AAcopalypsCharacter::StartCrouch);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndCrouch);
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Look);
-		//Kicking
-		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Kick);
 		//Slow Down Time
 		EnhancedInputComponent->BindAction(SlowDownTimeAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::SlowDownTime);
 		//Respawn
@@ -173,12 +144,9 @@ void AAcopalypsCharacter::ResetLevel()
 
 void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
-
 	if (Controller != nullptr)
 	{
-		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
@@ -201,115 +169,92 @@ void AAcopalypsCharacter::ResumeTime()
 
 void AAcopalypsCharacter::StartCrouch()
 {
-	if( CharacterMovementComponent->IsMovingOnGround() )
+	if( !bIsSliding )
 	{
-		LaunchCharacter(
-			CharacterMovementComponent->Velocity / 8,
-			false,
-			false
-			);
+		StartSlide();
 	}
 	CrouchTriggerEvent();
+	bRequestStopCrouching = false;
 	bIsCrouching = true;
 	CharacterMovementComponent->MaxWalkSpeed = CrouchMovementSpeed;
 }
 
 void AAcopalypsCharacter::EndCrouch()
 {
+	TArray<FOverlapResult> Overlaps;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActors(Children);
+	Params.AddIgnoredActors(Gun->Children);
+	const bool bHasCol = GetWorld()->OverlapMultiByChannel(
+		Overlaps,
+		GetActorLocation() + FVector(0, 0, 98),
+		FQuat::Identity,
+		ECC_Pawn,
+		FCollisionShape::MakeCapsule(55.f, 48.f),
+		Params
+		);
+	bRequestStopCrouching = true;
+	if( bIsSliding || bHasCol )
+	{
+		return;
+	}
 	bIsCrouching = false;
 	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
 }
 
-void AAcopalypsCharacter::StartSprint()
+void AAcopalypsCharacter::StartSlide()
 {
-	if( !bIsCrouching )
+	bIsSliding = true;
+	SlideTriggerEvent();
+	CharacterMovementComponent->GroundFriction = 0.f;
+	if(  CharacterMovementComponent->IsMovingOnGround() )
 	{
-		bIsSprinting = true;
-		SprintTriggerEvent();
-		CharacterMovementComponent->MaxWalkSpeed = SprintMovementSpeed;
+		if( CharacterMovementComponent->GetAnalogInputModifier() == 0 )
+		{
+			LaunchCharacter(
+				GetActorForwardVector() * SlideStrength,
+				false,
+				false
+				);
+		} else
+		{
+			LaunchCharacter(
+				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength,
+				true,
+				false
+				);
+		}
 	}
+	GetWorldTimerManager().SetTimer(SlideHandle, this, &AAcopalypsCharacter::EndSlide, .6f, false);
 }
 
-void AAcopalypsCharacter::EndSprint()
+void AAcopalypsCharacter::EndSlide()
 {
-	bIsSprinting = false;
-	if( !bIsCrouching )
+	bIsSliding = false;
+	CharacterMovementComponent->GroundFriction = 2.f;
+	if( bRequestStopCrouching )
 	{
-		CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
+		EndCrouch();
 	}
 }
 
 void AAcopalypsCharacter::Jump()
 {
-	Super::Jump();
-	HideLeg();
+	if( !bIsSliding )
+	{
+		Super::Jump();
+	}
 }
 
 void AAcopalypsCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
 	if (Controller != nullptr)
 	{
-		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X * MouseSensitivity);
 		AddControllerPitchInput(LookAxisVector.Y * MouseSensitivity);
 	}
-}
-
-void AAcopalypsCharacter::Kick()
-{
-	if (Controller != nullptr)
-	{
-		// makes leg mesh visible, and sets collision response of the leg mesh and box collider to collide
-		LegMesh->SetVisibility(true);
-		LegMesh->SetCollisionProfileName("Weapon");
-		LegMesh->SetNotifyRigidBodyCollision(true);
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &AAcopalypsCharacter::HideLeg, 1.f, false);
-	}
-}
-
-void AAcopalypsCharacter::HideLeg() const
-{
-	// makes leg mesh unvisible, and sets collision response to none on leg mesh and boxCollision-object
-	LegMesh->SetVisibility(false);
-	LegMesh->SetCollisionProfileName("NoCollision");
-	LegMesh->SetNotifyRigidBodyCollision(false);
-}
-
-void AAcopalypsCharacter::OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
-	if(OtherActor->ActorHasTag(TEXT("Enemy"))) {
-
-		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
-
-		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(OtherActor);
-		if(Enemy)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *HitComponent->GetName(), *OtherComp->GetName()));
-			Enemy->RagDoll(GetActorForwardVector() * 50000 + FVector(0, 0, 4000));
-		}
-	}
-}
-
-void AAcopalypsCharacter::OnKickAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
-{
-	GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
-	if(OtherActor->ActorHasTag(TEXT("Enemy"))) {
-
-		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
-
-		AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(OtherActor);
-		if(Enemy)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT("hit between: %s %s"), *OverlappedComponent->GetName(),*OtherComp->GetName()));
-			Enemy->RagDoll(GetActorForwardVector() * 50000 + FVector(0, 0, 4000));
-			//Enemy->GetMesh()->AddForce(GetActorForwardVector() * 1000);
-		}
-	}
-	KickTriggerEvent(SweepResult);
 }
 
 float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -333,7 +278,6 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			//DetachFromControllerPendingDestroy();
 			DisableInput(Cast<APlayerController>(GetController()));
 			//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
-			HideLeg();
 			GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AAcopalypsCharacter::Respawn, 1);
 			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 			bIsDead = true;
