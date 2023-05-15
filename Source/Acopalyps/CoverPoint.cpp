@@ -38,4 +38,12 @@ float ACoverPoint::DistanceToPlayer()
 	return FVector::Dist(GetActorLocation(), PlayerCharacter->GetActorLocation());
 }
 
+bool ACoverPoint::HasLineOfSightToPlayer()
+{
+	FHitResult HitResult;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult,FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 100), UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation(),ECC_WorldStatic);
+	if(!bHit) return true;
+	return UGameplayStatics::GetPlayerCharacter(this, 0) == Cast<ACharacter>(HitResult.GetActor());
+}
+
 
