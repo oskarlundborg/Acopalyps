@@ -51,10 +51,6 @@ class AAcopalypsCharacter : public ACharacter
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
-	
-	/** Sprint Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* SprintAction;
 
 	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -63,10 +59,6 @@ class AAcopalypsCharacter : public ACharacter
 	/** Slow Down Time Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SlowDownTimeAction;
-	
-	/** Kick Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* KickAction;
 
 	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -88,14 +80,6 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* LoadAction;
 	
-	/** Kick force to add on other object on kick-hitbox-overlap*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
-	FVector KickForce = FVector(0, 0, 5000);
-	//TODO inför framtiden kanske: Ha collisionsboxes som sätts aktiva onAnimNotifyState - när benanimationen är i ett visst läge, då sätts colliders till "mottagliga" för coll
-	// TODO inför framtiden kanske: Ha kick som ett enum, ett attackEnum för enklare uppbyggnad? Om vi vill kunna slå sönder saker?
-	
-	//FHitResult LookHit;
-
 	UPROPERTY(EditAnywhere)
 	float MouseSensitivity = 0.6;
 
@@ -135,24 +119,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	void SetHasRifle(bool bNewHasRifle);
 
-	/** Triggered on collision hit event between leg hitbox and enemies*/
-	UFUNCTION()
-	void OnKickAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	UFUNCTION()
-	void OnKickAttackOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void KickTriggerEvent(const FHitResult &Hit);
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void SprintTriggerEvent();
-	
 	UFUNCTION(BlueprintImplementableEvent)
 	void CrouchTriggerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void SlideTriggerEvent(const FVector& Velocity);
+	void SlideTriggerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void TakeDamageTriggerEvent(const float& Damage, const AActor* DamageCauser);
@@ -184,25 +155,17 @@ protected:
 	// Crouching functions
 	void StartCrouch();
 	void EndCrouch();
-	
-	// Crouching functions
-	void StartSprint();
-	void EndSprint();
 
+	void StartSlide();
+	void EndSlide();
+	
 	virtual void Jump() override;
-	//void StopJumping() override;
 
 	void SlowDownTime();
 	void ResumeTime();
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-
-	/** Called for kicking input*/
-	void Kick();
-
-	/** Called after kicking timer ended*/
-	void HideLeg() const;
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
@@ -228,25 +191,32 @@ public:
 	// ---- MOVEMENT ---- //
 	
 	// Characters active movespeed variable
-	UPROPERTY(VisibleAnywhere, Category="Movement|Crouch")
-		float WalkingMovementSpeed = 600.f;
+	UPROPERTY(VisibleAnywhere, Category="Movement")
+		float WalkingMovementSpeed = 1000.f;
 
 	// Crouching variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Crouch")
-		bool bIsCrouching;
+	bool bIsCrouching;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Crouch")
+	bool bRequestStopCrouching = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
-		float CrouchMovementSpeed = 300.f;
+	float CrouchMovementSpeed = 400.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
-		float CrouchSpeed = 5.f;
+	float CrouchSpeed = 4.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
-		float CrouchInterpTime;
+	float CrouchInterpTime;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
+	float CrouchHeight = 42.f;
 
-	// Sprinting variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Sprint")
-		bool bIsSprinting;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Sprint")
-		float SprintMovementSpeed = 1000.f;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Slide")
+	bool bIsSliding;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
+	float SlideStrength = 600.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
+	float SlideTime = .4f;
+	UPROPERTY()
+	FTimerHandle SlideHandle;
+	
 	UPROPERTY(VisibleAnywhere)
 	bool bIsDead;
 };
