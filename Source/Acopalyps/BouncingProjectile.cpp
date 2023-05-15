@@ -15,7 +15,7 @@ void ABouncingProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr && !HitActor->ActorHasTag(TEXT("Player")))
 	{
-		UGameplayStatics::ApplyDamage(HitActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		UGameplayStatics::ApplyPointDamage(HitActor, 50.f, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		if( bDrawDebugSphere )
 		{
 			DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Purple,true,5);
