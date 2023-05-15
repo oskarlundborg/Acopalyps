@@ -211,9 +211,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Slide")
 	bool bIsSliding;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
-	float SlideStrength = 600.f;
+	float SlideStrength = 900.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
-	float SlideTime = .4f;
+	float SlideTime = .2f;
 	UPROPERTY()
 	FTimerHandle SlideHandle;
 	
