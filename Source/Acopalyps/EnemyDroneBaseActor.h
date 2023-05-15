@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatManager.h"
 #include "GameFramework/Actor.h"
 #include "EnemyDroneBaseActor.generated.h"
 
@@ -14,6 +15,8 @@ class ACOPALYPS_API AEnemyDroneBaseActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AEnemyDroneBaseActor();
+
+	ACombatManager* CombatManager;
 
 	UPROPERTY(VisibleAnywhere, Category=Health)
 	class UHealthComponent* HealthComponent;
@@ -65,6 +68,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float AttackSpeed = 800.f;
 
+	UPROPERTY(EditAnywhere)
+	bool DebugAssist = false;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -77,20 +83,33 @@ public:
 	
 private:
 	
-	bool bAttackState;
-	bool bIdleState;
+	bool bAttack;
+	bool bIdle;
+
+	bool bHasMetPlayer;
 	
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
 
-	/** Current target location and direction*/
-	FVector TargetLocation;
+	
 	FVector Direction;
+
+	/** Location the player currently moves towards*/
+	FVector CurrentTargetLocation;
+
+	/** Location from which to start attack from*/
+	FVector EngagedLocation;
+
+	/** Location to move to if player is too far away*/
+	FVector HomeLocation;
+
+	/** Location to move towards after attacking player*/
+	FVector RetreatLocation;
 
 	FVector RelativePositionToPLayer;
 
-	/** Location to move towards during attack*/
-	FVector AttackLocation = FVector::ZeroVector;
+	/** Location to move towards after attack*/
+	FVector FirstEncounterLocation; // KANSKE TA BORT
 
 	/** Location to check collision agains*/  
 	FVector CollisionCheckLocation;
@@ -105,6 +124,10 @@ private:
 	/** Defines how far above colliding object drone moves to avoid collision*/
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess = true))
 	float CollisionAvoidanceOffset = 200.f;
+
+	/** Define the max distance to player before drone returns to home location */
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float MaxDistanceToPlayer = 8000.0f;
 	
 	/** Define the min height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -129,10 +152,19 @@ private:
 
 	/** Time delays for tick functions*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double UpdateEngagedTargetDelay = 0.2f;
+	double UpdateEngagedLocationDelay = 0.2f;
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double CheckDroneStateDelay = 0.2f;
+	double CheckAttackPotentialDelay = 0.2f;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double UpdateCurrentObjectiveDelay = 0.2f;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double CheckCollisionDelay = 0.2f;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double CheckPlayerDistanceDelay= 1.f;
 
 	/** Time delay before attack */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -146,12 +178,28 @@ private:
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double ResumeDelay = 1.2f;
 
+	/** Time delay before saving home location*/
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double SaveHomeDelay = 1.2f;
+
+	/** Time delay before setting initial speed*/
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double ResumeSpeedDelay = 1.f;
+
+	/* Looping timer handles*/
 	FTimerHandle UpdateEngagedLocationTimerHandle;
 	FTimerHandle CheckAttackBoundsTimerHandle;
+	FTimerHandle UpdateCurrentObjectiveTimerHandle;
+	FTimerHandle CheckPlayerDistanceTimerHandle;
+	FTimerHandle CheckCollisionTimerHandle;
+
+	/* One-shot timer handles*/
+	FTimerHandle SaveHomeLocationTimerHandle;
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle RetreatTimerHandle;
 	FTimerHandle ResumeTimerHandle;
-
+	FTimerHandle ResumeSpeedHandle;
+	
 	/** Closest colliding object between drone and target location*/
 	FHitResult SweepHitResult;
 	
@@ -164,26 +212,35 @@ private:
 	/** Moves actor towards a location in world*/
 	void MoveTowardsLocation(float DeltaTime);
 
+	/** Decides which location to move towards based on states*/
+	void UpdateCurrentObjective();
+
+	/** Calculates location from which to start engaging in combat encounter, and location to move to if player is too far away*/
+	void SaveHomeLocation();
+
 	/** Updates location from which to start attack*/
-	FVector GetNewEngagedLocation();
+	void CalculateEngagedLocation();
 
 	/** Generate new relative position to player*/
 	void GenerateNewRelativePosition();
-	
-	/** Updates bounds for location to move toward*/
-	void UpdateTargetLocation();
 
 	/** Checks if drone location is in range to initiate attack*/
 	bool IsWithinAttackArea() const;
 
-	/** Calculates if drone should attack or follow player*/
-	void CalculateCurrentState();
+	/** Checks if drone location is "too far" from player*/
+	void HasLostPlayer();
 
+	/** Calculates if drone should attack or follow player*/
+	void CheckAttackPotential();
+
+	/** Adjusts movement depending on collision*/
+	void AdjustMovementForCollision();
+	
 	/** Performs a sweep trace, returns if colliding object found between target location and current location to avoid collision*/
 	bool CollisionOnPathToTarget(FVector NewLocation);
 
 	/** Calculates and returns closest location that avoids collision */
-	FVector GetAdjustedLocation();
+	FVector GetAdjustedLocation(FVector GoalLocation);
 	
 	/** Performs a ray casts, returns true if generated target location isnt inside a colliding object. Aka that movement to the point is possible */
 	bool IsTargetLocationValid(FVector NewLocation) const;
@@ -199,6 +256,10 @@ private:
 
 	/** Resumes drone to idle behavior*/
 	void Resume();
+
+	/** Sets drone speed to initial speed*/
+	void ResumeInitialSpeed();
 };
+
 
 
