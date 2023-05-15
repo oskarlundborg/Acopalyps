@@ -360,7 +360,7 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	if(IsDead())
 	{
 		OnDeathEvent();
-		//CombatManager->RemoveDrone(this);
+		CombatManager->RemoveDrone(this);
 		Destroy();
 	}
 	return DamageApplied;
