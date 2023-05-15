@@ -62,7 +62,8 @@ void ASpawnZone::Spawn()
 			AEnemyDroneBaseActor* SpawnedDrone = SpawnPoint->SpawnDrone();
 			if(SpawnedDrone)
 			{
-				
+				CombatManager->AddDrone(SpawnedDrone);
+				NumberOfDronesLeftToSpawn--;
 			}
 		}
 	}
