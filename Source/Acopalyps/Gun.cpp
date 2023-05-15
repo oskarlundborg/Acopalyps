@@ -112,6 +112,25 @@ void AGun::AlternateFire()
 	}
 }
 
+void AGun::FlareFire()
+{
+	AMMO_TYPES AmmoToFire = Flare;
+	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
+	if( Projectiles.Find(AmmoToFire)->bCanFire )
+	{
+		Fire(AmmoToFire);
+		ToggleCanFireAlternate(AmmoToFire);
+		CanFireAlternateDelegate.BindUFunction(this, FName("ToggleCanFireAlternate"), AmmoToFire);
+		GetWorldTimerManager().SetTimer(
+			Projectiles.Find(AmmoToFire)->TimerHandle,
+			CanFireAlternateDelegate,
+			Projectiles.Find(AmmoToFire)->Delay,
+			false
+			);
+	}
+}
+
+
 /** Performs a ray casts, returns true if hit is registered */
 bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
 {
@@ -153,18 +172,20 @@ void AGun::AttachWeaponInputs(ACharacter* TargetCharacter)
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGun::PrimaryFire);
 			EnhancedInputComponent->BindAction(AlternativeFireAction, ETriggerEvent::Started, this, &AGun::AlternateFire);
 			EnhancedInputComponent->BindAction(RapidFireAction, ETriggerEvent::Triggered, this, &AGun::RapidFire);
+			EnhancedInputComponent->BindAction(FlareFireAction, ETriggerEvent::Triggered, this, &AGun::FlareFire);
 			// Reload
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AGun::AttemptReload);
 			// Change ammo type
 			
-			EnhancedInputComponent->BindAction<AGun>(RotateRegularAmmo, ETriggerEvent::Started, this, &AGun::RotateAmmoType);
+			EnhancedInputComponent->BindAction<AGun>(RotateRegularAmmoForward, ETriggerEvent::Started, this, &AGun::RotateAmmoTypeForward);
+			EnhancedInputComponent->BindAction<AGun>(RotateRegularAmmoBackward, ETriggerEvent::Started, this, &AGun::RotateAmmoTypeBackward);
 			EnhancedInputComponent->BindAction<AGun>(RotateAlternateAmmo, ETriggerEvent::Started, this, &AGun::RotateAlternateAmmoType);
 			
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRegularAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Regular);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBouncingAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Bouncing);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoRapidAction, ETriggerEvent::Started, this, &AGun::SetPrimaryAmmoType, Rapid);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoExplosiveAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Explosive);
-			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoFlareAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Flare);
+			//EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoFlareAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Flare);
 			EnhancedInputComponent->BindAction<AGun, TEnumAsByte<AMMO_TYPES>>(ChangeAmmoBeanBagAction, ETriggerEvent::Started, this, &AGun::SetAlternateAmmoType, Shotgun);
 		}
 	}
@@ -241,17 +262,27 @@ void AGun::SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
 	CurrentAlternateAmmoType = AmmoType;
 }
 
-void AGun::RotateAmmoType()
+void AGun::RotateAmmoTypeForward()
 {
 	if(AmmoTypes.Find(CurrentAmmoType) == AmmoTypes.Num()-1)
 	{
-		UE_LOG(LogTemp,Display,TEXT("LAST AMMOTYPE"))
 		SetPrimaryAmmoType(AmmoTypes[0]);
 	}
 	else
 	{
-		UE_LOG(LogTemp,Display,TEXT("NOT LAST AMMOTYPE"))
 		SetPrimaryAmmoType(AmmoTypes[(AmmoTypes.IndexOfByKey(CurrentAmmoType)+1)]);
+	}
+}
+
+void AGun::RotateAmmoTypeBackward()
+{
+	if(AmmoTypes.Find(CurrentAmmoType) == AmmoTypes[0])
+	{
+		SetPrimaryAmmoType(AmmoTypes[AmmoTypes.Num()-1]);
+	}
+	else
+	{
+		SetPrimaryAmmoType(AmmoTypes[(AmmoTypes.IndexOfByKey(CurrentAmmoType)-1)]);
 	}
 }
 
@@ -259,12 +290,10 @@ void AGun::RotateAlternateAmmoType()
 {
 	if(AlternateAmmoTypes.Find(CurrentAlternateAmmoType) == AlternateAmmoTypes.Num()-1)
 	{
-		UE_LOG(LogTemp,Display,TEXT("LAST AMMOTYPE"))
 		SetAlternateAmmoType(AlternateAmmoTypes[0]);
 	}
 	else
 	{
-		UE_LOG(LogTemp,Display,TEXT("NOT LAST AMMOTYPE"))
 		SetAlternateAmmoType(AlternateAmmoTypes[(AlternateAmmoTypes.IndexOfByKey(CurrentAlternateAmmoType)+1)]);
 	}
 }

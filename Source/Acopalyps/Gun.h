@@ -105,6 +105,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* RapidFireAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* FlareFireAction;
 	
 	/** Alternate Fire Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -137,7 +140,10 @@ public:
 	class UInputAction* ChangeAmmoBeanBagAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* RotateRegularAmmo;
+	class UInputAction* RotateRegularAmmoForward;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* RotateRegularAmmoBackward;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* RotateAlternateAmmo;
@@ -158,6 +164,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void RapidFire() { if( CurrentAmmoType == Rapid ) Fire(Rapid); }
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void FlareFire();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	bool HitTrace(FHitResult& Hit, FVector& ShotDirection);
@@ -182,7 +191,7 @@ public:
 	void Reload();
 
 	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
-	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun, Flare};
+	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun};
 	/** Equiped Ammo Type */
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
@@ -272,7 +281,8 @@ private:
 	void SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType);
 	void SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType);
 
-	void RotateAmmoType();
+	void RotateAmmoTypeForward();
+	void RotateAmmoTypeBackward();
 	void RotateAlternateAmmoType();
 
 	bool bCanReload = true;
