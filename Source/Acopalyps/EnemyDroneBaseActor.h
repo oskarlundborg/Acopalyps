@@ -85,6 +85,7 @@ private:
 	
 	bool bAttack;
 	bool bIdle;
+	bool bIsDead;
 	
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
@@ -159,23 +160,23 @@ private:
 
 	/** Time delay before attack */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double AttackDelay = 1.2f;
+	double AttackDelay = 1.f;
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double RetreatDelay = 1.f;
+	double RetreatDelay = 1.8f;
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double ResumeDelay = 1.2f;
 
-	/** Time delay before saving home location*/
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double SaveHomeDelay = 1.2f;
-
 	/** Time delay before setting initial speed*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double ResumeSpeedDelay = 1.f;
+	double ResumeSpeedDelay = 2.5f;
+
+	/** Time delay before destroying drone*/
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double DestructionDelay = 1.f;
 
 	/* Looping timer handles*/
 	FTimerHandle UpdateEngagedLocationTimerHandle;
@@ -190,6 +191,7 @@ private:
 	FTimerHandle RetreatTimerHandle;
 	FTimerHandle ResumeTimerHandle;
 	FTimerHandle ResumeSpeedHandle;
+	FTimerHandle DestructionTimerHandle;
 	
 	/** Closest colliding object between drone and target location*/
 	FHitResult SweepHitResult;
@@ -241,6 +243,12 @@ private:
 
 	/** Sets drone speed to initial speed*/
 	void ResumeInitialSpeed();
+
+	/** Runs when drone dies*/
+	void DoDeath(); //tror att OnDeath är överskuggat nånstans, därav namnet
+
+	/** Destroys drone after a some time*/
+	void DestroyDrone();
 };
 
 

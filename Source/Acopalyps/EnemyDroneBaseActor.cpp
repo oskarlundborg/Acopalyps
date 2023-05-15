@@ -76,7 +76,10 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 	PlayerLocation = PlayerCharacter->GetActorLocation();
 	PlayerRotation = PlayerCharacter->GetActorRotation();
 
-	MoveTowardsLocation(DeltaTime);
+	if (!bIsDead)
+	{
+		MoveTowardsLocation(DeltaTime);
+	}
 }
 
 /** Moves actor towards a location */
@@ -109,22 +112,16 @@ void AEnemyDroneBaseActor::UpdateCurrentObjective()
 	if (bIdle && !bAttack)
 	{
 		CalculateEngagedLocation();
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CurrentTargetLocation = EngagedLocation"));
-
 		CurrentTargetLocation = EngagedLocation;
 		
 	}
 	else if (!bIdle && bAttack)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CurrentTargetLocation = PlayerLocation"));
-
 		CurrentTargetLocation = PlayerLocation;
 	}
 	else if (!bIdle && !bAttack)
 	{
 		CalculateEngagedLocation();
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CurrentTargetLocation = EngagedLocation"));
-
 		CurrentTargetLocation = EngagedLocation;
 	}
 }
@@ -264,7 +261,6 @@ void AEnemyDroneBaseActor::PrepareForAttack()
 	OnPrepareForAttackEvent();
 	bIdle = false;
 	CurrentSpeed = 0.1f;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("PrepareForAttack"));
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyDroneBaseActor::Attack, 0.1f, false, AttackDelay);
 }
 
@@ -274,7 +270,6 @@ void AEnemyDroneBaseActor::Attack()
 	OnAttackEvent();
 	CurrentSpeed = AttackSpeed;
 	bAttack = true;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Attack"));
 	GetWorldTimerManager().SetTimer(RetreatTimerHandle, this, &AEnemyDroneBaseActor::Retreat, 0.1f, false, RetreatDelay);
 }
 
@@ -285,19 +280,39 @@ void AEnemyDroneBaseActor::Retreat()
 	CurrentSpeed = InitialSpeed;
 	bIdle = false;
 	bAttack = false;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Retreat"));
 	GetWorldTimerManager().SetTimer(ResumeTimerHandle, this, &AEnemyDroneBaseActor::Resume, 0.1f, false, ResumeDelay);
 }
 
 void AEnemyDroneBaseActor::Resume()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Resume"));
 	bIdle = true;
 }
 
 void AEnemyDroneBaseActor::ResumeInitialSpeed()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Drone stoppped")));
 	CurrentSpeed = InitialSpeed;
+}
+
+void AEnemyDroneBaseActor::DoDeath()
+{
+	OnDeathEvent();
+	CurrentSpeed = 0.02f;
+	//SphereColliderComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//SphereColliderComponent->SetEnableGravity(true);
+	SphereColliderComponent->SetSimulatePhysics(true);
+	DroneMesh->SetSimulatePhysics(true);
+	GetWorldTimerManager().ClearTimer(UpdateCurrentObjectiveTimerHandle);
+	GetWorldTimerManager().ClearTimer(CheckAttackBoundsTimerHandle);
+	bIsDead = true;
+	GetWorldTimerManager().SetTimer(DestructionTimerHandle, this, &AEnemyDroneBaseActor::DestroyDrone, 0.1f, false, DestructionDelay);
+}
+
+void AEnemyDroneBaseActor::DestroyDrone()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Drone ded")));
+	//CombatManager->RemoveDrone(this);
+	//Destroy();
 }
 
 /** Checks if drone location is in range to initiate attack*/
@@ -315,14 +330,6 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		}
-		/*
-		AProjectile* Projectile = Cast<AProjectile>(OtherActor);
-		if (Projectile)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Hit with projectile")));
-
-		}
-		*/
 	}
 }
 
@@ -344,11 +351,14 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 
+	CurrentSpeed = 0.02f;
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Drone stoppped")));
+	GetWorldTimerManager().SetTimer(ResumeSpeedHandle, this, &AEnemyDroneBaseActor::ResumeInitialSpeed, 0.1f, false, ResumeSpeedDelay);
+
+	
 	if(IsDead())
 	{
-		OnDeathEvent();
-		//CombatManager->RemoveDrone(this);
-		Destroy();
+		DoDeath();
 	}
 	return DamageApplied;
 }
