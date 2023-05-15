@@ -69,7 +69,7 @@ void ACombatManager::RunSpawnWave()
 	if(ActiveEnemiesCount > WavesQueue.Peek()->CurrentEnemyCountMaxForNextWave) return;
 	FCombatWave CurrentWave;
 	WavesQueue.Dequeue(CurrentWave);
-	ActiveEnemiesCount += CurrentWave.NumberOfBasicEnemies;
+	ActiveEnemiesCount += CurrentWave.NumberOfBasicEnemies + CurrentWave.NumberOfDrones;
 	for(ASpawnZone* SpawnZone : SpawnZones)
 	{
 		if(CurrentWave.SpawnZoneID == SpawnZone->SpawnZoneID)
@@ -136,6 +136,22 @@ void ACombatManager::AddEnemy(AEnemyAICharacter* Enemy)
 void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
 {
 	ManagedEnemies.Remove(EnemyToRemove);
+	ActiveEnemiesCount--;
+	if(WavesQueue.IsEmpty() && ActiveEnemiesCount == 0)
+	{
+		EndOfCombat();
+	}
+}
+
+void ACombatManager::AddDrone(AEnemyDroneBaseActor* Drone)
+{
+	ManagedDrones.Add(Drone);
+	
+}
+
+void ACombatManager::RemoveDrone(AEnemyDroneBaseActor* DroneToRemove)
+{
+	ManagedDrones.Remove(DroneToRemove);
 	ActiveEnemiesCount--;
 	if(WavesQueue.IsEmpty() && ActiveEnemiesCount == 0)
 	{

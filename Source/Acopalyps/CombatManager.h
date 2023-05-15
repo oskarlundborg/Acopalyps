@@ -11,6 +11,7 @@ class ACombatTrigger;
 class UBoxComponent;
 class AAIController;
 class AEnemyAICharacter;
+class AEnemyDroneBaseActor;
 class UBehaviorTree;
 class ASpawnZone;
 
@@ -31,6 +32,9 @@ struct FCombatWave
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn Wave")
 	int CurrentEnemyCountMaxForNextWave;
 
+	UPROPERTY(EditAnywhere, Category = "Enemy Spawn Wave")
+	double DelayInSecondsForWaveAfterCriteriaReached;
+
 	UPROPERTY(EditAnywhere, Category= "Sound")
 	USoundWave* StartSoundWave;
 
@@ -39,9 +43,6 @@ struct FCombatWave
 
 	UPROPERTY(EditAnywhere, Category= "Sound")
 	float PitchMultiplyer;
-
-
-	//TODO: Tillgång till spawnZone, för spawnpoints, timer för spawn, decrement numBasicEnemy, 
 };
 
 UCLASS()
@@ -63,6 +64,8 @@ public:
 
 	void RemoveEnemy(AEnemyAICharacter* EnemyToRemove);
 
+	void RemoveDrone(AEnemyDroneBaseActor* DroneToRemove);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartOfCombat();
 
@@ -72,6 +75,8 @@ public:
 	void GatherOverlappingActors();
 
 	void AddEnemy(AEnemyAICharacter* Enemy);
+
+	void AddDrone(AEnemyDroneBaseActor* Drone);
 
 	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
 	void StartCombatMode();
@@ -84,6 +89,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<AEnemyAICharacter*> ManagedEnemies = TArray<AEnemyAICharacter*>();
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AEnemyDroneBaseActor*> ManagedDrones = TArray<AEnemyDroneBaseActor*>();
 	
 	UPROPERTY(VisibleAnywhere)
 	TArray<ASpawnZone*> SpawnZones = TArray<ASpawnZone*>();
