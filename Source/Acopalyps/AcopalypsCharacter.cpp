@@ -220,7 +220,7 @@ void AAcopalypsCharacter::StartSlide()
 		} else
 		{
 			LaunchCharacter(
-				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength,
+				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength * 1.4,
 				true,
 				false
 				);
