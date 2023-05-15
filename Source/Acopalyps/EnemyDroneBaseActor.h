@@ -85,9 +85,12 @@ private:
 	
 	bool bAttack;
 	bool bIdle;
+
+	bool bHasMetPlayer;
 	
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
+
 	
 	FVector Direction;
 
@@ -97,10 +100,16 @@ private:
 	/** Location from which to start attack from*/
 	FVector EngagedLocation;
 
+	/** Location to move to if player is too far away*/
+	FVector HomeLocation;
+
 	/** Location to move towards after attacking player*/
 	FVector RetreatLocation;
 
 	FVector RelativePositionToPLayer;
+
+	/** Location to move towards after attack*/
+	FVector FirstEncounterLocation; // KANSKE TA BORT
 
 	/** Location to check collision agains*/  
 	FVector CollisionCheckLocation;
@@ -196,13 +205,19 @@ private:
 	
 	/** Starts timers*/
 	void StartTimers();
-	
+
+	/** Stop timers*/
+	void StopTimers();
+
 	/** Moves actor towards a location in world*/
 	void MoveTowardsLocation(float DeltaTime);
 
 	/** Decides which location to move towards based on states*/
 	void UpdateCurrentObjective();
-	
+
+	/** Calculates location from which to start engaging in combat encounter, and location to move to if player is too far away*/
+	void SaveHomeLocation();
+
 	/** Updates location from which to start attack*/
 	void CalculateEngagedLocation();
 
@@ -211,6 +226,9 @@ private:
 
 	/** Checks if drone location is in range to initiate attack*/
 	bool IsWithinAttackArea() const;
+
+	/** Checks if drone location is "too far" from player*/
+	void HasLostPlayer();
 
 	/** Calculates if drone should attack or follow player*/
 	void CheckAttackPotential();

@@ -36,12 +36,26 @@ void ASpawnZone::Tick(float DeltaTime)
 }
 
 
-void ASpawnZone::HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn)
+void ASpawnZone::HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn, double Delay)
 {
 	NumberOfBasicEnemiesLeftToSpawn += BasicEnemiesToSpawn;
 	NumberOfDronesLeftToSpawn += DronesToSpawn;
 	if(!GetWorldTimerManager().TimerExists(SpawnTimerHandle))
-		Spawn();
+	{
+		if(Delay == 0)
+		{
+			Spawn();
+		}
+		else
+		{
+			GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, Delay, false);
+		}
+	}
+	else
+	{
+		GetWorldTimerManager().SetTimer(SpawnTimerHandle, Delay, false);
+	}
+		
 }
 
 void ASpawnZone::Spawn()
@@ -67,9 +81,9 @@ void ASpawnZone::Spawn()
 			}
 		}
 	}
-	if(NumberOfBasicEnemiesLeftToSpawn > 0)
+	if(NumberOfBasicEnemiesLeftToSpawn + NumberOfDronesLeftToSpawn > 0)
 	{
-		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, 2.f, false);
+		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, 1.f, false);
 	} else
 	{
 		GetWorldTimerManager().ClearTimer(SpawnTimerHandle);

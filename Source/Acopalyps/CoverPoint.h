@@ -35,6 +35,8 @@ public:
 
 	float DistanceToPlayer();
 
+	bool HasLineOfSightToPlayer();
+
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* CoverBox;
 

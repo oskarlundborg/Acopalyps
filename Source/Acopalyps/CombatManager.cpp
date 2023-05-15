@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "CombatTrigger.h"
 #include "EnemyAICharacter.h"
+#include "EnemyDroneBaseActor.h"
 #include "SpawnZone.h"
 #include "AI/NavigationSystemBase.h"
 #include "Components/BoxComponent.h"
@@ -46,6 +47,7 @@ void ACombatManager::Tick(float DeltaTime)
 
 void ACombatManager::StartCombatMode()
 {
+	if(GetWorldTimerManager().TimerExists(RecurringSpawnCheckTimerHandle)) return;
 	for(AEnemyAICharacter* Enemy : ManagedEnemies)
 	{
 		Enemy->InitializeController();
@@ -78,7 +80,7 @@ void ACombatManager::RunSpawnWave()
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), CurrentWave.StartSoundWave, CurrentWave.VolumeMultiplyer, CurrentWave.PitchMultiplyer, 0.1f);
 			}	
-			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies, CurrentWave.NumberOfDrones);
+			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies, CurrentWave.NumberOfDrones, CurrentWave.DelayInSecondsForWaveAfterCriteriaReached);
 		}
 	}
 	
@@ -146,7 +148,7 @@ void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
 void ACombatManager::AddDrone(AEnemyDroneBaseActor* Drone)
 {
 	ManagedDrones.Add(Drone);
-	
+	Drone->CombatManager = this;
 }
 
 void ACombatManager::RemoveDrone(AEnemyDroneBaseActor* DroneToRemove)

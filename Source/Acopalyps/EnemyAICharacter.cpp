@@ -76,7 +76,10 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		OnDeath();
 		RagDoll();
 		if(Manager)
+		{
 			Manager->RemoveEnemy(this);
+			Manager->StartCombatMode();
+		}
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}

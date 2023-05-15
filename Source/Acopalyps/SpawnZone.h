@@ -29,7 +29,7 @@ public:
 
 	ACombatManager* CombatManager = nullptr;
 
-	void HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn);
+	void HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn, double Delay);
 
 	UPROPERTY(EditAnywhere)
 	int SpawnZoneID;
