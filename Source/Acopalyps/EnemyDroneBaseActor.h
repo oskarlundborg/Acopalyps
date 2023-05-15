@@ -233,7 +233,7 @@ private:
 	void PrepareForAttack();
 	
 	/** Runs when PrepareForAttack is done, starts drones unique attack pattern*/
-	void Attack();
+	virtual void Attack();
 
 	/** Runs after attack, to get a new target position */
 	void Retreat();
