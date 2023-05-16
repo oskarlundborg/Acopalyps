@@ -193,7 +193,7 @@ public:
 	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
 	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun};
 	/** Equiped Ammo Type */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType = Explosive;
