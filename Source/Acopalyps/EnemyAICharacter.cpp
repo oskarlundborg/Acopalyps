@@ -102,7 +102,7 @@ void AEnemyAICharacter::Shoot()
 	if(CurrentMag <= 0) Gun->Reload();
 	FireEnemyTriggerEvent();
 	Cast<AEnemyAIController>(GetController())->SetAim();
-	Gun->Fire(Regular);
+	Gun->Fire(Rapid);
 	FireEnemyTriggerEvent();
 }
 float AEnemyAICharacter::GetHealthPercent() const
