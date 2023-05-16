@@ -63,14 +63,19 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 	UPROPERTY(EditAnywhere)
-	float InitialSpeed = 600.f;
+	float InitialSpeed = 550.f;
 
 	UPROPERTY(EditAnywhere)
-	float AttackSpeed = 800.f;
+	float AttackSpeed = 1000.f;
 
 	UPROPERTY(EditAnywhere)
 	bool DebugAssist = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TargetSpeed = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CurrentSpeed = 0;
 
 protected:
 	// Called when the game starts or when spawned
@@ -85,6 +90,7 @@ private:
 	
 	bool bAttack;
 	bool bIdle;
+	bool bIsDead;
 	
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
@@ -108,9 +114,6 @@ private:
 	/** Player character location and rotation*/
 	FVector PlayerLocation;
 	FRotator PlayerRotation;
-	
-	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess = true))
-	float CurrentSpeed = 0;
 
 	/** Defines how far above colliding object drone moves to avoid collision*/
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess = true))
@@ -122,11 +125,11 @@ private:
 	
 	/** Define the min height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float MinHeightAbovePlayer = 300.0f;
+	float MinHeightAbovePlayer = 0.f;
 
 	/** Define the max height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float MaxHeightAbovePlayer = 500.0f; 
+	float MaxHeightAbovePlayer = 300.0f; 
 
 	/** Define the min and max distance of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -159,23 +162,23 @@ private:
 
 	/** Time delay before attack */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double AttackDelay = 1.2f;
+	double AttackDelay = 1.7f;
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double RetreatDelay = 1.f;
+	double RetreatDelay = 1.1f;
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double ResumeDelay = 1.2f;
-
-	/** Time delay before saving home location*/
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double SaveHomeDelay = 1.2f;
+	double ResumeDelay = 1.5f;
 
 	/** Time delay before setting initial speed*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double ResumeSpeedDelay = 1.f;
+	double ResumeSpeedDelay = 2.f;
+
+	/** Time delay before destroying drone*/
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	double DestructionDelay = 2.f;
 
 	/* Looping timer handles*/
 	FTimerHandle UpdateEngagedLocationTimerHandle;
@@ -190,6 +193,7 @@ private:
 	FTimerHandle RetreatTimerHandle;
 	FTimerHandle ResumeTimerHandle;
 	FTimerHandle ResumeSpeedHandle;
+	FTimerHandle DestructionTimerHandle;
 	
 	/** Closest colliding object between drone and target location*/
 	FHitResult SweepHitResult;
@@ -231,7 +235,7 @@ private:
 	void PrepareForAttack();
 	
 	/** Runs when PrepareForAttack is done, starts drones unique attack pattern*/
-	void Attack();
+	virtual void Attack();
 
 	/** Runs after attack, to get a new target position */
 	void Retreat();
@@ -241,6 +245,12 @@ private:
 
 	/** Sets drone speed to initial speed*/
 	void ResumeInitialSpeed();
+
+	/** Runs when drone dies*/
+	void DoDeath(); //tror att OnDeath är överskuggat nånstans, därav namnet
+
+	/** Destroys drone after a some time*/
+	void DestroyDrone();
 };
 
 

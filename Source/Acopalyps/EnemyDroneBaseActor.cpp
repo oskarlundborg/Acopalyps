@@ -55,7 +55,7 @@ void AEnemyDroneBaseActor::BeginPlay()
 	// Binding function to start of overlap with player
 	SphereColliderComponent->OnComponentBeginOverlap.AddDynamic(this, &AEnemyDroneBaseActor::OnOverlapBegin);
 	
-	CurrentSpeed = InitialSpeed;
+	TargetSpeed = InitialSpeed;
 
 	GenerateNewRelativePosition();
 	
@@ -74,9 +74,13 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	PlayerLocation = PlayerCharacter->GetActorLocation();
+	PlayerLocation.Z += 80.f;
 	PlayerRotation = PlayerCharacter->GetActorRotation();
 
-	MoveTowardsLocation(DeltaTime);
+	if (!bIsDead)
+	{
+		MoveTowardsLocation(DeltaTime);
+	}
 }
 
 /** Moves actor towards a location */
@@ -86,9 +90,11 @@ void AEnemyDroneBaseActor::MoveTowardsLocation(float DeltaTime)
 
 	AdjustMovementForCollision();
 
+	CurrentSpeed = FMath::Lerp(CurrentSpeed, TargetSpeed, 0.1);
+
 	// Rotation
 	const FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerLocation);
-	SetActorRotation(NewRotation + FRotator(0, -90, 0));
+	SetActorRotation(FRotator(0, NewRotation.Yaw -90, 0));
 	
 	//Direction = EngagedLocation - GetActorLocation();
 	Direction = CurrentTargetLocation - GetActorLocation();
@@ -109,22 +115,19 @@ void AEnemyDroneBaseActor::UpdateCurrentObjective()
 	if (bIdle && !bAttack)
 	{
 		CalculateEngagedLocation();
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CurrentTargetLocation = EngagedLocation"));
-
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("CurrentTargetLocation = EngagedLocation" )));
 		CurrentTargetLocation = EngagedLocation;
 		
 	}
 	else if (!bIdle && bAttack)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CurrentTargetLocation = PlayerLocation"));
-
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("CurrentTargetLocation = PlayerLocation" )));
 		CurrentTargetLocation = PlayerLocation;
 	}
 	else if (!bIdle && !bAttack)
 	{
 		CalculateEngagedLocation();
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CurrentTargetLocation = EngagedLocation"));
-
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("CurrentTargetLocation = EngagedLocation" )));
 		CurrentTargetLocation = EngagedLocation;
 	}
 }
@@ -150,7 +153,7 @@ void AEnemyDroneBaseActor::CalculateEngagedLocation()
 	while (IsTargetLocationValid(NewLocation) && Counter <=10);
 	
 	EngagedLocation = NewLocation;
-	DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Black, false,0.2f);
+	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Black, false,0.2f);
 }
 
 void AEnemyDroneBaseActor::GenerateNewRelativePosition()
@@ -264,7 +267,6 @@ void AEnemyDroneBaseActor::PrepareForAttack()
 	OnPrepareForAttackEvent();
 	bIdle = false;
 	CurrentSpeed = 0.1f;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("PrepareForAttack"));
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyDroneBaseActor::Attack, 0.1f, false, AttackDelay);
 }
 
@@ -272,9 +274,8 @@ void AEnemyDroneBaseActor::PrepareForAttack()
 void AEnemyDroneBaseActor::Attack()
 {
 	OnAttackEvent();
-	CurrentSpeed = AttackSpeed;
+	TargetSpeed = AttackSpeed;
 	bAttack = true;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Attack"));
 	GetWorldTimerManager().SetTimer(RetreatTimerHandle, this, &AEnemyDroneBaseActor::Retreat, 0.1f, false, RetreatDelay);
 }
 
@@ -282,22 +283,41 @@ void AEnemyDroneBaseActor::Attack()
 void AEnemyDroneBaseActor::Retreat()
 {
 	OnRetreatEvent();
-	CurrentSpeed = InitialSpeed;
+	TargetSpeed = InitialSpeed;
 	bIdle = false;
 	bAttack = false;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Retreat"));
 	GetWorldTimerManager().SetTimer(ResumeTimerHandle, this, &AEnemyDroneBaseActor::Resume, 0.1f, false, ResumeDelay);
 }
 
 void AEnemyDroneBaseActor::Resume()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Resume"));
 	bIdle = true;
 }
 
 void AEnemyDroneBaseActor::ResumeInitialSpeed()
 {
-	CurrentSpeed = InitialSpeed;
+	TargetSpeed = InitialSpeed;
+}
+
+void AEnemyDroneBaseActor::DoDeath()
+{
+	OnDeathEvent();
+	TargetSpeed = 0.02f;
+	//SphereColliderComponent->SetCollisionProfileName("Ragdoll");
+	SphereColliderComponent->SetSimulatePhysics(true);
+	SphereColliderComponent->SetEnableGravity(true);
+	DroneMesh->SetSimulatePhysics(true);
+	DroneMesh->SetEnableGravity(true);
+	GetWorldTimerManager().ClearTimer(UpdateCurrentObjectiveTimerHandle);
+	GetWorldTimerManager().ClearTimer(CheckAttackBoundsTimerHandle);
+	bIsDead = true;
+	if(CombatManager) CombatManager->RemoveDrone(this);
+	GetWorldTimerManager().SetTimer(DestructionTimerHandle, this, &AEnemyDroneBaseActor::DestroyDrone, 0.1f, false, DestructionDelay);
+}
+
+void AEnemyDroneBaseActor::DestroyDrone()
+{
+	Destroy();
 }
 
 /** Checks if drone location is in range to initiate attack*/
@@ -315,14 +335,6 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		}
-		/*
-		AProjectile* Projectile = Cast<AProjectile>(OtherActor);
-		if (Projectile)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Hit with projectile")));
-
-		}
-		*/
 	}
 }
 
@@ -344,11 +356,14 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 
+	TargetSpeed = 0.02f;
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Drone stoppped")));
+	GetWorldTimerManager().SetTimer(ResumeSpeedHandle, this, &AEnemyDroneBaseActor::ResumeInitialSpeed, 0.1f, false, ResumeSpeedDelay);
+
+	
 	if(IsDead())
 	{
-		OnDeathEvent();
-		//CombatManager->RemoveDrone(this);
-		Destroy();
+		DoDeath();
 	}
 	return DamageApplied;
 }
