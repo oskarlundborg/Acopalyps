@@ -298,9 +298,10 @@ void AEnemyDroneBaseActor::DoDeath()
 {
 	OnDeathEvent();
 	TargetSpeed = 0.02f;
-	//SphereColliderComponent->SetCollisionProfileName("Ragdoll");
+	SphereColliderComponent->SetCollisionProfileName("Ragdoll");
 	SphereColliderComponent->SetSimulatePhysics(true);
 	SphereColliderComponent->SetEnableGravity(true);
+	DroneMesh->SetCollisionProfileName("Ragdoll");
 	DroneMesh->SetSimulatePhysics(true);
 	DroneMesh->SetEnableGravity(true);
 	GetWorldTimerManager().ClearTimer(UpdateCurrentObjectiveTimerHandle);
