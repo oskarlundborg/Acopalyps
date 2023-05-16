@@ -3,10 +3,12 @@
 
 #include "BTTask_MoveToAndShoot.h"
 
+#include "EnemyAIController.h"
 #include "EnemyDroneBaseActor.h"
 #include "MathUtil.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "EnemyAICharacter.h"
 
 UBTTask_MoveToAndShoot::UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -17,36 +19,33 @@ UBTTask_MoveToAndShoot::UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectI
 	// typedefa filters o assigna senFilterClass
 }
 
-EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8* NodeMemory)
 {
-	EBTNodeResult::Type SuperResult =Super::ExecuteTask(OwnerComp, NodeMemory);
+	EBTNodeResult::Type SuperResult = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	EnemyActor = Cast<AActor>(&OwnerComp);
-
-	if (!EnemyActor) { return EBTNodeResult::Failed; }
+	EnemyController = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	if (!EnemyController)
+	{
+		return EBTNodeResult::Failed;
+	}
 	
 	if (SuperResult != EBTNodeResult::InProgress)
 	{
-		EnemyActor->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+		EnemyController->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
 	}
 
-	if (!EnemyActor->GetWorldTimerManager().IsTimerActive(ShootTimerHandle))
+	if (!EnemyController->GetWorldTimerManager().IsTimerActive(ShootTimerHandle))
 	{
 		ShootingDuration = FMath::RandRange(AcceptableShootDurationMin, AcceptableShootDurationMax);
-		EnemyActor->GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &UBTTask_MoveToAndShoot::Shoot, ShootingDuration, true, 0.1f); 
+		EnemyController->GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &UBTTask_MoveToAndShoot::Shoot, ShootingDuration, true, 0.1f); 
 	}
 	
 	return SuperResult;
 }
 
-void UBTTask_MoveToAndShoot::Shoot()
+void UBTTask_MoveToAndShoot::Shoot() const
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Shooting from new task")));
+	Cast<AEnemyAICharacter>(EnemyController->GetPawn())->Shoot();
 }
 
-/*
-void UBTTask_MoveToAndShoot::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
-}
-*/
+
