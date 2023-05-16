@@ -13,11 +13,14 @@ UCLASS()
 class ACOPALYPS_API UBTTask_Shoot : public UBTTaskNode
 {
 	GENERATED_BODY()
+	
 
 public:
 	UBTTask_Shoot();
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &ownerComp, uint8 *nodeMemory) override;
-	
+
+
+
 };
