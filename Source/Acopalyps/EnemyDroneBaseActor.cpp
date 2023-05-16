@@ -5,13 +5,8 @@
 
 
 #include "AcopalypsCharacter.h"
-#include "AcopalypsProjectile.h"
-#include "FileCache.h"
 #include "HealthComponent.h"
-#include "VectorTypes.h"
-#include "Camera/CameraComponent.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
