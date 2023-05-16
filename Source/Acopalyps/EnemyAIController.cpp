@@ -2,16 +2,11 @@
 
 #include "EnemyAIController.h"
 #include "AcopalypsCharacter.h"
-#include "EditorClassUtils.h"
-#include "NavigationSystem.h"
-#include "NavFilters/NavigationQueryFilter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "EnvironmentQuery/EnvQueryTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "ProfilingDebugging/CookStats.h"
 
 void AEnemyAIController::BeginPlay()
 {

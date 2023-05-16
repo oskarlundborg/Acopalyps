@@ -5,6 +5,7 @@
 
 #include "AcopalypsCharacter.h"
 #include "AIController.h"
+#include "CoverPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.h"
@@ -53,9 +54,19 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 				if (OwnerController->HitTraceAtPLayerSuccess())
 				{
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+				} else
+				{
+					ACoverPoint* Cover = Cast<ACoverPoint>(OwnerController->GetBlackboardComponent()->GetValueAsObject("Cover"));
+					if(Cover)
+					{
+						OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Cover->HasLineOfSightToPlayer());
+					}
 				}
 			}
 		}
-		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
+		else
+		{
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
+		}
 	}
 }
