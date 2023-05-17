@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Containers/Queue.h"
+#include "Templates/Tuple.h"
 #include "CombatManager.generated.h"
 
 class ACombatTrigger;
@@ -80,6 +81,19 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
 	void StartCombatMode();
+
+	TTuple<TArray<AEnemyAICharacter*>, TArray<AEnemyDroneBaseActor*>> GetEnemyLists();
+	TArray<ASpawnZone*> GetSpawnZones();
+	TArray<ACombatTrigger*> GetCombatTriggers();
+	TArray<FCombatWave> GetCombatWaves();
+	
+	void SetInstance(
+		TArray<AEnemyAICharacter*> InEnemies,
+		TArray<AEnemyDroneBaseActor*> InDrones,
+		TArray<ASpawnZone*> InSpawnZones,
+		TArray<ACombatTrigger*> InCombatTriggers,
+		TArray<FCombatWave> InCombatWaves
+		);
 
 private:
 
