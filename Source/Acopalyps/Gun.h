@@ -176,6 +176,12 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReloadTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SwapRegularAmmoTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SwapAlternateAmmoTriggerEvent();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCanFire(AMMO_TYPES AmmoType);

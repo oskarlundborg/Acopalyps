@@ -158,6 +158,7 @@ void AAcopalypsCharacter::SlowDownTime()
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
 	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, SlideTime, false);
 	CustomTimeDilation = 1.6f;
+	Gun->CustomTimeDilation = 1.6f;
 }
 
 void AAcopalypsCharacter::ResumeTime()
@@ -165,6 +166,7 @@ void AAcopalypsCharacter::ResumeTime()
 	GEngine->AddOnScreenDebugMessage(-1,6,FColor::Cyan, "Time is no longer slowed");
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 	CustomTimeDilation = 1.f;
+	Gun->CustomTimeDilation = 1.f;
 	ResumeTimeTriggerEvent();
 }
 

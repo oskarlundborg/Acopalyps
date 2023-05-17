@@ -254,11 +254,13 @@ FRotator AGun::RandomRotator(float Pitch, float Yaw, float Roll, float Interval)
 
 void AGun::SetPrimaryAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
+	SwapRegularAmmoTriggerEvent();
 	CurrentAmmoType = AmmoType;
 }
 
 void AGun::SetAlternateAmmoType(TEnumAsByte<AMMO_TYPES> AmmoType)
 {
+	SwapAlternateAmmoTriggerEvent();
 	CurrentAlternateAmmoType = AmmoType;
 }
 
