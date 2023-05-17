@@ -131,9 +131,9 @@ void AAcopalypsCharacter::Respawn()
 	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
 	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
 	HealthComponent->RefillHealth();
-	SetActorLocation(SpawnPosition);
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
+	Load();
 	SpawnTriggerEvent();
 }
 
@@ -226,7 +226,7 @@ void AAcopalypsCharacter::StartSlide()
 				);
 		}
 	}
-	GetWorldTimerManager().SetTimer(SlideHandle, this, &AAcopalypsCharacter::EndSlide, .6f, false);
+	GetWorldTimerManager().SetTimer(SlideHandle, this, &AAcopalypsCharacter::EndSlide, 1.2f, false);
 }
 
 void AAcopalypsCharacter::EndSlide()

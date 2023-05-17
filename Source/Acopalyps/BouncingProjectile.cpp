@@ -23,7 +23,8 @@ void ABouncingProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	}
 	if(Bounces==0)
 	{
-		Destroy();
+		ProjectileMovement->bShouldBounce=false;
+		SetLifeSpan(0.5);
 	}
 	Bounces--;
 }
