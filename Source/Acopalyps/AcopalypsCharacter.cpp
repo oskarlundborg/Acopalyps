@@ -131,9 +131,9 @@ void AAcopalypsCharacter::Respawn()
 	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
 	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
 	HealthComponent->RefillHealth();
-	SetActorLocation(SpawnPosition);
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
+	Load();
 	SpawnTriggerEvent();
 }
 
@@ -156,14 +156,17 @@ void AAcopalypsCharacter::SlowDownTime()
 {
 	SlowTimeTriggerEvent();
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
-	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, 2.f, false);
+	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, SlideTime, false);
 	CustomTimeDilation = 1.6f;
+	Gun->CustomTimeDilation = 1.6f;
 }
 
 void AAcopalypsCharacter::ResumeTime()
 {
+	GEngine->AddOnScreenDebugMessage(-1,6,FColor::Cyan, "Time is no longer slowed");
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 	CustomTimeDilation = 1.f;
+	Gun->CustomTimeDilation = 1.f;
 	ResumeTimeTriggerEvent();
 }
 
@@ -207,7 +210,9 @@ void AAcopalypsCharacter::StartSlide()
 {
 	bIsSliding = true;
 	SlideTriggerEvent();
-	CharacterMovementComponent->GroundFriction = 0.f;
+	CharacterMovementComponent->BrakingFrictionFactor = 0.075f;
+	CharacterMovementComponent->BrakingDecelerationWalking = 0.f;
+	Controller->SetIgnoreMoveInput(true);
 	if(  CharacterMovementComponent->IsMovingOnGround() )
 	{
 		if( CharacterMovementComponent->GetAnalogInputModifier() == 0 )
@@ -220,23 +225,27 @@ void AAcopalypsCharacter::StartSlide()
 		} else
 		{
 			LaunchCharacter(
-				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength * 1.4,
+				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength * 1.3,
 				true,
 				false
 				);
 		}
 	}
-	GetWorldTimerManager().SetTimer(SlideHandle, this, &AAcopalypsCharacter::EndSlide, .6f, false);
+	SlowDownTime();
+	GetWorldTimerManager().SetTimer(SlideHandle, this, &AAcopalypsCharacter::EndSlide, SlideTime, false);
 }
 
 void AAcopalypsCharacter::EndSlide()
 {
 	bIsSliding = false;
-	CharacterMovementComponent->GroundFriction = 2.f;
+	CharacterMovementComponent->BrakingFrictionFactor = 2.f;
+	CharacterMovementComponent->BrakingDecelerationWalking = 2048.f;
+	Controller->SetIgnoreMoveInput(false);
 	if( bRequestStopCrouching )
 	{
 		EndCrouch();
 	}
+	GEngine->AddOnScreenDebugMessage(-1,6,FColor::Cyan, "Slide Over");
 }
 
 void AAcopalypsCharacter::Jump()
