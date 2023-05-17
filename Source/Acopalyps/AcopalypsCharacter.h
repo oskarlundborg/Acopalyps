@@ -213,7 +213,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
 	float SlideStrength = 900.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
-	float SlideTime = .2f;
+	float SlideTime = 1.2f;
 	UPROPERTY()
 	FTimerHandle SlideHandle;
 	
