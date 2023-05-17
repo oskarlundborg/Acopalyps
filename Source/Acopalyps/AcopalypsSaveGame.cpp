@@ -216,7 +216,7 @@ void UAcopalypsSaveGame::DestroySceneActors(TArray<AActor*>& Actors)
 		{
 			Actor->Destroy();
 		}
-		else if( ClassesToDelete.Find(Actor->GetClass()) != INDEX_NONE && Actor->Owner.GetClass() != PlayerClass )
+		else if( ClassesToUnload.Find(Actor->GetClass()) != INDEX_NONE && Actor->Owner.GetClass() != PlayerClass )
 		{
 			Actor->Destroy();
 		}

@@ -39,6 +39,14 @@ struct FActorInstance
 	UStaticMeshComponent* MeshComp;
 };
 
+USTRUCT()
+struct FCombatManagerInstance 
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+};
+
 /**
  * 
  */
@@ -85,9 +93,11 @@ public:
 	TSubclassOf<AActor> ResupplyStationClass;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AActor> AmmoPickupClass;
+	UPROPERTY(EditDefaultsOnly, Category="Classes")
+	TSubclassOf<AActor> CombatManagerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TArray<TSubclassOf<AActor>> ClassesToDelete;
+	TArray<TSubclassOf<AActor>> ClassesToUnload;
 	
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
