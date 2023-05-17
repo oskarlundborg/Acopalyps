@@ -9,43 +9,38 @@
 /**
  * 
  */
-UCLASS(config = Game)
+UCLASS(Config = Game)
 class ACOPALYPS_API UBTTask_MoveToAndShoot : public UBTTask_MoveTo
 {
 	GENERATED_BODY()
 
-
-
 public:
 	UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectInitializer);
 
-	/** Acceptable radius to player before task is finished*/
-	UPROPERTY( Category = Node, EditAnywhere, meta=(ClampMin = "0.0"))
-	float AcceptableRadiusMin = 5.f;
+	/** Acceptable minimal radius to player before task is finished*/
+	UPROPERTY(Config, Category = Node, EditAnywhere, meta=(ClampMin = "0.0"))
+	float AcceptableRadiusMin = 1700.f;
 
-	UPROPERTY(Category = Node, EditAnywhere, meta=(ClampMin = "0.0"))
-	float AcceptableRadiusMax = 20.f;
+	/** Acceptable maximal radius to player before task is finished*/
+	UPROPERTY(Config, Category = Node, EditAnywhere, meta=(ClampMin = "0.0"))
+	float AcceptableRadiusMax = 2000.f;
 
-	UPROPERTY(Category = Shooting, EditAnywhere, meta=(ClampMin = "0.0"))
-	float AcceptableShootDurationMin = 0.3f;
+	/** Acceptable minimal time before shooting*/
+	UPROPERTY(Config, Category = Shooting, EditAnywhere, meta=(ClampMin = "0.0"))
+	float AcceptableShootDurationMin = 0.5f;
 
-	UPROPERTY(Category = Shooting, EditAnywhere, meta=(ClampMin = "0.0"))
-	float AcceptableShootDurationMax = 2.f;
+	/** Acceptable maximal time before shooting*/
+	UPROPERTY(Config, Category = Shooting, EditAnywhere, meta=(ClampMin = "0.0"))
+	float AcceptableShootDurationMax = 1.f;
 	
-	//UPROPERTY(Category=Node, EditAnywhere)
-	//class TSubclassOf<class UNavigationQueryFilter> FilterClass;
-
-	UPROPERTY(Category=BlackBoard, EditAnywhere)
-	FBlackboardKeySelector Key;
-	
-	//virtual FName GetNodeIconName() const override;
+	/** Timer for shooting method*/
 	FTimerHandle ShootTimerHandle;
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &ownerComp, uint8 *nodeMemory);
 
 	/** Shoots at player for a random amount of time before continuing running*/
-	void Shoot() const;
+	void Shoot();
 
 private:
 	/** Time interval between shooting executed*/
