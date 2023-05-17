@@ -9,14 +9,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "EnemyAICharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 UBTTask_MoveToAndShoot::UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	NodeName = TEXT("MoveAndShoot");
-
-	AcceptableRadius = UKismetMathLibrary::RandomFloatInRange(AcceptableRadiusMin, AcceptableRadiusMax);
 	
-	// typedefa filters o assigna senFilterClass
+	AcceptableRadius = UKismetMathLibrary::RandomFloatInRange(AcceptableRadiusMin, AcceptableRadiusMax);
 }
 
 EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8* NodeMemory)
@@ -37,15 +36,20 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &
 	if (!EnemyController->GetWorldTimerManager().IsTimerActive(ShootTimerHandle))
 	{
 		ShootingDuration = FMath::RandRange(AcceptableShootDurationMin, AcceptableShootDurationMax);
-		EnemyController->GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &UBTTask_MoveToAndShoot::Shoot, ShootingDuration, true, 0.1f); 
+		EnemyController->GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &UBTTask_MoveToAndShoot::Shoot, 0.1f, false, ShootingDuration); 
 	}
 	
 	return SuperResult;
 }
 
-void UBTTask_MoveToAndShoot::Shoot() const
+void UBTTask_MoveToAndShoot::Shoot() 
 {
-	Cast<AEnemyAICharacter>(EnemyController->GetPawn())->Shoot();
+	if (EnemyController && EnemyController->LineOfSightTo(UGameplayStatics::GetPlayerCharacter(this, 0)))
+	{
+		Cast<AEnemyAICharacter>(EnemyController->GetPawn())->Shoot();
+	}
+	EnemyController->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
+
 }
 
 
