@@ -12,27 +12,17 @@ class AProjectile;
 class AStaticMeshActor;
 class AAcopalypsCharacter;
 class AEnemyAICharacter;
-
+class ASpawnZone;
+class ASpawnPoint;
+class ACombatTrigger;
+class ACombatManager;
+struct FCombatWave;
 
 USTRUCT()
-struct FActorInstance
+struct FMeshData
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category=ActorInfo)
-	TSubclassOf<AActor> Class;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	FTransform Transform;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	FRotator Rotation;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	FVector Velocity;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	bool bIsDead;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	float Health;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	int32 GunMag;
+	
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	UStaticMesh* Mesh;
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
@@ -40,11 +30,84 @@ struct FActorInstance
 };
 
 USTRUCT()
-struct FCombatManagerInstance 
+struct FCombatManagerData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
+	TArray<AEnemyAICharacter*> ManagedEnemies;
+	UPROPERTY(VisibleAnywhere)
+	TArray<AEnemyDroneBaseActor*> ManagedDrones;
+	UPROPERTY(VisibleAnywhere)
+	TArray<ASpawnZone*> SpawnZones;
+	UPROPERTY(VisibleAnywhere)
+	TArray<ACombatTrigger*> CombatTriggers;
+	UPROPERTY(EditAnywhere)
+	TArray<FCombatWave> CombatWaves;
+	TQueue<FCombatWave> WavesQueue;
+};
+
+USTRUCT()
+struct FPlayerData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
+	FRotator CameraRotation;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
+	float Health;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	int32 GunMag;
+};
+
+USTRUCT()
+struct FEnemyData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
+	float Health;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	int32 GunMag;
+};
+
+USTRUCT()
+struct FDroneData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
+	float Health;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UStaticMeshComponent* MeshComp;
+};
+
+USTRUCT()
+struct FInstance
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<AActor> Class;
+	UPROPERTY(VisibleAnywhere)
+	FTransform Transform;
+	
+	UPROPERTY(VisibleAnywhere)
+	FPlayerData PlayerData;
+	UPROPERTY(VisibleAnywhere)
+	FEnemyData EnemyData;
+	UPROPERTY(VisibleAnywhere)
+	FDroneData DroneData;
+	UPROPERTY(VisibleAnywhere)
+	FMeshData MeshData;
+	UPROPERTY(VisibleAnywhere)
+	FCombatManagerData CombatManagerData;
 };
 
 /**
@@ -74,14 +137,10 @@ public:
 	FName WorldName;
 	
 	// Player Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	FActorInstance PlayerInstance;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AAcopalypsCharacter> PlayerClass;
 
 	// Enemies In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FActorInstance> EnemiesInWorld;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AEnemyAICharacter> EnemyClass;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
