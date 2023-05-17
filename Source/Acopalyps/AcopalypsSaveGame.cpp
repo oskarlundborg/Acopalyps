@@ -5,14 +5,15 @@
 
 #include "LevelSpawner.h"
 #include "AcopalypsCharacter.h"
+#include "ConstraintsManager.h"
 #include "EnemyAICharacter.h"
 #include "EnemyAIController.h"
 #include "EnemyDroneBaseActor.h"
 #include "LevelStreamerSubsystem.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "Engine/StaticMeshActor.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Misc/TypeContainer.h"
 
 class ULevelStreamerSubsystem;
 
@@ -44,8 +45,9 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= Player->GetTransform(),
-				.PlayerData	= FPlayerData {
+				.PlayerData	= {
                 	.CameraRotation	= Player->GetController()->GetControlRotation(),
+					.Velocity		= Player->GetVelocity(),
                 	.bIsDead		= Player->HealthComponent->IsDead(),
                 	.Health			= Player->HealthComponent->GetHealth(),
                 	.GunMag			= Player->Gun->CurrentMag,
@@ -59,7 +61,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= Enemy->GetTransform(),
-				.EnemyData	= FEnemyData {
+				.EnemyData	= {
             		.bIsDead	= Enemy->HealthComponent->IsDead(),
             		.Health		= Enemy->HealthComponent->GetHealth(),
             		.GunMag		= Enemy->Gun->CurrentMag,
@@ -72,10 +74,10 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= Drone->GetTransform(),
-				.DroneData	= FDroneData {
-            		.bIsDead		= Drone->HealthComponent->IsDead(),
-            		.Health			= Drone->HealthComponent->GetHealth(),
-            		.MeshComp		= Drone->DroneMesh,
+				.DroneData	= {
+            		.bIsDead	= Drone->HealthComponent->IsDead(),
+            		.Health		= Drone->HealthComponent->GetHealth(),
+            		.MeshComp	= Drone->DroneMesh,
 				},
 			});
 		}
@@ -86,8 +88,24 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= StaticMeshActor->GetActorTransform(),
-				.MeshData	= FMeshData {
-					.Mesh	= StaticMeshActor->GetStaticMeshComponent()->GetStaticMesh(),
+				.MeshData	= {
+					.Mesh		= StaticMeshActor->GetStaticMeshComponent()->GetStaticMesh(),
+				},
+			});
+		}
+		else if( ActorClass == CombatManagerClass )
+		{
+			ACombatManager* CombatManager = Cast<ACombatManager>(Actor);
+			TTuple<TArray<AEnemyAICharacter*>, TArray<AEnemyDroneBaseActor*>> EnemyList = CombatManager->GetEnemyLists();
+			InstancesInWorld.Add({
+				.Class				= ActorClass,
+				.Transform			= CombatManager->GetTransform(),
+				.CombatManagerData	= {
+					.ManagedEnemies = EnemyList.Get<0>(),
+					.ManagedDrones	= EnemyList.Get<1>(),
+					.SpawnZones		= CombatManager->GetSpawnZones(),
+					.CombatTriggers = CombatManager->GetCombatTriggers(),
+					.CombatWaves	= CombatManager->GetCombatWaves(),
 				},
 			});
 		}
@@ -130,19 +148,20 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 		// Set player data.
 		if( Instance.Class == PlayerClass )
 		{
-			if( Instance.PlayerData.bIsDead ) continue;
-			
+			if( Instance.PlayerData.bIsDead ) break;
+		
 			AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(World->GetFirstPlayerController()->GetCharacter());
 			Player->SetActorTransform(Instance.Transform);
+			Player->GetMovementComponent()->Velocity = Instance.PlayerData.Velocity;
 			Player->GetController()->SetControlRotation(Instance.PlayerData.CameraRotation);
 			Player->HealthComponent->SetHealth(Instance.PlayerData.Health);
 			Player->Gun->CurrentMag = Instance.PlayerData.GunMag;
 		}
-		// If actor is enemy, set specific data
-		if( Instance.Class == EnemyClass )
+		else if( Instance.Class == EnemyClass )
 		{
-			if( Instance.EnemyData.bIsDead ) continue;
-			
+			// If actor is enemy, set specific data
+			if( Instance.EnemyData.bIsDead ) break;
+		
 			const AEnemyAICharacter* Enemy = World->SpawnActor<AEnemyAICharacter>(
 				Instance.Class,
 				Instance.Transform.GetLocation(),
@@ -153,8 +172,8 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 		}
 		else if( Instance.Class == EnemyDroneClass )
 		{
-			if( Instance.DroneData.bIsDead ) continue;
-			
+			if( Instance.DroneData.bIsDead ) break;
+
 			AEnemyDroneBaseActor* Drone = World->SpawnActor<AEnemyDroneBaseActor>(
 				Instance.Class,
 				Instance.Transform.GetLocation(),
@@ -175,6 +194,22 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 			StaticMesh->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
 			StaticMesh->GetStaticMeshComponent()->SetRelativeTransform(Instance.Transform);
 			StaticMesh->GetStaticMeshComponent()->SetSimulatePhysics(true);
+		}
+		else if( Instance.Class == CombatManagerClass )
+		{
+			ACombatManager* CombatManager = World->SpawnActor<ACombatManager>(
+				Instance.Class,
+				Instance.Transform.GetLocation(),
+				Instance.Transform.Rotator()
+				);
+			FCombatManagerData Data = Instance.CombatManagerData;
+			CombatManager->SetInstance(
+				Instance.CombatManagerData.ManagedEnemies,
+				Instance.CombatManagerData.ManagedDrones,
+				Instance.CombatManagerData.SpawnZones,
+				Instance.CombatManagerData.CombatTriggers,
+				Instance.CombatManagerData.CombatWaves
+				);
 		}
 	}
 	

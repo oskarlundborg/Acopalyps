@@ -42,9 +42,8 @@ struct FCombatManagerData
 	TArray<ASpawnZone*> SpawnZones;
 	UPROPERTY(VisibleAnywhere)
 	TArray<ACombatTrigger*> CombatTriggers;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	TArray<FCombatWave> CombatWaves;
-	TQueue<FCombatWave> WavesQueue;
 };
 
 USTRUCT()
@@ -54,11 +53,13 @@ struct FPlayerData
 	
 	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
 	FRotator CameraRotation;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
+	FVector Velocity;
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
 	bool bIsDead;
 	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
 	float Health;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
 	int32 GunMag;
 };
 
