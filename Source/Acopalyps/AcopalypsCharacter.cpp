@@ -163,7 +163,6 @@ void AAcopalypsCharacter::SlowDownTime()
 
 void AAcopalypsCharacter::ResumeTime()
 {
-	GEngine->AddOnScreenDebugMessage(-1,6,FColor::Cyan, "Time is no longer slowed");
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 	CustomTimeDilation = 1.f;
 	Gun->CustomTimeDilation = 1.f;
@@ -245,7 +244,6 @@ void AAcopalypsCharacter::EndSlide()
 	{
 		EndCrouch();
 	}
-	GEngine->AddOnScreenDebugMessage(-1,6,FColor::Cyan, "Slide Over");
 }
 
 void AAcopalypsCharacter::Jump()
