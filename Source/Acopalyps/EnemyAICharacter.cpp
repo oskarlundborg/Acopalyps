@@ -8,6 +8,8 @@
 #include "EnemyAIController.h"
 #include "HealthComponent.h"
 #include "CombatManager.h"
+#include "CoverPoint.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -65,8 +67,10 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 	UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
-
-	
+	if(Manager)
+	{
+		Manager->StartCombatMode();
+	}
 	if(IsDead())
 	{
 		if (AAcopalypsPrototypeGameModeBase* PrototypeGameModeBase = GetWorld()->GetAuthGameMode<AAcopalypsPrototypeGameModeBase>())
@@ -75,10 +79,15 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		}
 		OnDeath();
 		RagDoll();
+		AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController());
+		if(Controller)
+		{
+			ACoverPoint* CoverPoint = Cast<ACoverPoint>(AIController->GetBlackboardComponent()->GetValueAsObject("Cover"));
+			if(CoverPoint) CoverPoint->bIsOccupied = false;
+		}
 		if(Manager)
 		{
 			Manager->RemoveEnemy(this);
-			Manager->StartCombatMode();
 		}
 		DetachFromControllerPendingDestroy();
 		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));

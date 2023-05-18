@@ -27,16 +27,16 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &
 	{
 		return EBTNodeResult::Failed;
 	}
-	
-	if (SuperResult != EBTNodeResult::InProgress)
-	{
-		EnemyController->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
-	}
 
 	if (!EnemyController->GetWorldTimerManager().IsTimerActive(ShootTimerHandle))
 	{
 		ShootingDuration = FMath::RandRange(AcceptableShootDurationMin, AcceptableShootDurationMax);
 		EnemyController->GetWorldTimerManager().SetTimer(ShootTimerHandle, this, &UBTTask_MoveToAndShoot::Shoot, 0.1f, false, ShootingDuration); 
+	}
+
+	if (SuperResult != EBTNodeResult::InProgress)
+	{
+		EnemyController->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
 	}
 	
 	return SuperResult;

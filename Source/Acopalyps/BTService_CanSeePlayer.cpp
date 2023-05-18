@@ -40,7 +40,7 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		StartLineOfSight = FVector(0, 0, 120);
 	}
 	
-	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn, EnemyAICharacter->GetActorLocation() + StartLineOfSight))
+	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn/*, EnemyAICharacter->GetActorLocation() + StartLineOfSight*/))
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
 	}
@@ -50,7 +50,7 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		{
 			AEnemyAIController* OwnerController = Cast<AEnemyAIController>(EnemyAICharacter->GetController());
 			if (OwnerController){
-			
+				/*
 				if (OwnerController->HitTraceAtPLayerSuccess())
 				{
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
@@ -61,6 +61,12 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 					{
 						OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Cover->HasLineOfSightToPlayer());
 					}
+				}
+				*/
+				ACoverPoint* Cover = Cast<ACoverPoint>(OwnerController->GetBlackboardComponent()->GetValueAsObject("Cover"));
+				if(Cover)
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Cover->HasLineOfSightToPlayer());
 				}
 			}
 		}
