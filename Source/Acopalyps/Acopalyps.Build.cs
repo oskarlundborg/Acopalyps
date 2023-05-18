@@ -11,5 +11,6 @@ public class Acopalyps : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "GameplayTasks", "UMG", "Niagara", "NavigationSystem" });
 
 		CppStandard = CppStandardVersion.Cpp20;
+		OptimizeCode = CodeOptimization.Always;
 	}
 }

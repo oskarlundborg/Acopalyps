@@ -6,9 +6,7 @@
 #include "AcopalypsCharacter.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
-#include "Dataflow/DataflowEdNode.h"
 #include "Engine/StaticMeshActor.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> Actors)
@@ -24,7 +22,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 		//UE_LOG(LogTemp, Display, TEXT("Actor Class: %s"), *Actor->GetClass()->GetName())
 		
 		// Save player specific data
-		if( ActorClass == PlayerClass )
+		if( ActorClass == AAcopalypsCharacter::StaticClass() )
 		{
 			const AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(Actor);
 			//InstancesInWorld.Add({
@@ -48,7 +46,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			Instances.Add(Tmp);
 		}
 		// Save enemy specific data
-		else if( ActorClass == EnemyClass )
+		else if( ActorClass == AEnemyAICharacter::StaticClass() )
 		{
 			const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
 			//InstancesInWorld.Add({
@@ -69,7 +67,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			};
 			Instances.Add(Tmp);
 		}
-		else if( ActorClass == EnemyDroneClass )
+		else if( ActorClass == AEnemyDroneBaseActor::StaticClass() )
 		{
 			const AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor);
 			//InstancesInWorld.Add({
@@ -91,7 +89,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			Instances.Add(Tmp);
 		}
 		// Save non static actors data
-		else if( ActorClass == StaticMeshClass && Actor->GetRootComponent() != nullptr && Actor->GetRootComponent()->IsSimulatingPhysics() && Actor->Owner == nullptr )
+		else if( ActorClass == AStaticMeshActor::StaticClass() && Actor->GetRootComponent() != nullptr && Actor->GetRootComponent()->IsSimulatingPhysics() && Actor->Owner == nullptr )
 		{
 			const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor);
 			//InstancesInWorld.Add({
@@ -110,7 +108,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			};
 			Instances.Add(Tmp);
 		}
-		else if( ActorClass == CombatManagerClass )
+		else if( ActorClass == ACombatManager::StaticClass() )
 		{
 			ACombatManager* CombatManager = Cast<ACombatManager>(Actor);
 			TTuple<TArray<AEnemyAICharacter*>, TArray<AEnemyDroneBaseActor*>> EnemyList = CombatManager->GetEnemyLists();
@@ -151,16 +149,16 @@ void UAcopalypsSaveGame::OnPostLoadLevel(const FString& InSlotName, const int32 
 
 void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors)
 {
-	FString Names = World->GetFName().ToString();
-	Names.Append(", ");
-	Names.Append(WorldName.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 6, FColor::Green, Names);
-	// Open the saved world if different
-	if( WorldName != World->GetFName() )
-	{
-		OnLoadLevelDelegate.BindUObject(this, &UAcopalypsSaveGame::OnPostLoadLevel);
-		UGameplayStatics::AsyncLoadGameFromSlot(FString("default"), 0, OnLoadLevelDelegate);
-	}
+	//FString Names = World->GetFName().ToString();
+	//Names.Append(", ");
+	//Names.Append(WorldName.ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 6, FColor::Green, Names);
+	//// Open the saved world if different
+	//if( WorldName != World->GetFName() )
+	//{
+	//	OnLoadLevelDelegate.BindUObject(this, &UAcopalypsSaveGame::OnPostLoadLevel);
+	//	UGameplayStatics::AsyncLoadGameFromSlot(FString("default"), 0, OnLoadLevelDelegate);
+	//}
 	
 	// Set for deletion.
 	DestroySceneActors(Actors);
@@ -252,18 +250,18 @@ void UAcopalypsSaveGame::DestroySceneActors(TArray<AActor*>& Actors)
 	{
 		if( !Actor || !Actor->IsValidLowLevel() || Actor->ActorHasTag("Player") ) continue;
 		
-		if( Actor->GetClass() == EnemyClass )
+		if( Actor->GetClass() == AEnemyAICharacter::StaticClass() )
 		{
 			AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
 			Enemy->Gun->Owner = nullptr;
 			Enemy->DetachFromControllerPendingDestroy();
 			Enemy->Destroy();
 		}
-		else if( Actor->GetClass() == StaticMeshClass && Actor->IsRootComponentMovable() )
+		else if( Actor->GetClass() == AStaticMeshActor::StaticClass() && Actor->IsRootComponentMovable() )
 		{
 			Actor->Destroy();
 		}
-		else if( ClassesToUnload.Find(Actor->GetClass()) != INDEX_NONE && Actor->Owner.GetClass() != PlayerClass )
+		else if( ClassesToUnload.Find(Actor->GetClass()) != INDEX_NONE && Actor->Owner.GetClass() != AAcopalypsCharacter::StaticClass() )
 		{
 			Actor->Destroy();
 		}

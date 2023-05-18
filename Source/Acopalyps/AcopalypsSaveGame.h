@@ -154,25 +154,6 @@ private:
 	// World Info
 	UPROPERTY(VisibleAnywhere, Category=World)
 	FName WorldName;
-	
-	// Player Info
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AAcopalypsCharacter> PlayerClass;
-
-	// Enemies In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyAICharacter> EnemyClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyDroneBaseActor> EnemyDroneClass;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AStaticMeshActor> StaticMeshClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> ResupplyStationClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> AmmoPickupClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> CombatManagerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TArray<TSubclassOf<AActor>> ClassesToUnload;
