@@ -109,8 +109,10 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Move);
 		//Crouching
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AAcopalypsCharacter::StartCrouch);
+		EnhancedInputComponent->BindAction<AAcopalypsCharacter, bool>(CrouchActionSlowMotion, ETriggerEvent::Started, this, &AAcopalypsCharacter::StartCrouch, true);
+		EnhancedInputComponent->BindAction<AAcopalypsCharacter, bool>(CrouchAction, ETriggerEvent::Started, this, &AAcopalypsCharacter::StartCrouch, false);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndCrouch);
+		EnhancedInputComponent->BindAction(CrouchActionSlowMotion, ETriggerEvent::Completed, this, &AAcopalypsCharacter::EndCrouch);
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Look);
 		//Slow Down Time
@@ -169,11 +171,11 @@ void AAcopalypsCharacter::ResumeTime()
 	ResumeTimeTriggerEvent();
 }
 
-void AAcopalypsCharacter::StartCrouch()
+void AAcopalypsCharacter::StartCrouch(bool SlowMotion)
 {
 	if( !bIsSliding )
 	{
-		StartSlide();
+		StartSlide(SlowMotion);
 	}
 	CrouchTriggerEvent();
 	bRequestStopCrouching = false;
@@ -205,7 +207,7 @@ void AAcopalypsCharacter::EndCrouch()
 	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
 }
 
-void AAcopalypsCharacter::StartSlide()
+void AAcopalypsCharacter::StartSlide(bool SlowMotion)
 {
 	bIsSliding = true;
 	SlideTriggerEvent();
@@ -230,7 +232,10 @@ void AAcopalypsCharacter::StartSlide()
 				);
 		}
 	}
-	SlowDownTime();
+	if(SlowMotion)
+	{
+		SlowDownTime();
+	}
 	GetWorldTimerManager().SetTimer(SlideHandle, this, &AAcopalypsCharacter::EndSlide, SlideTime, false);
 }
 
