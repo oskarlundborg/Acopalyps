@@ -4,7 +4,6 @@
 #include "AcopalypsSaveGame.h"
 
 #include "AcopalypsCharacter.h"
-#include "ConstraintsManager.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
 #include "Engine/StaticMeshActor.h"
@@ -98,12 +97,28 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game Saved!"));
 }
 
+void UAcopalypsSaveGame::OnPostLoadLevel(const FString& InSlotName, const int32 InUserIndex, USaveGame* InSaveData)
+{
+	if( GetWorld() != nullptr )
+	{
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(StaticClass()))->LoadGameInstance(GetWorld(), AllActors);
+	}
+};
+
+
 void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors)
 {
+	FString Names = World->GetFName().ToString();
+	Names.Append(", ");
+	Names.Append(WorldName.ToString());
+	GEngine->AddOnScreenDebugMessage(-1, 6, FColor::Green, Names);
 	// Open the saved world if different
-	if( WorldName != FName(World->GetName()) )
+	if( WorldName != World->GetFName() )
 	{
-		UGameplayStatics::OpenLevel(World, WorldName, false);
+		OnLoadLevelDelegate.BindUObject(this, &UAcopalypsSaveGame::OnPostLoadLevel);
+		UGameplayStatics::AsyncLoadGameFromSlot(FString("default"), 0, OnLoadLevelDelegate);
 	}
 	
 	// Set for deletion.

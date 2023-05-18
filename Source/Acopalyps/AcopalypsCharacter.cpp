@@ -306,20 +306,20 @@ void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 
 void AAcopalypsCharacter::Save()
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	UAcopalypsSaveGame* SaveData = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveDataClass));
 	TArray<AActor*> AllActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-	SaveGame->SaveGameInstance(GetWorld(), AllActors);
-	UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
+	SaveData->SaveGameInstance(GetWorld(), AllActors);
+	UGameplayStatics::SaveGameToSlot(SaveData, TEXT("default"), 0);
 	//UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
 }
 
 void AAcopalypsCharacter::Load()
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
-	if( SaveGame != nullptr ) {
+	UAcopalypsSaveGame* SaveData = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	if( SaveData != nullptr ) {
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->LoadGameInstance(GetWorld(), AllActors);
+		SaveData->LoadGameInstance(GetWorld(), AllActors);
 	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("No Game To Load...")); }
 }

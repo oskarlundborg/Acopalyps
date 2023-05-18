@@ -175,7 +175,7 @@ protected:
 	// End of APawn interface
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
+	TSubclassOf<UAcopalypsSaveGame> SaveDataClass;
 
 public:
 	/** Returns Mesh1P subobject **/

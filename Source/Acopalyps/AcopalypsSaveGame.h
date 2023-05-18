@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "CombatManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "AcopalypsSaveGame.generated.h"
 
 class AEnemyDroneBaseActor;
@@ -124,6 +126,9 @@ public:
 	void SaveGameInstance(const UWorld* World, TArray<AActor*> Actors);
 	UFUNCTION()
 	void LoadGameInstance(UWorld* World, TArray<AActor*>& Actors);
+private:
+	UFUNCTION()
+	void OnPostLoadLevel(const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData);
 
 	UFUNCTION()
 	void DestroySceneActors(TArray<AActor*>& Actors);
@@ -162,4 +167,6 @@ public:
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
 	TArray<FInstance> InstancesInWorld;
+	
+	FAsyncLoadGameFromSlotDelegate OnLoadLevelDelegate;
 };
