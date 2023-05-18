@@ -98,6 +98,8 @@ struct FInstance
 	GENERATED_BODY()
 	
 	UPROPERTY(VisibleAnywhere)
+	FName Name;
+	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<AActor> Class;
 	UPROPERTY(VisibleAnywhere)
 	FTransform Transform;
@@ -153,10 +155,10 @@ private:
 
 	// World Info
 	UPROPERTY(VisibleAnywhere, Category=World)
-	FName WorldName;
+	FName WorldName = FName("");
 
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TArray<TSubclassOf<AActor>> ClassesToUnload;
+	TArray<TSubclassOf<AActor>> IgnoredClasses;
 	
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")

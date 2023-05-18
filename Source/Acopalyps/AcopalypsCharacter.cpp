@@ -306,7 +306,7 @@ void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 
 void AAcopalypsCharacter::Save()
 {
-	UAcopalypsSaveGame* SaveData = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveDataClass));
+	UAcopalypsSaveGame* SaveData = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(UAcopalypsSaveGame::StaticClass()));
 	TArray<AActor*> AllActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 	SaveData->SaveGameInstance(GetWorld(), AllActors);
