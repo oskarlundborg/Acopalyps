@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float ExplosionRadius = 360.f;
 
+	UPROPERTY(EditAnywhere)
+	float GlassSmashExplosionRadius = 720.f;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UExplosiveDamageType> ExplosiveDamageType;
 };
