@@ -110,19 +110,16 @@ void AEnemyDroneBaseActor::UpdateCurrentObjective()
 	if (bIdle && !bAttack)
 	{
 		CalculateEngagedLocation();
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("CurrentTargetLocation = EngagedLocation" )));
 		CurrentTargetLocation = EngagedLocation;
 		
 	}
 	else if (!bIdle && bAttack)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("CurrentTargetLocation = PlayerLocation" )));
 		CurrentTargetLocation = PlayerLocation;
 	}
 	else if (!bIdle && !bAttack)
 	{
 		CalculateEngagedLocation();
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("CurrentTargetLocation = EngagedLocation" )));
 		CurrentTargetLocation = EngagedLocation;
 	}
 }
@@ -298,18 +295,19 @@ void AEnemyDroneBaseActor::DoDeath()
 {
 	OnDeathEvent();
 	TargetSpeed = 0.00f;
+	CurrentSpeed = 0.00f;
+	GetWorldTimerManager().ClearTimer(UpdateCurrentObjectiveTimerHandle);
+	GetWorldTimerManager().ClearTimer(CheckAttackBoundsTimerHandle);
+	bIsDead = true;
 	SphereColliderComponent->SetCollisionProfileName("Ragdoll");
 	SphereColliderComponent->SetSimulatePhysics(true);
 	SphereColliderComponent->SetEnableGravity(true);
 	SphereColliderComponent->OnComponentBeginOverlap.RemoveDynamic(this, &AEnemyDroneBaseActor::OnOverlapBegin);
+	SphereColliderComponent->OnComponentHit.AddDynamic(this, &AEnemyDroneBaseActor::OnDeathGroundHit);
 	DroneMesh->SetCollisionProfileName("Ragdoll");
 	DroneMesh->SetSimulatePhysics(true);
 	DroneMesh->SetEnableGravity(true);
-	GetWorldTimerManager().ClearTimer(UpdateCurrentObjectiveTimerHandle);
-	GetWorldTimerManager().ClearTimer(CheckAttackBoundsTimerHandle);
-	bIsDead = true;
 	if(CombatManager) CombatManager->RemoveDrone(this);
-	GetWorldTimerManager().SetTimer(DestructionTimerHandle, this, &AEnemyDroneBaseActor::DestroyDrone, 0.1f, false, DestructionDelay);
 }
 
 void AEnemyDroneBaseActor::DestroyDrone()
@@ -331,6 +329,20 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 		if (Cast<AAcopalypsCharacter>(OtherActor))
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		}
+	}
+}
+
+void AEnemyDroneBaseActor::OnDeathGroundHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor != nullptr)
+	{
+		if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
+		{
+			OnDeathCrashEvent();
+			GetWorldTimerManager().SetTimer(DestructionTimerHandle, this, &AEnemyDroneBaseActor::DestroyDrone, 0.1f, false, DestructionDelay);
+			SphereColliderComponent->OnComponentHit.RemoveDynamic(this, &AEnemyDroneBaseActor::OnDeathGroundHit);
 		}
 	}
 }

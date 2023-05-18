@@ -30,6 +30,10 @@ public:
 	/** Called when drone starts overlapping something */
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	/** Called when drone dies and hits ground */
+	UFUNCTION()    
+	void OnDeathGroundHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 	/** Event when drone is prepared to attack player */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -43,13 +47,21 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnRetreatEvent();
 
-	/** Method for blueprint when drone is flying*/
+	/** Event when drone hits player*/
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDroneHitPlayerEvent();
+
+	/** Event when drone is flying*/
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDroneMovement();
 
-	/** Method for blueprint when drone is flying*/
+	/** Event when drone dies */
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeathEvent();
+
+	/** Event when drone crashed on ground*/
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDeathCrashEvent();
 	
 	/** Returns if actor is dead */
 	UFUNCTION(BlueprintPure)
