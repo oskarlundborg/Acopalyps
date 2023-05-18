@@ -3,6 +3,7 @@
 
 #include "LevelStreamerSubsystem.h"
 
+#include "LevelSpawner.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "LevelInstance/LevelInstanceSubsystem.h"
 
@@ -11,32 +12,31 @@ void ULevelStreamerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 }
 
-void ULevelStreamerSubsystem::LoadLevel(TSoftObjectPtr<UWorld> SubLevelToLoad, int ID)
+void ULevelStreamerSubsystem::LoadLevel(FLevelID SubLevelToLoad)
 {
 	bool bIsSuccess;
 	
-	CurrentInstancedLevel = ULevelStreamingDynamic::LoadLevelInstanceBySoftObjectPtr(
-				this, SubLevelToLoad, FVector::ZeroVector, FRotator::ZeroRotator, bIsSuccess);
+	
+	if (LevelMap.Contains(SubLevelToLoad.ID) == false)
+	{
+		ULevelStreamingDynamic* Level = ULevelStreamingDynamic::LoadLevelInstanceBySoftObjectPtr(
+				this, SubLevelToLoad.LevelPtr, FVector::ZeroVector, FRotator::ZeroRotator, bIsSuccess);
 
-	ensure(LevelMap.Contains(ID) == false);
-	LevelMap.Add(ID, CurrentInstancedLevel);
-
-	UE_LOG(LogTemp, Warning, TEXT("Loading level with ID %i"), ID);
-
-	// jämföra om det är en softptr till den instanced level jag vill komma åt
-	CurrentInstancedLevel->SetIsRequestingUnloadAndRemoval(true);
+		LevelMap.Add(SubLevelToLoad.ID, Level);
+		
+		UE_LOG(LogTemp, Warning, TEXT("Loading level with ID %i"));
+	}
 }
 
-/*
-void ULevelStreamerSubsystem::UnloadLevel(TSoftObjectPtr<UWorld> SubLevelToLoad, int ID)
+
+void ULevelStreamerSubsystem::UnloadLevel(int IDToUnload)
 {
-	
-	
-	//TSoftObjectPtr<UWorld> SoftObjPtrWorld;
-	//ULevelStreamingDynamic* CurrentInstancedLevel;
-	
-	// Ta bort från map
-	UE_LOG(LogTemp, Warning, TEXT("Unloading level with ID %i"), ID);
+	if (LevelMap.Contains(IDToUnload))
+	{
+		LevelMap[IDToUnload]->SetIsRequestingUnloadAndRemoval(true);
+		LevelMap.Remove(IDToUnload);
+		UE_LOG(LogTemp, Warning, TEXT("Unloading level with ID %i"));
+	}
 }
-*/
+
 
