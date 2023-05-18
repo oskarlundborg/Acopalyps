@@ -297,10 +297,11 @@ void AEnemyDroneBaseActor::ResumeInitialSpeed()
 void AEnemyDroneBaseActor::DoDeath()
 {
 	OnDeathEvent();
-	TargetSpeed = 0.02f;
+	TargetSpeed = 0.00f;
 	SphereColliderComponent->SetCollisionProfileName("Ragdoll");
 	SphereColliderComponent->SetSimulatePhysics(true);
 	SphereColliderComponent->SetEnableGravity(true);
+	SphereColliderComponent->OnComponentBeginOverlap.RemoveDynamic(this, &AEnemyDroneBaseActor::OnOverlapBegin);
 	DroneMesh->SetCollisionProfileName("Ragdoll");
 	DroneMesh->SetSimulatePhysics(true);
 	DroneMesh->SetEnableGravity(true);
@@ -353,7 +354,6 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
 
 	TargetSpeed = 0.02f;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Drone stoppped")));
 	GetWorldTimerManager().SetTimer(ResumeSpeedHandle, this, &AEnemyDroneBaseActor::ResumeInitialSpeed, 0.1f, false, ResumeSpeedDelay);
 
 	
@@ -364,52 +364,3 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	return DamageApplied;
 }
 
-
-/*
- * Get the hit point and surface normal
-	const FVector HitPoint = SweepHitResult.ImpactPoint;
-
-	// Calculate a location around collision
-	const FVector SurfaceNormal = SweepHitResult.ImpactNormal;
-	FVector AdjustedLocation = HitPoint +  SurfaceNormal * CollisionAvoidanceOffset;
-
-	// Distance vector between drone and player location aka hypotenusan
-	//const FVector DroneToGoal = ((PlayerLocation + RelativePositionToPLayer) - GetActorLocation()).GetSafeNormal();
-
-	//const FVector DroneToGoal = ((GoalLocation) - GetActorLocation()).GetSafeNormal();
-	const FVector DroneToGoal = (HitPoint - GetActorLocation());
-
-
-	// Projection of DroneToPlayer on SurfaceNormal
-	const double ProjectionOnSurfNorm = -SurfaceNormal.Dot(DroneToGoal);
-
-	if (ProjectionOnSurfNorm > 0.95)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ProjectionOnSurfNorm %f" ), ProjectionOnSurfNorm));
-		GenerateNewRelativePosition();
-	}
-
-	/*
-	// Magnitude of distance vector aka långa katetern
-	//const double DistanceMagnitude = DroneToGoal.Size();
-	
-	//const FVector AdjustedDirection = DroneToGoal + SurfaceNormal * DistanceMagnitude * ProjectionOnSurfNorm;
-	
-	FVector ReflectionVector = (2 * ProjectionOnSurfNorm * SurfaceNormal * DroneToGoal.Size() - DroneToGoal);
-
-	const double DistanceMagnitude = DroneToGoal.Size();
-	ReflectionVector = ReflectionVector.GetSafeNormal() * FMath::Clamp(ReflectionVector.Size(), 0, CollisionAvoidanceOffset);
-	//const FVector AdjustedDirection = ReflectionVector.GetSafeNormal();
-	//const FVector AdjustedDirection = DroneToGoal + ReflectionVector.GetSafeNormal() * DistanceMagnitude * ProjectionOnSurfNorm;
-	//AdjustedLocation += AdjustedDirection;
-	AdjustedLocation += ReflectionVector;
-	//DrawDebugSphere(GetWorld(), AdjustedLocation, 30.f, 30, FColor::Orange, true,0.2f);
-
-	if (DebugAssist)
-	{
-		DrawDebugSphere(GetWorld(), HitPoint, 30.f, 30, FColor::Black, true,0.2f);
-		DrawDebugSphere(GetWorld(), AdjustedLocation, 30.f, 30, FColor::Orange, true,0.2f);
-	}
-	return AdjustedLocation;
- 
- */
