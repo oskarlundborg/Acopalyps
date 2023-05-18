@@ -38,6 +38,20 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			GetWorld()->GetFirstPlayerController(),
 			ECC_Visibility
 			);
+		UGameplayStatics::ApplyRadialDamageWithFalloff(
+			GetWorld(),
+			1.f,
+			1.f,
+			Hit.Location,
+			GlassSmashExplosionRadius / 2,
+			GlassSmashExplosionRadius,
+			1.f,
+			ExplosiveDamageType,
+			{},
+			this,
+			GetWorld()->GetFirstPlayerController(),
+			ECC_Visibility
+			);
 		for( FOverlapResult Overlap : Overlaps )
 		{
 			
@@ -73,6 +87,10 @@ bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
 	if( bDrawDebugSphere )
 	{
 		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 10, FColor::Red, true, 5);
+	}
+	if( bDrawDebugSphere )
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), GlassSmashExplosionRadius, 10, FColor::Cyan, true, 5);
 	}
 	return GetWorld()->OverlapMultiByChannel(
 		Overlaps,

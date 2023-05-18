@@ -55,6 +55,9 @@ class AAcopalypsCharacter : public ACharacter
 	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* CrouchActionSlowMotion;
 	
 	/** Slow Down Time Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -153,10 +156,10 @@ protected:
 	void Move(const FInputActionValue& Value);
 
 	// Crouching functions
-	void StartCrouch();
+	void StartCrouch(bool SlowMotion);
 	void EndCrouch();
 
-	void StartSlide();
+	void StartSlide(bool SlowMotion);
 	void EndSlide();
 	
 	virtual void Jump() override;
