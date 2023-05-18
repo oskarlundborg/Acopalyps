@@ -6,6 +6,7 @@
 #include "GameFramework/SaveGame.h"
 #include "CombatManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "AcopalypsSaveGame.generated.h"
 
 class AEnemyDroneBaseActor;
@@ -111,6 +112,18 @@ struct FInstance
 	FMeshData MeshData;
 	UPROPERTY(VisibleAnywhere)
 	FCombatManagerData CombatManagerData;
+	UPROPERTY()
+	TArray<uint8> Data;
+};
+
+struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
+{
+	FSaveGameArchive(FArchive& InInnerArchive) 
+		: FObjectAndNameAsStringProxyArchive(InInnerArchive,true)
+	{
+		ArIsSaveGame = true;
+		ArNoDelta	 = true;
+	}
 };
 
 /**
@@ -166,7 +179,9 @@ private:
 	
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FInstance> InstancesInWorld;
+	TArray<FInstance> Instances;
+	UPROPERTY(EditDefaultsOnly, Category="Instances")
+	TArray<AActor*> TmpInstances;
 	
 	FAsyncLoadGameFromSlotDelegate OnLoadLevelDelegate;
 };
