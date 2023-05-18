@@ -328,6 +328,7 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 	{
 		if (Cast<AAcopalypsCharacter>(OtherActor))
 		{
+			OnDroneHitPlayerEvent();
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		}
 	}
