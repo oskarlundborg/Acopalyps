@@ -22,6 +22,7 @@ void AEnemyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	TArray<FOverlapResult> Overlaps;
 	if( HitActor != nullptr && HitActor != this )
 	{
+		const AActor* ConstHitActor = HitActor;
 		AttachToActor(HitActor, FAttachmentTransformRules::KeepWorldTransform, "NAME_None");
 		UGameplayStatics::ApplyDamage(HitActor, 1.f, GetWorld()->GetFirstPlayerController(), this,nullptr);
 	}

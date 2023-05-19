@@ -8,7 +8,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Containers/Queue.h"
-#include "Templates/Tuple.h"
 #include "CombatManager.generated.h"
 
 class ACombatTrigger;

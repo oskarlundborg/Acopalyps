@@ -134,6 +134,7 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void SpawnTriggerEvent();
+<<<<<<< refs/remotes/origin/main
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnSave(const FString& SaveName);
@@ -142,17 +143,22 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeathEvent();
+=======
+>>>>>>> progress saved again??
 	
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
-	void Save(FString SaveName);
+	void Save();
 	UFUNCTION(BlueprintCallable)
 	void Load();
+<<<<<<< refs/remotes/origin/main
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int NumberOfActiveCombats = 0;
+=======
+>>>>>>> progress saved again??
 	
 protected:
 	/** Called for movement input */

@@ -234,14 +234,18 @@ public:
 	float ReloadTime = 1.5;
 	
 	UFUNCTION(BlueprintCallable, Category=Delay)
-	void ToggleCanFirePrimary(AMMO_TYPES AmmoType) {
-		if( (Projectiles.Find(AmmoType)->bCanFire ^= true) == true ) OnCanFire(AmmoType);
+	void ToggleCanFirePrimary(AMMO_TYPES AmmoType)
+	{
+		Projectiles.Find(AmmoType)->bCanFire ^= true;
+		if( Projectiles.Find(AmmoType)->bCanFire == true ) OnCanFire(AmmoType);
 	}
 	FTimerDelegate CanFirePrimaryDelegate;
 	
 	UFUNCTION(BlueprintCallable, Category=Delay)
-	void ToggleCanFireAlternate(AMMO_TYPES AmmoType) {
-		if( (Projectiles.Find(AmmoType)->bCanFire ^= true) == true ) OnCanFire(AmmoType);
+	void ToggleCanFireAlternate(AMMO_TYPES AmmoType)
+	{
+		Projectiles.Find(AmmoType)->bCanFire ^= true;
+		if( Projectiles.Find(AmmoType)->bCanFire == true ) OnCanFire(AmmoType);
 	}
 	FTimerDelegate CanFireAlternateDelegate;
 

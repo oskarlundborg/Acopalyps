@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "Kismet/GameplayStatics.h"
-#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "AcopalypsSaveGame.generated.h"
 
 class AEnemyDroneBaseActor;
@@ -14,119 +12,31 @@ class AProjectile;
 class AStaticMeshActor;
 class AAcopalypsCharacter;
 class AEnemyAICharacter;
-class ASpawnZone;
-class ASpawnPoint;
-class ACombatTrigger;
-class ACombatManager;
-struct FCombatWave;
+
 
 USTRUCT()
-struct FMeshData
+struct FActorInstance
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY(EditDefaultsOnly, Category=ActorInfo)
+	TSubclassOf<AActor> Class;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	FTransform Transform;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	FRotator Rotation;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	FVector Velocity;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	float Health;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	int32 GunMag;
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	UStaticMesh* Mesh;
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	UStaticMeshComponent* MeshComp;
-};
-
-USTRUCT()
-struct FCombatManagerData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<AEnemyAICharacter*> ManagedEnemies;
-	UPROPERTY(VisibleAnywhere)
-	TArray<AEnemyDroneBaseActor*> ManagedDrones;
-	UPROPERTY(VisibleAnywhere)
-	TArray<ASpawnZone*> SpawnZones;
-	UPROPERTY(VisibleAnywhere)
-	TArray<ACombatTrigger*> CombatTriggers;
-	//UPROPERTY(VisibleAnywhere)
-	//TArray<FCombatWave> CombatWaves;
-};
-
-USTRUCT()
-struct FPlayerData
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	FRotator CameraRotation;
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	FVector Velocity;
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	bool bIsDead;
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	float Health;
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	int32 GunMag;
-};
-
-USTRUCT()
-struct FEnemyData
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	bool bIsDead;
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	float Health;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	int32 GunMag;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	ACombatManager* CombatManager;
-};
-
-USTRUCT()
-struct FDroneData
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	bool bIsDead;
-	UPROPERTY(VisibleAnywhere, Category=PlayerInfo)
-	float Health;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	UStaticMeshComponent* MeshComp;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	ACombatManager* CombatManager;
-};
-
-USTRUCT()
-struct FInstance
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(VisibleAnywhere)
-	TSubclassOf<AActor> Class;
-	UPROPERTY(VisibleAnywhere)
-	FTransform Transform;
-	
-	UPROPERTY(VisibleAnywhere)
-	FPlayerData PlayerData;
-	UPROPERTY(VisibleAnywhere)
-	FEnemyData EnemyData;
-	UPROPERTY(VisibleAnywhere)
-	FDroneData DroneData;
-	UPROPERTY(VisibleAnywhere)
-	FMeshData MeshData;
-	UPROPERTY(VisibleAnywhere)
-	FCombatManagerData CombatManagerData;
-	UPROPERTY(VisibleAnywhere)
-	TArray<uint8> Data;
-};
-
-struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
-{
-	FSaveGameArchive(FArchive& InInnerArchive) 
-		: FObjectAndNameAsStringProxyArchive(InInnerArchive,true)
-	{
-		ArIsSaveGame = true;
-		ArNoDelta	 = true;
-	}
 };
 
 /**
@@ -145,18 +55,25 @@ public:
 
 	UFUNCTION()
 	void DestroySceneActors(TArray<AActor*>& Actors);
+	
+	UPROPERTY(VisibleAnywhere)
+	FString SlotName;
+	UPROPERTY(VisibleAnywhere)
+	uint32 UserIndex;
 
 	// World Info
 	UPROPERTY(VisibleAnywhere, Category=World)
 	FName WorldName;
-	UPROPERTY(VisibleAnywhere, Category=World)
-	TSoftObjectPtr<UWorld> WorldPtr;
 	
 	// Player Info
+	UPROPERTY(EditDefaultsOnly, Category="Instances")
+	FActorInstance PlayerInstance;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AAcopalypsCharacter> PlayerClass;
 
 	// Enemies In World Info
+	UPROPERTY(EditDefaultsOnly, Category="Instances")
+	TArray<FActorInstance> EnemiesInWorld;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AEnemyAICharacter> EnemyClass;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
@@ -168,15 +85,13 @@ public:
 	TSubclassOf<AActor> ResupplyStationClass;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AActor> AmmoPickupClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> CombatManagerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TArray<TSubclassOf<AActor>> ClassesToUnload;
+	TArray<TSubclassOf<AActor>> ClassesToDelete;
 	
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<struct FLevelID> SubLevels;
+	TArray<FActorInstance> ActorsInWorld;
 	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
-	TArray<FInstance> InstancesInWorld;
+	TArray<struct FLevelID> SubLevels;
 };

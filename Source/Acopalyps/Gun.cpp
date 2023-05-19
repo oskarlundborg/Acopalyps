@@ -65,11 +65,11 @@ void AGun::Fire(TEnumAsByte<AMMO_TYPES> AmmoType)
 				SpawnRotation = RandomRotator(SpawnRotation.Pitch,SpawnRotation.Yaw,SpawnRotation.Roll,ShotgunSpread);
 			}
 			GetWorld()->SpawnActor<AProjectile>(
-				Projectile->Class,
-				GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
-				SpawnRotation,
-				ActorSpawnParameters
-				)->SetOwner(this);
+			Projectile->Class,
+			GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset),
+			SpawnRotation,
+			ActorSpawnParameters
+			);
 		}
 		
 		FireTriggerEvent(Hit, ShotDirection, AmmoType);
@@ -96,7 +96,7 @@ void AGun::PrimaryFire()
 
 void AGun::AlternateFire()
 {
-	const AMMO_TYPES AmmoToFire = CurrentAlternateAmmoType; // For TimerHandle to handle same ammo when switching mid delay
+	AMMO_TYPES AmmoToFire = CurrentAlternateAmmoType; // For TimerHandle to handle same ammo when switching mid delay
 	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
 	if( Projectiles.Find(AmmoToFire)->bCanFire && bCanReload)
 	{
@@ -114,7 +114,7 @@ void AGun::AlternateFire()
 
 void AGun::FlareFire()
 {
-	const AMMO_TYPES AmmoToFire = Flare;
+	AMMO_TYPES AmmoToFire = Flare;
 	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
 	if( Projectiles.Find(AmmoToFire)->bCanFire && bCanReload)
 	{
@@ -129,6 +129,7 @@ void AGun::FlareFire()
 			);
 	}
 }
+
 
 /** Performs a ray casts, returns true if hit is registered */
 bool AGun::HitTrace(FHitResult& HitResult, FVector& ShotDirection)
