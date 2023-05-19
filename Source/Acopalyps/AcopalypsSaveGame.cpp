@@ -58,6 +58,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
                 },
 				.Data				= tData,
 			});
+			SubLevels = Player->LoadedLevels;
 		}
 		// Save enemy specific data
 		else if( ActorClass == EnemyClass )

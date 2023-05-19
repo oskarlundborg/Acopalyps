@@ -136,7 +136,7 @@ public:
 	void SpawnTriggerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnSave();
+	void OnSave(const FString& SaveName);
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnLoad();
 
@@ -147,7 +147,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
-	void Save();
+	void Save(FString SaveName);
 	UFUNCTION(BlueprintCallable)
 	void Load();
 
