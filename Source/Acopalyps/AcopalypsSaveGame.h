@@ -92,4 +92,6 @@ public:
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
 	TArray<FActorInstance> ActorsInWorld;
+	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
+	TArray<struct FLevelID> SubLevels;
 };

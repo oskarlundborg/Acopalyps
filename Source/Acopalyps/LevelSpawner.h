@@ -19,7 +19,6 @@ struct FLevelID
 };
 
 
-
 UCLASS()
 
 class ACOPALYPS_API ALevelSpawner : public AActor

@@ -9,6 +9,7 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "AcopalypsSaveGame.h"
 #include "EnemyAICharacter.h"
+#include "LevelSpawner.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h" 
 
@@ -322,4 +323,10 @@ void AAcopalypsCharacter::Load()
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 		SaveGame->LoadGameInstance(GetWorld(), AllActors);
 	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("No Game To Load...")); }
+}
+
+void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad)
+{
+	LoadedLevels.Empty();
+	LoadedLevels = LevelsToLoad;
 }

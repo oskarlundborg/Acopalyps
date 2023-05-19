@@ -222,5 +222,10 @@ public:
 	
 	UPROPERTY(VisibleAnywhere)
 	bool bIsDead;
-};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<struct FLevelID> LoadedLevels;
+
+	UFUNCTION(BlueprintCallable)
+	void SetLoadedLevels(TArray<FLevelID> LevelsToLoad);
+};

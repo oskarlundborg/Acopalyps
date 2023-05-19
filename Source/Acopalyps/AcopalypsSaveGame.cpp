@@ -3,18 +3,22 @@
 
 #include "AcopalypsSaveGame.h"
 
+#include "LevelSpawner.h"
 #include "AcopalypsCharacter.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
+#include "LevelStreamerSubsystem.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+class ULevelStreamerSubsystem;
+
 void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> Actors)
 {
 	// Save level name
-	WorldName = FName(World->GetName());
-
+	//WorldName = FName(World->GetName());
+	
 	// Store data from actors in scene
 	for( AActor* Actor : Actors )
 	{
@@ -43,6 +47,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 			UE_LOG(LogTemp, Display, TEXT("Health: %f"), PlayerInstance.Health)
 			UE_LOG(LogTemp, Display, TEXT("GunMag: %i"), PlayerInstance.GunMag)
 			UE_LOG(LogTemp, Display, TEXT("###########################################"))
+			SubLevels = Player->LoadedLevels;
 		}
 		// Save enemy specific data
 		else if( ActorClass == EnemyClass )
@@ -106,14 +111,18 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors)
 {
 	// Open the saved world if different
-	if( WorldName != FName(World->GetName()) )
-	{
-		UGameplayStatics::OpenLevel(World, WorldName, false);
-	}
+	//if( WorldName != FName(World->GetName()) )
+	//{
+	//	UGameplayStatics::OpenLevel(World, WorldName, false);
+	//}
 	
 	// Set for deletion.
 	DestroySceneActors(Actors);
 	
+	for (int i = 0; i < SubLevels.Num(); i++)
+	{
+		Actors.Last()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LoadLevel(SubLevels[i]);
+	}
 	// Recreate saved state.
 	for( const FActorInstance Actor : ActorsInWorld )
 	{
@@ -179,7 +188,6 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 		}
 	}
-	
 	// Set player data.
 	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(World->GetFirstPlayerController()->GetCharacter());
 	Player->SetActorTransform(PlayerInstance.Transform);

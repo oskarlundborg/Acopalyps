@@ -219,16 +219,7 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AGun::Reload()
 {
 	ReloadCompletedEvent();
-	if(AmmoCapacity > MaxMagSize-CurrentMag)
-	{
-		AmmoCapacity-=MaxMagSize-CurrentMag;
-		CurrentMag = MaxMagSize;
-	}
-	else
-	{
-		CurrentMag+=AmmoCapacity;
-		AmmoCapacity=0;
-	}
+	CurrentMag = MaxMagSize;
 	bCanReload=true;
 }
 
