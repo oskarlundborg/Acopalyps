@@ -37,6 +37,9 @@ AProjectile::AProjectile()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	Mesh->SetupAttachment(RootComponent);
+
+	Mesh->SetCanEverAffectNavigation(false);
+	CollisionComp->SetCanEverAffectNavigation(false);
 }
 
 void AProjectile::BeginPlay()

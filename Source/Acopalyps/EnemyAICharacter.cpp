@@ -21,6 +21,8 @@ AEnemyAICharacter::AEnemyAICharacter()
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	
 }
 
 // Called when the game starts or when spawned
