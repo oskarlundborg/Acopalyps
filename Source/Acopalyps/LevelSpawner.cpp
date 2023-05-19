@@ -43,6 +43,7 @@ void ALevelSpawner::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AAct
 		{
 			GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->UnloadLevel(SubLevelsToUnload[i]);
 		}
+		PlayerCharacter->SetLoadedLevels(SubLevelsToLoad);
 	}
 }
 
