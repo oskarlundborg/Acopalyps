@@ -104,6 +104,8 @@ struct FInstance
 	TSubclassOf<AActor> Class;
 	UPROPERTY(VisibleAnywhere)
 	FTransform Transform;
+	UPROPERTY(VisibleAnywhere)
+	FName Name;
 	
 	UPROPERTY(VisibleAnywhere)
 	FPlayerData PlayerData;

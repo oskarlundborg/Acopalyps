@@ -5,7 +5,6 @@
 
 #include "LevelSpawner.h"
 #include "AcopalypsCharacter.h"
-#include "ConstraintsManager.h"
 #include "EnemyAICharacter.h"
 #include "EnemyAIController.h"
 #include "EnemyDroneBaseActor.h"
@@ -13,7 +12,6 @@
 #include "Engine/LevelStreamingDynamic.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 class ULevelStreamerSubsystem;
 
@@ -42,13 +40,14 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 		if( ActorClass == PlayerClass )
 		{
 			const AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(Actor);
-			TArray<uint8> tData;
-			FMemoryWriter MemWriter = FMemoryWriter(tData, true);
+			TArray<uint8> TData;
+			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= Player->GetTransform(),
+				.Name		= Player->GetFName(),
 				.PlayerData	= {
                 	.CameraRotation	= Player->GetController()->GetControlRotation(),
 					.Velocity		= Player->GetVelocity(),
@@ -56,7 +55,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
                 	.Health			= Player->HealthComponent->GetHealth(),
                 	.GunMag			= Player->Gun->CurrentMag,
                 },
-				.Data				= tData,
+				.Data				= TData,
 			});
 			SubLevels = Player->LoadedLevels;
 		}
@@ -64,69 +63,73 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 		else if( ActorClass == EnemyClass )
 		{
 			const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
-			TArray<uint8> tData;
-			FMemoryWriter MemWriter = FMemoryWriter(tData, true);
+			TArray<uint8> TData;
+			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= Enemy->GetTransform(),
+				.Name		= Enemy->GetFName(),
 				.EnemyData	= {
             		.bIsDead	= Enemy->HealthComponent->IsDead(),
             		.Health		= Enemy->HealthComponent->GetHealth(),
             		.GunMag		= Enemy->Gun->CurrentMag,
 					.CombatManager = Enemy->Manager,
 				},
-				.Data				= tData,
+				.Data				= TData,
 			});
 		}
 		else if( ActorClass == EnemyDroneClass )
 		{
 			const AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor);
-			TArray<uint8> tData;
-			FMemoryWriter MemWriter = FMemoryWriter(tData, true);
+			TArray<uint8> TData;
+			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= Drone->GetTransform(),
+				.Name		= Drone->GetFName(),
 				.DroneData	= {
             		.bIsDead	= Drone->HealthComponent->IsDead(),
             		.Health		= Drone->HealthComponent->GetHealth(),
             		.MeshComp	= Drone->DroneMesh,
 					.CombatManager = Drone->CombatManager,
 				},
-				.Data				= tData,
+				.Data				= TData,
 			});
 		}
 		// Save non static actors data
 		else if( ActorClass == StaticMeshClass && Actor->GetRootComponent() != nullptr && Actor->GetRootComponent()->IsSimulatingPhysics() && Actor->Owner == nullptr )
 		{
 			const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor);
-			TArray<uint8> tData;
-			FMemoryWriter MemWriter = FMemoryWriter(tData, true);
+			TArray<uint8> TData;
+			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
 				.Class		= ActorClass,
 				.Transform	= StaticMeshActor->GetActorTransform(),
+				.Name		= StaticMeshActor->GetFName(),
 				.MeshData	= {
 					.Mesh		= StaticMeshActor->GetStaticMeshComponent()->GetStaticMesh(),
 				},
-				.Data				= tData,
+				.Data				= TData,
 			});
 		}
 		else if( ActorClass == CombatManagerClass )
 		{
 			ACombatManager* CombatManager = Cast<ACombatManager>(Actor);
 			TTuple<TArray<AEnemyAICharacter*>, TArray<AEnemyDroneBaseActor*>> EnemyList = CombatManager->GetEnemyLists();
-			TArray<uint8> tData;
-			FMemoryWriter MemWriter = FMemoryWriter(tData, true);
+			TArray<uint8> TData;
+			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
-				.Class				= ActorClass,
-				.Transform			= CombatManager->GetTransform(),
+				.Class			= ActorClass,
+				.Transform		= CombatManager->GetTransform(),
+				.Name			= CombatManager->GetFName(),
 				.CombatManagerData	= {
 					.ManagedEnemies = EnemyList.Get<0>(),
 					.ManagedDrones	= EnemyList.Get<1>(),
@@ -134,7 +137,7 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 					.CombatTriggers = CombatManager->GetCombatTriggers(),
 					//.CombatWaves	= CombatManager->GetCombatWaves(),
 				},
-				.Data				= tData,
+				.Data				= TData,
 			});
 		}
 	}
@@ -166,10 +169,25 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 	// Set for deletion.
 	DestroySceneActors(Actors);
 	
-	//for (int i = 0; i < SubLevels.Num(); i++)
-	//{
-	//	Actors.Last()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LoadLevel(SubLevels[i]);
-	//}
+	for (int i = 0; i < SubLevels.Num(); i++)
+	{
+		Actors.Last()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LoadLevel(SubLevels[i]);
+	}
+	for( const FInstance Inst : InstancesInWorld )
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Name = Inst.Name;
+		SpawnParams.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
+		auto Actor = World->SpawnActor(
+			Inst.Class,
+			&Inst.Transform,
+			FActorSpawnParameters()
+			);
+		FMemoryReader MemReader(Inst.Data, true);
+		FSaveGameArchive Ar(MemReader);
+		Actor->Serialize(Ar);
+	}
+	/*
 	// Recreate saved state.
 	for( const FInstance Instance : InstancesInWorld )
 	{
@@ -252,6 +270,7 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 			CombatManager->Serialize(Ar);
 		}
 	}
+	*/
 	
 	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Cyan, TEXT("Game Loaded."));
 }
