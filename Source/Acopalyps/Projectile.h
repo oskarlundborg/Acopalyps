@@ -31,6 +31,9 @@ public:
 	AProjectile();
 
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float Damage;
 
 	/** called when projectile hits something */
 	UFUNCTION()
