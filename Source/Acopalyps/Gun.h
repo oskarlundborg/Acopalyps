@@ -218,8 +218,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FProjectileInfo GetProjectileInfoByKey(AMMO_TYPES AmmoType) { return *Projectiles.Find(AmmoType); }
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=WeaponProperties)
 	int32 CurrentMag = 1000;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=WeaponProperties)
 	int32 MaxMagSize = 1000;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -276,10 +277,6 @@ private:
 	/** Shot Impact */
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	float ImpulseForce = 500.f;
-
-	/** Ammo variables **/
-	UPROPERTY(EditDefaultsOnly)
-	int32 MaxAmmo = 12;
 	
 	AController* GetOwnerController() const;
 
