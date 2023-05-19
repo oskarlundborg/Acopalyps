@@ -52,10 +52,8 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 		CheckSphereShape);
 	if(bOverlaps)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("overlaps: %i"), OverlapResults.Num());
+		//UE_LOG(LogTemp, Warning, TEXT("overlaps: %i"), OverlapResults.Num());
 
-		//float ClosestToPlayerDistance = 0.f;
-		//ACoverPoint* NextCoverPoint = nullptr;
 		for(FOverlapResult Overlap : OverlapResults)
 		{
 			ACoverPoint* CoverPoint = Cast<ACoverPoint>(Overlap.GetActor());
@@ -65,31 +63,10 @@ void UBTService_FindCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* No
 				UE_LOG(LogTemp, Warning, TEXT("Cover is set"));
 				CoverPoint->bIsOccupied = true;
 				CoverPoint->LastVisitedCharacter = EnemyAICharacter;
-				/*
-				if (CoverPoint->DistanceToPlayer() < ClosestToPlayerDistance)
-				{
-					NextCoverPoint = CoverPoint;
-				}*/
+				return;
 			}
 		}
-		/*
-		if (NextCoverPoint)
-		{
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", NextCoverPoint);
-			UE_LOG(LogTemp, Warning, TEXT("Cover is set"));
-			NextCoverPoint->bIsOccupied = true;
-			NextCoverPoint->LastVisitedCharacter = EnemyAICharacter;
-		}
-		else
-		{
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Cover", NextCoverPoint);
-			UE_LOG(LogTemp, Warning, TEXT("Cover is not set"));
-		}
-		*/
 	}
-	
-	//OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsBool("HasCover", true);
-	//CurrentCover.
 }
 
 bool UBTService_FindCover::IsCoverValid(ACoverPoint* Cover)
