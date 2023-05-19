@@ -136,6 +136,11 @@ public:
 	void SpawnTriggerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void OnSave();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLoad();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void DeathEvent();
 	
 	/** Called upon when object channel weapon collider collides with enemy char */

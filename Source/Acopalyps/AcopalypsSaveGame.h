@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "AcopalypsSaveGame.generated.h"
 
 class AEnemyDroneBaseActor;
@@ -42,8 +44,8 @@ struct FCombatManagerData
 	TArray<ASpawnZone*> SpawnZones;
 	UPROPERTY(VisibleAnywhere)
 	TArray<ACombatTrigger*> CombatTriggers;
-	UPROPERTY(VisibleAnywhere)
-	TArray<FCombatWave> CombatWaves;
+	//UPROPERTY(VisibleAnywhere)
+	//TArray<FCombatWave> CombatWaves;
 };
 
 USTRUCT()
@@ -74,6 +76,8 @@ struct FEnemyData
 	float Health;
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	int32 GunMag;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	ACombatManager* CombatManager;
 };
 
 USTRUCT()
@@ -87,6 +91,8 @@ struct FDroneData
 	float Health;
 	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
 	UStaticMeshComponent* MeshComp;
+	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	ACombatManager* CombatManager;
 };
 
 USTRUCT()
@@ -109,6 +115,18 @@ struct FInstance
 	FMeshData MeshData;
 	UPROPERTY(VisibleAnywhere)
 	FCombatManagerData CombatManagerData;
+	UPROPERTY(VisibleAnywhere)
+	TArray<uint8> Data;
+};
+
+struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
+{
+	FSaveGameArchive(FArchive& InInnerArchive) 
+		: FObjectAndNameAsStringProxyArchive(InInnerArchive,true)
+	{
+		ArIsSaveGame = true;
+		ArNoDelta	 = true;
+	}
 };
 
 /**
@@ -127,15 +145,12 @@ public:
 
 	UFUNCTION()
 	void DestroySceneActors(TArray<AActor*>& Actors);
-	
-	UPROPERTY(VisibleAnywhere)
-	FString SlotName;
-	UPROPERTY(VisibleAnywhere)
-	uint32 UserIndex;
 
 	// World Info
 	UPROPERTY(VisibleAnywhere, Category=World)
 	FName WorldName;
+	UPROPERTY(VisibleAnywhere, Category=World)
+	TSoftObjectPtr<UWorld> WorldPtr;
 	
 	// Player Info
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
@@ -161,7 +176,7 @@ public:
 	
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FActorInstance> ActorsInWorld;
-	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
 	TArray<struct FLevelID> SubLevels;
+	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
+	TArray<FInstance> InstancesInWorld;
 };

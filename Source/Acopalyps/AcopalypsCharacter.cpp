@@ -297,28 +297,20 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 
 void AAcopalypsCharacter::Save()
 {
-	//TArray<AActor*> AllActors;
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->SaveGame(AllActors);
-	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
-	if( SaveGame )
-	{
-		TArray<AActor*> AllActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->SaveGameInstance(GetWorld(), AllActors);
-		if( SaveGame->IsValidLowLevel() )
-		{
-			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
-			UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
-		}
-	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
+	OnSave();
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	TArray<AActor*> AllActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+	SaveGame->SaveGameInstance(GetWorld(), AllActors);
+	UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
+	//UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
 }
 
 void AAcopalypsCharacter::Load()
 {
-	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->LoadGame();
-	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
-	if( SaveGame ) {
+	OnLoad();
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	if( SaveGame != nullptr ) {
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 		SaveGame->LoadGameInstance(GetWorld(), AllActors);
