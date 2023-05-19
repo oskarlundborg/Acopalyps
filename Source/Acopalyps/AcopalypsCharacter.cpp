@@ -121,20 +121,19 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		//Reset Level
 		EnhancedInputComponent->BindAction(ResetLevelAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::ResetLevel);
 		//Save & Load
-		EnhancedInputComponent->BindAction(SaveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Save);
-		EnhancedInputComponent->BindAction(LoadAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Load);
+		EnhancedInputComponent->BindAction<AAcopalypsCharacter, FString>(SaveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Save, "quick_save");
+		EnhancedInputComponent->BindAction<AAcopalypsCharacter, FString>(LoadAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Load, "quick_save");
 	}
 }
 
 void AAcopalypsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
-	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
 	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
 	HealthComponent->RefillHealth();
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
-	Load();
+	Load("checkpoint");
 	SpawnTriggerEvent();
 }
 
@@ -303,19 +302,20 @@ void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
 	bHasRifle = bNewHasRifle;
 }
 
-void AAcopalypsCharacter::Save()
+void AAcopalypsCharacter::Save(FString SaveName)
 {
+	OnSave(SaveName);
 	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
 	TArray<AActor*> AllActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 	SaveGame->SaveGameInstance(GetWorld(), AllActors);
-	UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
-	//UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
+	UGameplayStatics::SaveGameToSlot(SaveGame, SaveName, 0);
 }
 
-void AAcopalypsCharacter::Load()
+void AAcopalypsCharacter::Load(FString SaveName)
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	OnLoad(SaveName);
+	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveName, 0));
 	if( SaveGame != nullptr ) {
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
