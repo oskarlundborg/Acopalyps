@@ -69,7 +69,7 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	PlayerLocation = PlayerCharacter->GetActorLocation();
-	PlayerLocation.Z += 80.f;
+	PlayerLocation.Z += MinHeightAbovePlayer;
 	PlayerRotation = PlayerCharacter->GetActorRotation();
 
 	if (!bIsDead)
@@ -115,10 +115,12 @@ void AEnemyDroneBaseActor::UpdateCurrentObjective()
 	}
 	else if (!bIdle && bAttack)
 	{
-		CurrentTargetLocation = PlayerLocation;
+		CalculateAttackLocation();
+		CurrentTargetLocation = AttackLocation;
 	}
 	else if (!bIdle && !bAttack)
 	{
+		// Calculate retreat location()
 		CalculateEngagedLocation();
 		CurrentTargetLocation = EngagedLocation;
 	}
@@ -139,13 +141,19 @@ void AEnemyDroneBaseActor::CalculateEngagedLocation()
 	do
 	{
 		NewLocation = BoundCenterPosition + RelativePositionToPLayer;
-		NewLocation = FVector(NewLocation.X, NewLocation.Y, FMath::Clamp(NewLocation.Z, PlayerLocation.Z + MinHeightAbovePlayer, PlayerLocation.Z + MaxHeightAbovePlayer));
+		NewLocation = FVector(NewLocation.X, NewLocation.Y, FMath::Clamp(NewLocation.Z, PlayerLocation.Z + 0.f, PlayerLocation.Z + MaxHeightAbovePlayer)); //kanske lägga till min height player
 		Counter++;
 	}
 	while (IsTargetLocationValid(NewLocation) && Counter <=10);
 	
 	EngagedLocation = NewLocation;
-	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Black, false,0.2f);
+	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Purple, false,0.2f);
+}
+
+void AEnemyDroneBaseActor::CalculateAttackLocation()
+{
+	AttackLocation = GetActorForwardVector() * PlayerLocation;
+	DrawDebugSphere(GetWorld(),  AttackLocation, 30.f, 30, FColor::Red, false,3.f);
 }
 
 void AEnemyDroneBaseActor::GenerateNewRelativePosition()
@@ -231,7 +239,7 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation(FVector GoalLocation)
 
 	// reflection vector from hit point
 	FVector ReflectionVector = (2 * ProjectionOnSurfNorm * SurfaceNormal * DroneToGoal.Size() - DroneToGoal);
-	ReflectionVector = ReflectionVector.GetSafeNormal() * FMath::Clamp(ReflectionVector.Size(), 0, CollisionAvoidanceOffset);
+	ReflectionVector = ReflectionVector.GetSafeNormal() * FMath::Clamp(ReflectionVector.Size(), 0, CollisionAvoidanceOffset); // 0 förut
 	AdjustedLocation += ReflectionVector;
 
 	if (DebugAssist)

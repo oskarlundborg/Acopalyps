@@ -118,6 +118,9 @@ private:
 	/** Location to move towards after attacking player*/
 	FVector RetreatLocation;
 
+	/** Location to move towards when attacking player*/
+	FVector AttackLocation;
+
 	FVector RelativePositionToPLayer;
 
 	/** Location to check collision agains*/  
@@ -137,7 +140,7 @@ private:
 	
 	/** Define the min height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float MinHeightAbovePlayer = 0.f;
+	float MinHeightAbovePlayer = 80.f;
 
 	/** Define the max height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -221,6 +224,9 @@ private:
 	
 	/** Updates location from which to start attack*/
 	void CalculateEngagedLocation();
+
+	/** Updates location to retreat to*/
+	void CalculateAttackLocation();
 
 	/** Generate new relative position to player*/
 	void GenerateNewRelativePosition();
