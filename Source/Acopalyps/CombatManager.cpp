@@ -108,7 +108,6 @@ void ACombatManager::RunSpawnWave()
 	}
 }
 
-
 void ACombatManager::GatherOverlappingActors()
 {
 	// populate array with all overlapping zones
@@ -186,41 +185,3 @@ void ACombatManager::RemoveDrone(AEnemyDroneBaseActor* DroneToRemove)
 		if(Player) Player->NumberOfActiveCombats--;
 	}
 }
-
-TTuple<TArray<AEnemyAICharacter*>, TArray<AEnemyDroneBaseActor*>> ACombatManager::GetEnemyLists()
-{
-	return { ManagedEnemies, ManagedDrones };
-}
-
-TArray<ASpawnZone*> ACombatManager::GetSpawnZones()
-{
-	return SpawnZones;
-}
-
-TArray<ACombatTrigger*> ACombatManager::GetCombatTriggers()
-{
-	return CombatTriggers;
-}
-
-TArray<FCombatWave> ACombatManager::GetCombatWaves()
-{
-	return CombatWaves;
-}
-
-void ACombatManager::SetInstance(
-	TArray<AEnemyAICharacter*> InEnemies,
-	TArray<AEnemyDroneBaseActor*> InDrones,
-	TArray<ASpawnZone*> InSpawnZones,
-	TArray<ACombatTrigger*> InCombatTriggers,
-	TArray<FCombatWave> InCombatWaves
-	)
-{
-	ManagedEnemies = InEnemies;
-	ManagedDrones = InDrones;
-	SpawnZones = InSpawnZones;
-	CombatTriggers = InCombatTriggers;
-	CombatWaves	= InCombatWaves;
-}
-
-
-

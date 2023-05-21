@@ -30,11 +30,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(SaveGame)
 	ACombatManager* CombatManager = nullptr;
 
 	void HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn, double Delay);
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	int SpawnZoneID;
 	
 private:
@@ -45,13 +46,13 @@ private:
 
 	FTimerHandle SpawnTimerHandle;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	TArray<ASpawnPoint*> SpawnPoints = TArray<ASpawnPoint*>();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	UBoxComponent* SpawnZoneZone;
 	
-	UPROPERTY(EditAnywhere, Category="Spawning")
+	UPROPERTY(EditAnywhere, Category="Spawning", SaveGame)
 	int SpawnDelay;
 
 	int NumberOfBasicEnemiesLeftToSpawn = 0;

@@ -20,6 +20,7 @@ class ACombatTrigger;
 class ACombatManager;
 struct FCombatWave;
 
+/*
 USTRUCT()
 struct FMeshData
 {
@@ -101,11 +102,16 @@ struct FInstance
 	GENERATED_BODY()
 	
 	UPROPERTY(VisibleAnywhere)
-	TSubclassOf<AActor> Class;
+	FName Name;
+	UPROPERTY(VisibleAnywhere)
+	UClass* Class;
 	UPROPERTY(VisibleAnywhere)
 	FTransform Transform;
 	UPROPERTY(VisibleAnywhere)
-	FName Name;
+	TArray<uint8> Data;
+	
+	UPROPERTY(VisibleAnywhere)
+	bool bIsDead;
 	
 	UPROPERTY(VisibleAnywhere)
 	FPlayerData PlayerData;
@@ -117,8 +123,43 @@ struct FInstance
 	FMeshData MeshData;
 	UPROPERTY(VisibleAnywhere)
 	FCombatManagerData CombatManagerData;
-	UPROPERTY(VisibleAnywhere)
+};
+*/
+
+USTRUCT()
+struct ACOPALYPS_API FInstanceComponent
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	UClass* Class;
+	UPROPERTY()
+	FName Name;
+	UPROPERTY()
+	FTransform Transform;
+	UPROPERTY()
 	TArray<uint8> Data;
+	
+	UPROPERTY()
+	FVector Velocity;
+	UPROPERTY()
+	FVector AngularVelocity;
+	
+	UPROPERTY()
+	float Lifespan;
+};
+
+USTRUCT()
+struct ACOPALYPS_API FInstanceRef
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	AActor* SpawnedActor;
+	UPROPERTY()
+	FInstanceComponent Self;
+	UPROPERTY()
+	TArray<FInstanceComponent> Components;
 };
 
 struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
@@ -127,7 +168,6 @@ struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
 		: FObjectAndNameAsStringProxyArchive(InInnerArchive,true)
 	{
 		ArIsSaveGame = true;
-		ArNoDelta	 = true;
 	}
 };
 
@@ -141,44 +181,50 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 	
 public:
 	UFUNCTION()
-	void SaveGameInstance(const UWorld* World, TArray<AActor*> Actors);
-	UFUNCTION()
-	void LoadGameInstance(UWorld* World, TArray<AActor*>& Actors);
+	void SaveGameInstance(APawn* Player, TArray<AActor*>& InActors);
+	UFUNCTION(meta=(WorldContext=WorldContextObject))
+	void LoadGameInstance(UObject* WorldContextObject);
 
+private:
+	UFUNCTION()
+	void LoadInstance(UWorld* World, FInstanceRef& Ref);
+	UFUNCTION()
+	void FinishLoadingInstance(FInstanceRef& Ref);
+	UFUNCTION()
+	void AddInstanceRef(AActor* Actor, FInstanceRef& Ref);
+	
+	UPROPERTY()
+	FInstanceRef PlayerRef;
+	UPROPERTY()
+	FRotator PlayerControllerRotation;
+	
+	UPROPERTY()
+	TArray<FInstanceRef> Instances;
+/*
 	UFUNCTION()
 	void DestroySceneActors(TArray<AActor*>& Actors);
-
+	
 	// World Info
 	UPROPERTY(VisibleAnywhere, Category=World)
 	FName WorldName;
 	UPROPERTY(VisibleAnywhere, Category=World)
 	TSoftObjectPtr<UWorld> WorldPtr;
+	UPROPERTY(VisibleAnywhere)
+	FDateTime Timestamp;
 	
 	// Player Info
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
 	TSubclassOf<AAcopalypsCharacter> PlayerClass;
-
-	// Enemies In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyAICharacter> EnemyClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyDroneBaseActor> EnemyDroneClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AStaticMeshActor> StaticMeshClass;
+	TArray<TSubclassOf<AActor>> SavedClasses;
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> ResupplyStationClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> AmmoPickupClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> CombatManagerClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TArray<TSubclassOf<AActor>> ClassesToUnload;
+	TArray<TSubclassOf<AActor>> SavedClassesWithFilters;
 	
 	// Actors In World Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
 	TArray<struct FLevelID> SubLevels;
 	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
 	TArray<FInstance> InstancesInWorld;
+	*/
 };

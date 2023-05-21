@@ -3,29 +3,189 @@
 
 #include "AcopalypsSaveGame.h"
 
-#include "LevelSpawner.h"
-#include "AcopalypsCharacter.h"
+#include "LevelSpawner.h" // Needed but grayed out by rider for whatever reason lol
 #include "EnemyAICharacter.h"
-#include "EnemyAIController.h"
-#include "EnemyDroneBaseActor.h"
-#include "LevelStreamerSubsystem.h"
-#include "Engine/LevelStreamingDynamic.h"
-#include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 class ULevelStreamerSubsystem;
 
+void UAcopalypsSaveGame::SaveGameInstance(APawn* Player, TArray<AActor*>& InActors)
+{
+	check( Player != nullptr )
+	ensure( Instances.Num() < 1 );
+	
+	AddInstanceRef(Player, PlayerRef);
+	PlayerControllerRotation = Player->GetController()->GetControlRotation();
+
+	for( AActor* Actor : InActors )
+	{
+		const int Index = Instances.Emplace();
+		FInstanceRef& Ref = Instances[Index];
+		AddInstanceRef(Actor, Ref);
+	}
+}
+
+void UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref)
+{
+	FMemoryWriter MemWriter = FMemoryWriter(Ref.Self.Data, true);
+	FSaveGameArchive Archive = FSaveGameArchive(MemWriter);
+
+	Ref = {
+		.Self = {
+			.Class = Actor->GetClass(),
+			.Name = Actor->GetFName(),
+			.Transform = Actor->GetTransform(),
+			.Lifespan = Actor->GetLifeSpan(),
+		},
+	};
+	Actor->Serialize(Archive);
+	
+	TArray<UActorComponent*> Components = TArray<UActorComponent*>();
+	Actor->GetComponents(Components);
+	for( UActorComponent* Comp : Components )
+	{
+		const int Index = Ref.Components.Emplace();
+		FInstanceComponent& CompRef = Ref.Components[Index];
+		CompRef = {
+			.Class	= Comp->GetClass(),
+			.Name	= Comp->GetFName(),
+		};
+		if( USceneComponent* SceneComp = Cast<USceneComponent>(Comp) )
+		{
+			CompRef.Transform = SceneComp->GetRelativeTransform();
+			if( UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(Comp) )
+			{
+				CompRef.Velocity = PrimComp->GetPhysicsLinearVelocity();
+				CompRef.AngularVelocity = PrimComp->GetPhysicsAngularVelocityInDegrees();
+			}
+		}
+		if( UMovementComponent* MovementComp = Cast<UMovementComponent>(Comp) )
+		{
+			CompRef.Velocity = MovementComp->Velocity;
+		}
+
+		FMemoryWriter CompMemWriter = FMemoryWriter(CompRef.Data, true);
+		FSaveGameArchive CompArchive = FSaveGameArchive(MemWriter);
+		Comp->Serialize(CompArchive);
+		
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.Class->GetFName().ToString())
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.Name.ToString())
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.Velocity.ToString())
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.AngularVelocity.ToString())
+	}
+}
+
+void UAcopalypsSaveGame::LoadGameInstance(UObject* WorldContextObject)
+{
+	UWorld* World = WorldContextObject->GetWorld();
+	//ACharacter* Player = UGameplayStatics::GetPlayerCharacter(World, 0);
+	//Player->DetachFromControllerPendingDestroy();
+	//Player->Destroy();
+
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), Actors);
+	for( AActor* Actor : Actors )
+	{
+		Actor->Destroy();
+	}
+
+	LoadInstance(World, PlayerRef);
+	for( FInstanceRef& Ref : Instances )
+	{
+		LoadInstance(World, Ref);
+	}
+
+	//FinishLoadingInstance(PlayerRef);
+	//APlayerController* Controller = UGameplayStatics::GetPlayerController(World, 0);
+	//Controller->Possess(Cast<APawn>(PlayerRef.SpawnedActor));
+	//Controller->SetControlRotation(PlayerControllerRotation);
+	//Controller->UpdateRotation(1);
+
+	for( FInstanceRef& Ref : Instances )
+	{
+		FinishLoadingInstance(Ref);
+	}
+}
+
+void UAcopalypsSaveGame::LoadInstance(UWorld* World, FInstanceRef& Ref)
+{
+	FActorSpawnParameters Params;
+	Params.Name = Ref.Self.Name;
+	Params.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
+	Params.bDeferConstruction = true;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	AActor* Actor = World->SpawnActor(
+		Ref.Self.Class,
+		&Ref.Self.Transform,
+		Params
+		);
+	Actor->SetLifeSpan(Ref.Self.Lifespan);
+
+	FMemoryReader MemReader = FMemoryReader(Ref.Self.Data, true);
+	FSaveGameArchive Archive = FSaveGameArchive(MemReader);
+	Actor->Serialize(Archive);
+
+	Ref.SpawnedActor = Actor;
+}
+
+void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref)
+{
+	if( Ref.SpawnedActor == nullptr ) return;
+	AActor* Actor = Ref.SpawnedActor;
+	if( Actor != nullptr )
+	{
+		TArray<UActorComponent*> Comps = TArray<UActorComponent*>();
+		Actor->GetComponents(Comps);
+		for( FInstanceComponent& CompRef : Ref.Components )
+		{
+			for( UActorComponent* Comp : Comps )
+			{
+				if( Comp->GetFName() == CompRef.Name )
+				{
+					FMemoryReader MemReader = FMemoryReader(CompRef.Data, true);
+					FSaveGameArchive Archive = FSaveGameArchive(MemReader);
+					Comp->Serialize(Archive);
+
+					if( USceneComponent* SceneComponent = Cast<USceneComponent>(Comp) )
+					{
+						SceneComponent->SetRelativeTransform(
+							CompRef.Transform,
+							false,
+							nullptr,
+							ETeleportType::TeleportPhysics
+							);
+						UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Comp);
+						if( PrimitiveComponent != nullptr && PrimitiveComponent->IsAnySimulatingPhysics() )
+						{
+							PrimitiveComponent->SetPhysicsLinearVelocity(CompRef.Velocity);
+							PrimitiveComponent->SetPhysicsAngularVelocityInDegrees(CompRef.AngularVelocity);
+							PrimitiveComponent->GetBodyInstance()->UpdateMassProperties();
+						}
+					}
+					if( UMovementComponent* MovementComponent = Cast<UMovementComponent>(Comp) )
+					{
+						MovementComponent->Velocity = CompRef.Velocity;
+						MovementComponent->UpdateComponentVelocity();
+					}
+				}
+			}
+		}
+		//Actor->FinishSpawning(Ref.Self.Transform);
+	}
+}
+
+/*
 void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> Actors)
 {
-	// Save level name
-	//WorldName = FName(World->GetName());
-	
 	// Store data from actors in scene
 	for( AActor* Actor : Actors )
 	{
+		if( !IsValid(Actor) ) continue;
+		
 		// Get iteration's actor class
 		const auto ActorClass = Actor->GetClass();
-		//UE_LOG(LogTemp, Display, TEXT("Actor Class: %s"), *Actor->GetClass()->GetName())
+		UE_LOG(LogTemp, Display, TEXT("%s"), *ActorClass->GetName())
 		
 		//ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
 		//SubLevels.Empty();
@@ -41,13 +201,14 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 		{
 			const AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(Actor);
 			TArray<uint8> TData;
-			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
+			FMemoryWriter MemWriter = FMemoryWriter(TData);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
+				.Name		= Player->GetFName(),
 				.Class		= ActorClass,
 				.Transform	= Player->GetTransform(),
-				.Name		= Player->GetFName(),
+				.Data		= TData,
 				.PlayerData	= {
                 	.CameraRotation	= Player->GetController()->GetControlRotation(),
 					.Velocity		= Player->GetVelocity(),
@@ -55,92 +216,57 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
                 	.Health			= Player->HealthComponent->GetHealth(),
                 	.GunMag			= Player->Gun->CurrentMag,
                 },
-				.Data				= TData,
 			});
 			SubLevels = Player->LoadedLevels;
 		}
 		// Save enemy specific data
-		else if( ActorClass == EnemyClass )
+		else if( SavedClasses.Find(ActorClass) != INDEX_NONE )
 		{
-			const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
+			bool bIsDead = false;
+			if( const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor) )
+			{
+				bIsDead = Enemy->IsDead();
+			}
+			else if( const AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor) )
+			{
+				bIsDead = Drone->IsDead();
+			}
 			TArray<uint8> TData;
-			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
+			FMemoryWriter MemWriter = FMemoryWriter(TData);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
+				.Name		= Actor->GetFName(),
 				.Class		= ActorClass,
-				.Transform	= Enemy->GetTransform(),
-				.Name		= Enemy->GetFName(),
-				.EnemyData	= {
-            		.bIsDead	= Enemy->HealthComponent->IsDead(),
-            		.Health		= Enemy->HealthComponent->GetHealth(),
-            		.GunMag		= Enemy->Gun->CurrentMag,
-					.CombatManager = Enemy->Manager,
-				},
-				.Data				= TData,
-			});
-		}
-		else if( ActorClass == EnemyDroneClass )
-		{
-			const AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor);
-			TArray<uint8> TData;
-			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
-			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
-			Actor->Serialize(Ar);
-			InstancesInWorld.Add({
-				.Class		= ActorClass,
-				.Transform	= Drone->GetTransform(),
-				.Name		= Drone->GetFName(),
-				.DroneData	= {
-            		.bIsDead	= Drone->HealthComponent->IsDead(),
-            		.Health		= Drone->HealthComponent->GetHealth(),
-            		.MeshComp	= Drone->DroneMesh,
-					.CombatManager = Drone->CombatManager,
-				},
-				.Data				= TData,
+				.Transform	= Actor->GetTransform(),
+				.Data		= TData,
+				.bIsDead	= bIsDead,
 			});
 		}
 		// Save non static actors data
-		else if( ActorClass == StaticMeshClass && Actor->GetRootComponent() != nullptr && Actor->GetRootComponent()->IsSimulatingPhysics() && Actor->Owner == nullptr )
+		else if( ActorClass == AStaticMeshActor::StaticClass()
+		      && Actor->GetRootComponent() == nullptr
+		      && Actor->GetRootComponent()->IsSimulatingPhysics()
+		      && Actor->Owner == nullptr
+		       )
 		{
 			const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor);
 			TArray<uint8> TData;
-			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
+			FMemoryWriter MemWriter = FMemoryWriter(TData);
 			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
 			Actor->Serialize(Ar);
 			InstancesInWorld.Add({
+				.Name		= StaticMeshActor->GetFName(),
 				.Class		= ActorClass,
 				.Transform	= StaticMeshActor->GetActorTransform(),
-				.Name		= StaticMeshActor->GetFName(),
+				.Data		= TData,
 				.MeshData	= {
 					.Mesh		= StaticMeshActor->GetStaticMeshComponent()->GetStaticMesh(),
 				},
-				.Data				= TData,
-			});
-		}
-		else if( ActorClass == CombatManagerClass )
-		{
-			ACombatManager* CombatManager = Cast<ACombatManager>(Actor);
-			TTuple<TArray<AEnemyAICharacter*>, TArray<AEnemyDroneBaseActor*>> EnemyList = CombatManager->GetEnemyLists();
-			TArray<uint8> TData;
-			FMemoryWriter MemWriter = FMemoryWriter(TData, true);
-			FSaveGameArchive Ar = FSaveGameArchive(MemWriter);
-			Actor->Serialize(Ar);
-			InstancesInWorld.Add({
-				.Class			= ActorClass,
-				.Transform		= CombatManager->GetTransform(),
-				.Name			= CombatManager->GetFName(),
-				.CombatManagerData	= {
-					.ManagedEnemies = EnemyList.Get<0>(),
-					.ManagedDrones	= EnemyList.Get<1>(),
-					.SpawnZones		= CombatManager->GetSpawnZones(),
-					.CombatTriggers = CombatManager->GetCombatTriggers(),
-					//.CombatWaves	= CombatManager->GetCombatWaves(),
-				},
-				.Data				= TData,
 			});
 		}
 	}
+	Timestamp = FDateTime::Now();
 	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game Saved!"));
 }
 
@@ -167,111 +293,58 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 	}
 	
 	// Set for deletion.
-	DestroySceneActors(Actors);
-	
-	for (int i = 0; i < SubLevels.Num(); i++)
+	//DestroySceneActors(Actors);
+	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
+	for( TTuple<int, ULevelStreamingDynamic*> Level : LevelStreamSubsystem->LevelMap )
 	{
-		Actors.Last()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LoadLevel(SubLevels[i]);
+		LevelStreamSubsystem->UnloadLevel(Level.Key);
 	}
+	for( auto Lvl : SubLevels )
+	{
+		UE_LOG(LogTemp, Display, TEXT("%i"), Lvl.ID )
+	}
+	for( int i = 0; i < SubLevels.Num(); i++ )
+	{
+		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
+		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
+	}
+	for( AActor* Actor : Actors )
+    {
+    	if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
+    	{
+    		Actor->Destroy();
+    	}
+    }
 	for( const FInstance Inst : InstancesInWorld )
 	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Name = Inst.Name;
-		SpawnParams.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
-		auto Actor = World->SpawnActor(
-			Inst.Class,
-			&Inst.Transform,
-			FActorSpawnParameters()
-			);
-		FMemoryReader MemReader(Inst.Data, true);
-		FSaveGameArchive Ar(MemReader);
-		Actor->Serialize(Ar);
-	}
-	/*
-	// Recreate saved state.
-	for( const FInstance Instance : InstancesInWorld )
-	{
-		// Set player data.
-		if( Instance.Class == PlayerClass )
+		if( Inst.Class == PlayerClass && !Inst.bIsDead )
 		{
-			if( Instance.PlayerData.bIsDead ) break;
-		
 			AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(World->GetFirstPlayerController()->GetCharacter());
-			Player->SetActorTransform(Instance.Transform);
-			Player->GetMovementComponent()->Velocity = Instance.PlayerData.Velocity;
-			Player->GetController()->SetControlRotation(Instance.PlayerData.CameraRotation);
-			Player->HealthComponent->SetHealth(Instance.PlayerData.Health);
-			Player->Gun->CurrentMag = Instance.PlayerData.GunMag;
-			FMemoryReader MemReader(Instance.Data, true);
+			//Player->SetActorTransform(Inst.Transform);
+			//Player->GetMovementComponent()->Velocity = Inst.PlayerData.Velocity;
+			//Player->GetController()->SetControlRotation(Inst.PlayerData.CameraRotation);
+			//Player->HealthComponent->SetHealth(Inst.PlayerData.Health);
+			//Player->Gun->CurrentMag = Inst.PlayerData.GunMag;
+			FMemoryReader MemReader(Inst.Data);
 			FSaveGameArchive Ar(MemReader);
 			Player->Serialize(Ar);
 		}
-		else if( Instance.Class == EnemyClass )
+		else if( !Inst.bIsDead )
 		{
-			// If actor is enemy, set specific data
-			if( Instance.EnemyData.bIsDead ) break;
-		
-			AEnemyAICharacter* Enemy = World->SpawnActor<AEnemyAICharacter>(
-				Instance.Class,
-				Instance.Transform
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Name = Inst.Name;
+			SpawnParams.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
+			auto Actor = World->SpawnActor(
+				Inst.Class,
+				&Inst.Transform,
+				FActorSpawnParameters()
 				);
-			Enemy->HealthComponent->SetHealth(Instance.EnemyData.Health);
-			Enemy->Gun->CurrentMag = Instance.EnemyData.GunMag;
-			FMemoryReader MemReader(Instance.Data, true);
+			check(Actor)
+			FMemoryReader MemReader(Inst.Data);
 			FSaveGameArchive Ar(MemReader);
-			Enemy->Serialize(Ar);
-		}
-		else if( Instance.Class == EnemyDroneClass )
-		{
-			if( Instance.DroneData.bIsDead ) break;
-
-			AEnemyDroneBaseActor* Drone = World->SpawnActor<AEnemyDroneBaseActor>(
-				Instance.Class,
-				Instance.Transform
-				);
-			Drone->HealthComponent->SetHealth(Instance.DroneData.Health);
-			Drone->DroneMesh = Instance.DroneData.MeshComp;
-			FMemoryReader MemReader(Instance.Data, true);
-			FSaveGameArchive Ar(MemReader);
-			Drone->Serialize(Ar);
-		}
-		else if( Instance.Class == StaticMeshClass ) // Handle all static mesh data in scene
-		{
-			AStaticMeshActor* StaticMesh = World->SpawnActor<AStaticMeshActor>(
-				Instance.Class,
-				Instance.Transform
-				);
-			StaticMesh->SetMobility(EComponentMobility::Movable);
-			StaticMesh->GetStaticMeshComponent()->SetStaticMesh(Instance.MeshData.Mesh);
-			StaticMesh->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
-			StaticMesh->GetStaticMeshComponent()->SetRelativeTransform(Instance.Transform);
-			StaticMesh->GetStaticMeshComponent()->SetSimulatePhysics(true);
-			FMemoryReader MemReader(Instance.Data, true);
-			FSaveGameArchive Ar(MemReader);
-			StaticMesh->Serialize(Ar);
-		}
-		else if( Instance.Class == CombatManagerClass )
-		{
-			ACombatManager* CombatManager = World->SpawnActor<ACombatManager>(
-				Instance.Class,
-				Instance.Transform.GetLocation(),
-				Instance.Transform.Rotator()
-				);
-			FCombatManagerData Data = Instance.CombatManagerData;
-			CombatManager->SetInstance(
-				Instance.CombatManagerData.ManagedEnemies,
-				Instance.CombatManagerData.ManagedDrones,
-				Instance.CombatManagerData.SpawnZones,
-				Instance.CombatManagerData.CombatTriggers,
-				TArray<FCombatWave>() // Stopped working for some reason
-				);
-			FMemoryReader MemReader(Instance.Data, true);
-			FSaveGameArchive Ar(MemReader);
-			CombatManager->Serialize(Ar);
+			Actor->Serialize(Ar);
 		}
 	}
-	*/
-	
 	GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Cyan, TEXT("Game Loaded."));
 }
 
@@ -281,18 +354,18 @@ void UAcopalypsSaveGame::DestroySceneActors(TArray<AActor*>& Actors)
 	{
 		if( !Actor || !Actor->IsValidLowLevel() || Actor->ActorHasTag("Player") ) continue;
 		
-		if( Actor->GetClass() == EnemyClass )
+		if( Actor->GetClass() == AEnemyAICharacter::StaticClass() )
 		{
 			AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor);
 			Enemy->Gun->Owner = nullptr;
 			Enemy->DetachFromControllerPendingDestroy();
 			Enemy->Destroy();
 		}
-		else if( Actor->GetClass() == StaticMeshClass && Actor->IsRootComponentMovable() )
+		else if( Actor->GetClass() == AStaticMeshActor::StaticClass() && Actor->IsRootComponentMovable() )
 		{
 			Actor->Destroy();
 		}
-		else if( ClassesToUnload.Find(Actor->GetClass()) != INDEX_NONE
+		else if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE
 			&& Actor->Owner.GetClass() != PlayerClass
 			&& Actor->IsRootComponentMovable() )
 		{
@@ -300,3 +373,4 @@ void UAcopalypsSaveGame::DestroySceneActors(TArray<AActor*>& Actors)
 		}
 	}
 }
+*/

@@ -37,14 +37,15 @@ void AEnemyDroneBaseActor::BeginPlay()
 	Super::BeginPlay();
 	
 	PlayerCharacter = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if( PlayerCharacter != nullptr )
+	{
+		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCharacter->GetActorLocation()));
 
-	SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCharacter->GetActorLocation()));
-
-	// Calculate the location of the AI character relative to the player, and rotation
-	const FVector DirectionToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
-	const FRotator InitialRotation = DirectionToPlayer.ToOrientationRotator();
-	SetActorRotation(InitialRotation);
-
+		// Calculate the location of the AI character relative to the player, and rotation
+		const FVector DirectionToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
+		const FRotator InitialRotation = DirectionToPlayer.ToOrientationRotator();
+		SetActorRotation(InitialRotation);
+	}
 	// Start timers to update target location and to check for current state
 	StartTimers();
 
@@ -70,10 +71,12 @@ void AEnemyDroneBaseActor::StartTimers()
 void AEnemyDroneBaseActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	PlayerLocation = PlayerCharacter->GetActorLocation();
-	PlayerLocation.Z += MinHeightAbovePlayer;
-	PlayerRotation = PlayerCharacter->GetActorRotation();
-
+	if( PlayerCharacter != nullptr )
+	{
+	    PlayerLocation = PlayerCharacter->GetActorLocation();
+	    PlayerLocation.Z += MinHeightAbovePlayer;
+	    PlayerRotation = PlayerCharacter->GetActorRotation();
+	}
 	if (!bIsDead)
 	{
 		MoveTowardsLocation(DeltaTime);

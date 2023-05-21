@@ -18,9 +18,10 @@ public:
 	// Sets default values for this actor's properties
 	AEnemyDroneBaseActor();
 
+	UPROPERTY()
 	ACombatManager* CombatManager;
 
-	UPROPERTY(VisibleAnywhere, Category=Health)
+	UPROPERTY(VisibleAnywhere, Category=Health, SaveGame)
 	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
@@ -89,10 +90,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool DebugAssist = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame)
 	float TargetSpeed = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame)
 	float CurrentSpeed = 0;
 
 protected:
@@ -111,19 +112,23 @@ private:
 	bool bIsDead;
 	bool bIsPreparingForAttack;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	class AAcopalypsCharacter* PlayerCharacter;
 
 	/** Current direction drone is moving in*/
+	UPROPERTY(SaveGame)
 	FVector Direction;
 
 	/** Location the player currently moves towards*/
+	UPROPERTY(SaveGame)
 	FVector CurrentTargetLocation;
 
 	/** Location from which to start attack from*/
+	UPROPERTY(SaveGame)
 	FVector EngagedLocation;
 
 	/** Location to move towards after attacking player*/
+	UPROPERTY(SaveGame)
 	FVector RetreatLocation;
 
 	/** Location to move towards when attacking player*/
@@ -133,13 +138,17 @@ private:
 	FVector PrepareAttackLocation;
 
 	/** Location to track while moving towards player, located withing assigned bounds*/
+	UPROPERTY(SaveGame)
 	FVector RelativePositionToPLayer;
 
 	/** Location to check collision towards*/  
+	UPROPERTY(SaveGame)
 	FVector CollisionCheckLocation;
 
 	/** Player character location and rotation*/
+	UPROPERTY(SaveGame)
 	FVector PlayerLocation;
+	UPROPERTY(SaveGame)
 	FRotator PlayerRotation;
 
 	/** Defines how far above colliding object drone moves to avoid collision*/
@@ -171,6 +180,7 @@ private:
 	float DroneRadius = 50.0f;
 
 	/** Attack area center, same as player character location */
+	UPROPERTY(SaveGame)
 	FVector BoundCenterPosition;
 
 	//=============== Time delays for tick functions =================//
@@ -204,18 +214,26 @@ private:
 	double DestructionDelay = 1.f;
 
 	/* Looping timer handles*/
+	UPROPERTY(SaveGame)
 	FTimerHandle CheckAttackBoundsTimerHandle;
+	UPROPERTY(SaveGame)
 	FTimerHandle UpdateCurrentObjectiveTimerHandle;
 
 	/* One-shot timer handles*/
 	FTimerHandle SaveHomeLocationTimerHandle;
+	UPROPERTY(SaveGame)
 	FTimerHandle AttackTimerHandle;
+	UPROPERTY(SaveGame)
 	FTimerHandle RetreatTimerHandle;
+	UPROPERTY(SaveGame)
 	FTimerHandle ResumeTimerHandle;
+	UPROPERTY(SaveGame)
 	FTimerHandle ResumeSpeedHandle;
+	UPROPERTY(SaveGame)
 	FTimerHandle DestructionTimerHandle;
 	
 	/** Closest colliding object between drone and target location*/
+	UPROPERTY(SaveGame)
 	FHitResult SweepHitResult;
 	
 	/** Starts looping timers*/
