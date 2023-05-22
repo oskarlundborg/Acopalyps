@@ -130,6 +130,14 @@ void AEnemyDroneBaseActor::UpdateCurrentObjective()
 		CalculateEngagedLocation();
 		CurrentTargetLocation = EngagedLocation;
 	}
+	else
+	{
+		bIdle = true;
+		bAttack = false;
+		bIsPreparingForAttack = false;
+		CalculateEngagedLocation();
+		CurrentTargetLocation = EngagedLocation;
+	}
 }
 
 /** Updates location from which to start attack*/
@@ -146,11 +154,13 @@ void AEnemyDroneBaseActor::CalculateEngagedLocation()
 	int Counter = 0;
 	do
 	{
+		if(Counter > 1)
+			GenerateNewRelativePosition();
 		NewLocation = BoundCenterPosition + RelativePositionToPLayer;
 		NewLocation = FVector(NewLocation.X, NewLocation.Y, FMath::Clamp(NewLocation.Z, PlayerLocation.Z, PlayerLocation.Z + MaxHeightAbovePlayer)); //kanske lägga till min height player
 		Counter++;
 	}
-	while (IsTargetLocationValid(NewLocation) && Counter <=10);
+	while (IsTargetLocationValid(NewLocation) && IsWithinPlayerInnerBounds(NewLocation) && Counter <=10);
 	
 	EngagedLocation = NewLocation;
 	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Purple, false,0.2f);
@@ -237,7 +247,7 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation()
 	float AvoidingOffset;
 	if (bIsPreparingForAttack)
 	{
-		AvoidingOffset = 0.5f;
+		AvoidingOffset = 50.f;
 	}
 	else
 	{
@@ -257,7 +267,7 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation()
 	// Projection of DroneToGoal on SurfaceNormal
 	const double ProjectionOnSurfNorm = -SurfaceNormal.Dot(DroneToGoal);
 
-	if (ProjectionOnSurfNorm > 0.95)
+	if (ProjectionOnSurfNorm > 0.99)
 	{
 		GenerateNewRelativePosition();
 	}
@@ -266,16 +276,16 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation()
 	FVector ReflectionVector = (2 * ProjectionOnSurfNorm * SurfaceNormal * DroneToGoal.Size() - DroneToGoal);
 	ReflectionVector = ReflectionVector.GetSafeNormal() * FMath::Clamp(ReflectionVector.Size(), 0, AvoidingOffset); 
 	AdjustedLocation += ReflectionVector;
-
+	
 	if (bIdle && CollisionOnPathToTarget(EngagedLocation))
 	{
-		AdjustedLocation.Z += 20.f; //borde vara en global variabel
+		AdjustedLocation.Z += 50.f; //borde vara en global variabel
 	}
 
 	if (DebugAssist)
 	{
-		DrawDebugSphere(GetWorld(), HitPoint, 30.f, 30, FColor::Black, true,0.2f);
-		DrawDebugSphere(GetWorld(), AdjustedLocation, 30.f, 30, FColor::Orange, true,0.2f);
+		DrawDebugSphere(GetWorld(), HitPoint, 30.f, 30, FColor::Black, false,0.2f);
+		DrawDebugSphere(GetWorld(), AdjustedLocation, 30.f, 30, FColor::Orange, false,0.2f);
 	}
 	return AdjustedLocation;
 }
@@ -362,6 +372,11 @@ void AEnemyDroneBaseActor::DestroyDrone()
 bool AEnemyDroneBaseActor::IsWithinAttackArea() const
 {
 	return (GetActorLocation() - BoundCenterPosition).Length() < OuterBoundRadius && (GetActorLocation() - BoundCenterPosition).Length() > InnerBoundRadius;
+}
+
+bool AEnemyDroneBaseActor::IsWithinPlayerInnerBounds(const FVector& LocationToCheck) const
+{
+	return (LocationToCheck - BoundCenterPosition).Length() < InnerBoundRadius;
 }
 
 void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
