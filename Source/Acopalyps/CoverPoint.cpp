@@ -9,6 +9,8 @@
 #include "AcopalypsCharacter.h"
 #include "Math/Vector.h"
 
+/** @author Jonathan Rubensson */
+/** @author Isabel Mirella Diaz Johansson */
 
 // Sets default values
 ACoverPoint::ACoverPoint()
@@ -33,12 +35,12 @@ void ACoverPoint::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-float ACoverPoint::DistanceToPlayer()
+float ACoverPoint::DistanceToPlayer() const
 {
 	return FVector::Dist(GetActorLocation(), PlayerCharacter->GetActorLocation());
 }
 
-bool ACoverPoint::HasLineOfSightToPlayer()
+bool ACoverPoint::HasLineOfSightToPlayer() const
 {
 	FHitResult HitResult;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult,FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 100), UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation(),ECC_WorldStatic);

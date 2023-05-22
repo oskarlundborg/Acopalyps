@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Jonathan Rubensson */
+/** @author Isabel Mirella Diaz Johansson */
 
 #include "CombatManager.h"
 

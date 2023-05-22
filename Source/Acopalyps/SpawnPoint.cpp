@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Jonathan Rubensson */
+/** @author Isabel Mirella Diaz Johansson */
 
 #include "SpawnPoint.h"
 
-#include "CombatManager.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
 #include "Components/CapsuleComponent.h"

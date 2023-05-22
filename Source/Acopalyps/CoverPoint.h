@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Jonathan Rubensson */
+/** @author Isabel Mirella Diaz Johansson */
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -33,9 +36,9 @@ public:
 
 	AEnemyAICharacter* LastVisitedCharacter;
 
-	float DistanceToPlayer();
+	float DistanceToPlayer() const;
 
-	bool HasLineOfSightToPlayer();
+	bool HasLineOfSightToPlayer() const;
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* CoverBox;

@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Jonathan Rubensson */
 
 #include "CombatTrigger.h"
 
