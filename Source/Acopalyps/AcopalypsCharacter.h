@@ -16,7 +16,7 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
-UCLASS(config=Game)
+UCLASS(config=Game, NonTransient)
 class AAcopalypsCharacter : public ACharacter
 {
 	GENERATED_BODY()

@@ -7,6 +7,7 @@
 #include "HealthComponent.h"
 #include "LevelSpawner.h" // Needed but grayed out by rider for whatever reason lol
 #include "LevelStreamerSubsystem.h"
+#include "Dataflow/DataflowEngineUtil.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -31,6 +32,14 @@ void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InAct
 	{
 		if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
 		{
+			for( TFieldIterator<UProperty> PropIt(Actor->GetClass()); PropIt; ++PropIt )
+			{
+				UE_LOG(LogTemp, Display, TEXT("%s"), *PropIt->GetFName().ToString())
+				if( UProperty* Val = *PropIt->ContainerPtrToValuePtr<UProperty*>(Actor) )
+				{
+					UE_LOG(LogTemp, Display, TEXT("%s"), *Val->GetFName().ToString())
+				}
+			}
 			const int Index = Instances.Emplace();
 			FInstanceRef& Ref = Instances[Index];
 			AddInstanceRef(Actor, Ref);
@@ -40,19 +49,15 @@ void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InAct
 
 void UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 {
-	FMemoryWriter MemWriter = FMemoryWriter(Ref.Self.Data, true);
+	FMemoryWriter MemWriter = FMemoryWriter(Ref.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemWriter);
 
-	Ref = {
-		.Self = {
-			.Class = Actor->GetClass(),
-			.Name = Actor->GetFName(),
-			.Transform = Actor->GetTransform(),
-			.Lifespan = Actor->GetLifeSpan(),
-		},
-	};
+	Ref.Class = Actor->GetClass();
+	Ref.Name = Actor->GetFName();
+	Ref.Transform = Actor->GetTransform();
+	Ref.Lifespan = Actor->GetLifeSpan();
 	Actor->Serialize(Archive);
-	
+
 	TArray<UActorComponent*> Components = TArray<UActorComponent*>();
 	Actor->GetComponents(Components);
 	for( UActorComponent* Comp : Components )
@@ -86,67 +91,85 @@ void UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 void UAcopalypsSaveGame::LoadGameInstance(const UObject* WorldContextObject)
 {
 	UWorld* World = WorldContextObject->GetWorld();
+	if( World != WorldPtr )
+	{
+		UGameplayStatics::LoadStreamLevel(
+			WorldContextObject,
+			WorldPtr->GetFName(),
+			true,
+			true,
+			FLatentActionInfo()
+			);
+	}
 	
+	// Set player status
 	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(World, 0));
-	Player->SetActorTransform(PlayerRef.Self.Transform);
-	Player->GetController()->SetControlRotation(PlayerRef.ControllerRotation);
-	Player->GetMovementComponent()->Velocity = PlayerRef.Self.Velocity;
-	Player->Gun->CurrentMag = PlayerRef.GunMag;
-	Player->HealthComponent->SetHealth(PlayerRef.Health);
-	
-	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
-	TArray<int> LevelKeys;
-	LevelStreamSubsystem->UnloadLevel(LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys));
-	for( const int Level : LevelKeys )
-	{
-		LevelStreamSubsystem->UnloadLevel(Level);
-	}
-	for( auto Lvl : SubLevels ) //-------------//
-	{													//
-		UE_LOG(LogTemp, Display, TEXT("%i"), Lvl.ID )	//
-	}						//--------------------------//
-	for( int i = 0; i < SubLevels.Num(); i++ )
-	{
-		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
-		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
-	}
+	FMemoryReader MemReader = FMemoryReader(PlayerRef.Data, true);
+	FSaveGameArchive Archive = FSaveGameArchive(MemReader);
+	Player->Serialize(Archive);
+	//Player->SetActorTransform(PlayerRef.Self.Transform);
+	//Player->GetController()->SetControlRotation(PlayerRef.ControllerRotation);
+	//Player->GetMovementComponent()->Velocity = PlayerRef.Self.Velocity;
+	//Player->Gun->CurrentMag = PlayerRef.GunMag;
+	//Player->HealthComponent->SetHealth(PlayerRef.Health);
 
+	// Destroy all saved actor instances in world.
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), Actors);
 	for( AActor* Actor : Actors )
 	{
 		if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
 		{
-			UE_LOG(LogTemp, Display, TEXT("%s"), *Actor->GetFName().ToString())
+			UE_LOG(LogTemp, Display, TEXT("Destroying: %s"), *Actor->GetFName().ToString())
 			Actor->Destroy();
 		}
 	}
+	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
+	TArray<int> LevelKeys;
+	LevelStreamSubsystem->UnloadLevel(LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys));
+	// Unload all loaded levels
+	for( const int Level : LevelKeys )
+	{
+		LevelStreamSubsystem->UnloadLevel(Level);
+	}
+	// Load all levels from save
+	for( int i = 0; i < SubLevels.Num(); i++ )
+	{
+		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
+		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
+	}
 
+	// Create new instances of saved actors.
 	for( FInstanceRef& Ref : Instances )
 	{
 		LoadInstanceRef(World, Ref);
+		UE_LOG(LogTemp, Display, TEXT("Load: %s"), *Ref.Class->GetFName().ToString() )
+	}
+	for( FInstanceRef& Ref : Instances )
+	{
+		FinishLoadingInstanceRef(Ref);
+		UE_LOG(LogTemp, Display, TEXT("Finish loading: %s"), *Ref.Class->GetFName().ToString() )
 	}
 }
 
 void UAcopalypsSaveGame::LoadInstanceRef(UWorld* World, FInstanceRef& Ref) const
 {
-	FActorSpawnParameters Params;
-	Params.Name = Ref.Self.Name;
-	Params.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
-	Params.bDeferConstruction = true;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	
-	AActor* Actor = World->SpawnActor(
-		Ref.Self.Class,
-		&Ref.Self.Transform,
-		Params
+	auto Actor = World->SpawnActorDeferred<AActor>(
+		Ref.Class,
+		Ref.Transform
 		);
-	Actor->SetLifeSpan(Ref.Self.Lifespan);
+	Actor->SetLifeSpan(Ref.Lifespan);
 
-	FMemoryReader MemReader = FMemoryReader(Ref.Self.Data, true);
+	FMemoryReader MemReader = FMemoryReader(Ref.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemReader);
 	Actor->Serialize(Archive);
-	
+
+	Ref.SpawnedActor = Actor;
+}
+
+void UAcopalypsSaveGame::FinishLoadingInstanceRef(FInstanceRef& Ref) const
+{
+	AActor* Actor = Ref.SpawnedActor;
 	if( Actor != nullptr )
 	{
 		TArray<UActorComponent*> Comps = TArray<UActorComponent*>();
@@ -157,9 +180,10 @@ void UAcopalypsSaveGame::LoadInstanceRef(UWorld* World, FInstanceRef& Ref) const
 			{
 				if( Comp->GetFName() == CompRef.Name )
 				{
+					UE_LOG(LogTemp, Display, TEXT("%s: %s"), *Actor->GetFName().ToString(),*Comp->GetFName().ToString() )
 					FMemoryReader CompMemReader = FMemoryReader(CompRef.Data, true);
-					FSaveGameArchive CompArchive = FSaveGameArchive(MemReader);
-					Comp->Serialize(Archive);
+					FSaveGameArchive CompArchive = FSaveGameArchive(CompMemReader);
+					Comp->Serialize(CompArchive);
 
 					if( USceneComponent* SceneComponent = Cast<USceneComponent>(Comp) )
 					{
@@ -185,7 +209,7 @@ void UAcopalypsSaveGame::LoadInstanceRef(UWorld* World, FInstanceRef& Ref) const
 				}
 			}
 		}
-		Actor->FinishSpawning(Ref.Self.Transform);
+		Actor->FinishSpawning(Ref.Transform);
 	}
 }
 

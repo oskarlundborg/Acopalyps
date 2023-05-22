@@ -32,14 +32,13 @@ struct ACOPALYPS_API FInstanceComponent
 };
 
 USTRUCT()
-struct ACOPALYPS_API FInstanceRef
+struct ACOPALYPS_API FInstanceRef : public FInstanceComponent
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere)
 	AActor* SpawnedActor;
-	UPROPERTY(VisibleAnywhere)
-	FInstanceComponent Self;
+	
 	UPROPERTY(VisibleAnywhere)
 	TArray<FInstanceComponent> Components;
 };
@@ -88,6 +87,9 @@ public:
 private:
 	UFUNCTION()
 	void LoadInstanceRef(UWorld* World, FInstanceRef& Ref) const;
+	UFUNCTION()
+	void FinishLoadingInstanceRef(FInstanceRef& Ref) const;
+	
 	UFUNCTION()
 	void AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const;
 
