@@ -21,7 +21,7 @@ public:
 	UPROPERTY()
 	ACombatManager* CombatManager;
 
-	UPROPERTY(VisibleAnywhere, Category=Health, SaveGame)
+	UPROPERTY(VisibleAnywhere, Category=Health)
 	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
@@ -107,9 +107,13 @@ public:
 private:
 
 	/** boolean states*/
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	bool bAttack;
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	bool bIdle;
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	bool bIsDead;
+    UPROPERTY(VisibleAnywhere, SaveGame)
 	bool bIsPreparingForAttack;
 	
 	UPROPERTY(EditAnywhere, SaveGame)

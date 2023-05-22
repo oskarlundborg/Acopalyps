@@ -155,12 +155,14 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::PerformMoveTask(UBehaviorTreeCompone
 
 void UBTTask_MoveToAndShoot::Shoot() 
 {
-	if (EnemyController && UGameplayStatics::GetPlayerCharacter(this, 0) && EnemyController->LineOfSightTo(UGameplayStatics::GetPlayerCharacter(this, 0)))
+	if( auto Player = UGameplayStatics::GetPlayerCharacter(this, 0) )
 	{
-		Cast<AEnemyAICharacter>(EnemyController->GetPawn())->Shoot();
+		if (EnemyController->IsValidLowLevel() && EnemyController->LineOfSightTo(Player))
+		{
+			Cast<AEnemyAICharacter>(EnemyController->GetPawn())->Shoot();
+		}
+		EnemyController->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
 	}
-	EnemyController->GetWorldTimerManager().ClearTimer(ShootTimerHandle);
-
 }
 
 

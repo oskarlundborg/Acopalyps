@@ -3,29 +3,42 @@
 
 #include "AcopalypsSaveGame.h"
 
+#include "AcopalypsCharacter.h"
+#include "HealthComponent.h"
 #include "LevelSpawner.h" // Needed but grayed out by rider for whatever reason lol
-#include "EnemyAICharacter.h"
+#include "LevelStreamerSubsystem.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
+class ULevelStreamingDynamic;
 class ULevelStreamerSubsystem;
 
-void UAcopalypsSaveGame::SaveGameInstance(APawn* Player, TArray<AActor*>& InActors)
+void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InActors)
 {
-	check( Player != nullptr )
-	ensure( Instances.Num() < 1 );
+	WorldPtr = _Player->GetWorld();
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(_Player);
 	
 	AddInstanceRef(Player, PlayerRef);
-	PlayerControllerRotation = Player->GetController()->GetControlRotation();
+	PlayerRef.ControllerRotation = Player->GetController()->GetControlRotation();
+	PlayerRef.GunMag = Player->Gun->CurrentMag;
+	PlayerRef.Health = Player->HealthComponent->GetHealth();
+	PlayerRef.EquippedAmmoType = Player->Gun->CurrentAmmoType;
+	PlayerRef.EquippedAltAmmoType = Player->Gun->CurrentAlternateAmmoType;
+	
+	SubLevels = Player->LoadedLevels;
 
 	for( AActor* Actor : InActors )
 	{
-		const int Index = Instances.Emplace();
-		FInstanceRef& Ref = Instances[Index];
-		AddInstanceRef(Actor, Ref);
+		if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
+		{
+			const int Index = Instances.Emplace();
+			FInstanceRef& Ref = Instances[Index];
+			AddInstanceRef(Actor, Ref);
+		}
 	}
 }
 
-void UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref)
+void UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 {
 	FMemoryWriter MemWriter = FMemoryWriter(Ref.Self.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemWriter);
@@ -67,47 +80,55 @@ void UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref)
 		FMemoryWriter CompMemWriter = FMemoryWriter(CompRef.Data, true);
 		FSaveGameArchive CompArchive = FSaveGameArchive(MemWriter);
 		Comp->Serialize(CompArchive);
-		
-		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.Class->GetFName().ToString())
-		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.Name.ToString())
-		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.Velocity.ToString())
-		UE_LOG(LogTemp, Display, TEXT("%s"), *Ref.Self.AngularVelocity.ToString())
 	}
 }
 
-void UAcopalypsSaveGame::LoadGameInstance(UObject* WorldContextObject)
+void UAcopalypsSaveGame::LoadGameInstance(const UObject* WorldContextObject)
 {
 	UWorld* World = WorldContextObject->GetWorld();
-	//ACharacter* Player = UGameplayStatics::GetPlayerCharacter(World, 0);
-	//Player->DetachFromControllerPendingDestroy();
-	//Player->Destroy();
+	
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(World, 0));
+	Player->SetActorTransform(PlayerRef.Self.Transform);
+	Player->GetController()->SetControlRotation(PlayerRef.ControllerRotation);
+	Player->GetMovementComponent()->Velocity = PlayerRef.Self.Velocity;
+	Player->Gun->CurrentMag = PlayerRef.GunMag;
+	Player->HealthComponent->SetHealth(PlayerRef.Health);
+	
+	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
+	TArray<int> LevelKeys;
+	LevelStreamSubsystem->UnloadLevel(LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys));
+	for( const int Level : LevelKeys )
+	{
+		LevelStreamSubsystem->UnloadLevel(Level);
+	}
+	for( auto Lvl : SubLevels ) //-------------//
+	{													//
+		UE_LOG(LogTemp, Display, TEXT("%i"), Lvl.ID )	//
+	}						//--------------------------//
+	for( int i = 0; i < SubLevels.Num(); i++ )
+	{
+		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
+		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
+	}
 
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), Actors);
 	for( AActor* Actor : Actors )
 	{
-		Actor->Destroy();
+		if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
+		{
+			UE_LOG(LogTemp, Display, TEXT("%s"), *Actor->GetFName().ToString())
+			Actor->Destroy();
+		}
 	}
-
-	LoadInstance(World, PlayerRef);
-	for( FInstanceRef& Ref : Instances )
-	{
-		LoadInstance(World, Ref);
-	}
-
-	//FinishLoadingInstance(PlayerRef);
-	//APlayerController* Controller = UGameplayStatics::GetPlayerController(World, 0);
-	//Controller->Possess(Cast<APawn>(PlayerRef.SpawnedActor));
-	//Controller->SetControlRotation(PlayerControllerRotation);
-	//Controller->UpdateRotation(1);
 
 	for( FInstanceRef& Ref : Instances )
 	{
-		FinishLoadingInstance(Ref);
+		LoadInstanceRef(World, Ref);
 	}
 }
 
-void UAcopalypsSaveGame::LoadInstance(UWorld* World, FInstanceRef& Ref)
+void UAcopalypsSaveGame::LoadInstanceRef(UWorld* World, FInstanceRef& Ref) const
 {
 	FActorSpawnParameters Params;
 	Params.Name = Ref.Self.Name;
@@ -125,14 +146,7 @@ void UAcopalypsSaveGame::LoadInstance(UWorld* World, FInstanceRef& Ref)
 	FMemoryReader MemReader = FMemoryReader(Ref.Self.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemReader);
 	Actor->Serialize(Archive);
-
-	Ref.SpawnedActor = Actor;
-}
-
-void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref)
-{
-	if( Ref.SpawnedActor == nullptr ) return;
-	AActor* Actor = Ref.SpawnedActor;
+	
 	if( Actor != nullptr )
 	{
 		TArray<UActorComponent*> Comps = TArray<UActorComponent*>();
@@ -143,8 +157,8 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref)
 			{
 				if( Comp->GetFName() == CompRef.Name )
 				{
-					FMemoryReader MemReader = FMemoryReader(CompRef.Data, true);
-					FSaveGameArchive Archive = FSaveGameArchive(MemReader);
+					FMemoryReader CompMemReader = FMemoryReader(CompRef.Data, true);
+					FSaveGameArchive CompArchive = FSaveGameArchive(MemReader);
 					Comp->Serialize(Archive);
 
 					if( USceneComponent* SceneComponent = Cast<USceneComponent>(Comp) )
@@ -171,7 +185,7 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref)
 				}
 			}
 		}
-		//Actor->FinishSpawning(Ref.Self.Transform);
+		Actor->FinishSpawning(Ref.Self.Transform);
 	}
 }
 
