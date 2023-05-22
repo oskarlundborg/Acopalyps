@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Jonathan Rubensson */
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,7 +24,8 @@ protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	bool IsCoverValid(ACoverPoint* Cover);
+	//Helper function that checks if a CoverPoint is facing towards the players current position
+	bool IsCoverValid(const ACoverPoint* Cover) const;
 
 	class AEnemyAICharacter* EnemyAICharacter;
 };
