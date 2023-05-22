@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Isabel Mirella Diaz Johansson */
 
 #include "EnemyDroneBaseActor.h"
 
@@ -69,7 +70,7 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	PlayerLocation = PlayerCharacter->GetActorLocation();
-	PlayerLocation.Z += 80.f;
+	PlayerLocation.Z += MinHeightAbovePlayer;
 	PlayerRotation = PlayerCharacter->GetActorRotation();
 
 	if (!bIsDead)
@@ -107,18 +108,25 @@ void AEnemyDroneBaseActor::MoveTowardsLocation(float DeltaTime)
 
 void AEnemyDroneBaseActor::UpdateCurrentObjective()
 {
-	if (bIdle && !bAttack)
+	if (bIdle && !bAttack && !bIsPreparingForAttack)
 	{
 		CalculateEngagedLocation();
 		CurrentTargetLocation = EngagedLocation;
 		
 	}
-	else if (!bIdle && bAttack)
+	else if (!bIdle && bAttack && !bIsPreparingForAttack)
 	{
-		CurrentTargetLocation = PlayerLocation;
+		CalculateAttackLocation();
+		CurrentTargetLocation = PlayerLocation - GetActorForwardVector();
 	}
-	else if (!bIdle && !bAttack)
+	else if (!bIdle && !bAttack && bIsPreparingForAttack)
 	{
+		CalculatePrepareAttackLocation();
+		CurrentTargetLocation = PrepareAttackLocation;
+	}
+	else if (!bIdle && !bAttack && !bIsPreparingForAttack)
+	{
+		// Calculate retreat location()
 		CalculateEngagedLocation();
 		CurrentTargetLocation = EngagedLocation;
 	}
@@ -139,13 +147,28 @@ void AEnemyDroneBaseActor::CalculateEngagedLocation()
 	do
 	{
 		NewLocation = BoundCenterPosition + RelativePositionToPLayer;
-		NewLocation = FVector(NewLocation.X, NewLocation.Y, FMath::Clamp(NewLocation.Z, PlayerLocation.Z + MinHeightAbovePlayer, PlayerLocation.Z + MaxHeightAbovePlayer));
+		NewLocation = FVector(NewLocation.X, NewLocation.Y, FMath::Clamp(NewLocation.Z, PlayerLocation.Z, PlayerLocation.Z + MaxHeightAbovePlayer)); //kanske lägga till min height player
 		Counter++;
 	}
 	while (IsTargetLocationValid(NewLocation) && Counter <=10);
 	
 	EngagedLocation = NewLocation;
-	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Black, false,0.2f);
+	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Purple, false,0.2f);
+}
+
+void AEnemyDroneBaseActor::CalculateAttackLocation()
+{
+	const FVector DirectionToPlayer = (PlayerLocation - GetActorLocation());
+	AttackLocation = PlayerLocation + (-DistanceBehindPlayer );
+	DrawDebugSphere(GetWorld(),  AttackLocation, 30.f, 30, FColor::Red, false,3.f);
+}
+
+void AEnemyDroneBaseActor::CalculatePrepareAttackLocation()
+{
+	if (GetActorLocation().Z != PlayerLocation.Z)
+	{
+		CurrentTargetLocation = FVector(CurrentTargetLocation.X, CurrentTargetLocation.Y, PlayerLocation.Z);
+	}
 }
 
 void AEnemyDroneBaseActor::GenerateNewRelativePosition()
@@ -166,11 +189,11 @@ void AEnemyDroneBaseActor::AdjustMovementForCollision()
 {
 	if (CollisionOnPathToTarget(CurrentTargetLocation))
 	{
-		CurrentTargetLocation = GetAdjustedLocation(CurrentTargetLocation );
+		CurrentTargetLocation = GetAdjustedLocation();
 	}
 }
 
-/** Performs a ray casts, returns a location to move towards if colliding object found between target location and current location to avoid collision*/
+/** Performs a ray casts, returns true if colliding object found between target location and current location to avoid collision*/
 bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector NewLocation)
 {
 	FHitResult HitResult;
@@ -209,14 +232,24 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector NewLocation)
 	return false;
 }
 
-FVector AEnemyDroneBaseActor::GetAdjustedLocation(FVector GoalLocation) 
+FVector AEnemyDroneBaseActor::GetAdjustedLocation() 
 {
+	float AvoidingOffset;
+	if (bIsPreparingForAttack)
+	{
+		AvoidingOffset = 0.5f;
+	}
+	else
+	{
+		AvoidingOffset = CollisionAvoidanceOffset;
+	}
+	
 	// Get the hit point and surface normal
 	const FVector HitPoint = SweepHitResult.ImpactPoint;
 
 	// Calculate a location around collision
 	const FVector SurfaceNormal = SweepHitResult.ImpactNormal;
-	FVector AdjustedLocation = HitPoint +  SurfaceNormal * CollisionAvoidanceOffset;
+	FVector AdjustedLocation = HitPoint +  SurfaceNormal * AvoidingOffset;
 
 	// Distance vector between drone and hitpoint aka hypotenusan
 	const FVector DroneToGoal = (HitPoint - GetActorLocation());
@@ -231,8 +264,13 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation(FVector GoalLocation)
 
 	// reflection vector from hit point
 	FVector ReflectionVector = (2 * ProjectionOnSurfNorm * SurfaceNormal * DroneToGoal.Size() - DroneToGoal);
-	ReflectionVector = ReflectionVector.GetSafeNormal() * FMath::Clamp(ReflectionVector.Size(), 0, CollisionAvoidanceOffset);
+	ReflectionVector = ReflectionVector.GetSafeNormal() * FMath::Clamp(ReflectionVector.Size(), 0, AvoidingOffset); 
 	AdjustedLocation += ReflectionVector;
+
+	if (bIdle && CollisionOnPathToTarget(EngagedLocation))
+	{
+		AdjustedLocation.Z += 20.f; //borde vara en global variabel
+	}
 
 	if (DebugAssist)
 	{
@@ -257,8 +295,10 @@ bool AEnemyDroneBaseActor::IsTargetLocationValid(FVector NewLocation) const
 void AEnemyDroneBaseActor::PrepareForAttack()
 {
 	OnPrepareForAttackEvent();
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("PreparedFAttack")));
 	bIdle = false;
-	CurrentSpeed = 0.1f;
+	bIsPreparingForAttack = true;
+	CurrentSpeed = 0.1f; // sätta att den inte ska vara lika högt
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyDroneBaseActor::Attack, 0.1f, false, AttackDelay);
 }
 
@@ -267,7 +307,9 @@ void AEnemyDroneBaseActor::Attack()
 {
 	OnAttackEvent();
 	TargetSpeed = AttackSpeed;
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Attack")));
 	bAttack = true;
+	bIsPreparingForAttack = false;
 	GetWorldTimerManager().SetTimer(RetreatTimerHandle, this, &AEnemyDroneBaseActor::Retreat, 0.1f, false, RetreatDelay);
 }
 
@@ -276,13 +318,14 @@ void AEnemyDroneBaseActor::Retreat()
 {
 	OnRetreatEvent();
 	TargetSpeed = InitialSpeed;
-	bIdle = false;
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("REtreat")));
 	bAttack = false;
 	GetWorldTimerManager().SetTimer(ResumeTimerHandle, this, &AEnemyDroneBaseActor::Resume, 0.1f, false, ResumeDelay);
 }
 
 void AEnemyDroneBaseActor::Resume()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("REsume")));
 	bIdle = true;
 }
 

@@ -1,5 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Isabel Mirella Diaz Johansson
+ *  @author Jonathan Rubensson
+ */
+
 
 #include "BTService_CanSeePlayer.h"
 
@@ -33,14 +37,8 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	EnemyAICharacter = Cast<AEnemyAICharacter>(OwnerComp.GetAIOwner()->GetCharacter());
 
 	if (EnemyAICharacter == nullptr) return;
-
-	FVector StartLineOfSight = FVector(0, 0, 60);
-	if (EnemyAICharacter->GetCharacterMovement()->IsCrouching())
-	{
-		StartLineOfSight = FVector(0, 0, 120);
-	}
 	
-	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn/*, EnemyAICharacter->GetActorLocation() + StartLineOfSight*/))
+	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn)) 
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
 	}
@@ -50,19 +48,6 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		{
 			AEnemyAIController* OwnerController = Cast<AEnemyAIController>(EnemyAICharacter->GetController());
 			if (OwnerController){
-				/*
-				if (OwnerController->HitTraceAtPLayerSuccess())
-				{
-					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
-				} else
-				{
-					ACoverPoint* Cover = Cast<ACoverPoint>(OwnerController->GetBlackboardComponent()->GetValueAsObject("Cover"));
-					if(Cover)
-					{
-						OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Cover->HasLineOfSightToPlayer());
-					}
-				}
-				*/
 				ACoverPoint* Cover = Cast<ACoverPoint>(OwnerController->GetBlackboardComponent()->GetValueAsObject("Cover"));
 				if(Cover)
 				{
