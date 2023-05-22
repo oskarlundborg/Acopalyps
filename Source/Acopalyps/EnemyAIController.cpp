@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Jonathan Rubensson */
+
 #include "EnemyAIController.h"
 #include "AcopalypsCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -12,9 +14,6 @@ void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	//const int32 FilterArrayIndex = UKismetMathLibrary::RandomIntegerInRange(0, NavigationFiltersClasses.Num() -1);
-	
-	//FilterClass = NavigationFiltersClasses[FilterArrayIndex];
 }
 
 void AEnemyAIController::SetAim()
@@ -50,7 +49,6 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 
 void AEnemyAIController::SetIsRagdoll(bool val)
 {
-	// TODO: Crash on shot with explosive when already dead after load game.
 	GetBlackboardComponent()->SetValueAsBool("IsRagdoll", val);
 }
 

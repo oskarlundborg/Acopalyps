@@ -1,5 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Isabel Mirella Diaz Johansson
+ *  @author Jonathan Rubensson
+ */
+
 
 #include "BTService_PlayerLocation.h"
 
@@ -18,6 +22,5 @@ void UBTService_PlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 	APawn* playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (playerPawn == nullptr) return;
 	
-	//OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), playerPawn->GetActorLocation());
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(GetSelectedBlackboardKey(), playerPawn);
 }

@@ -1,5 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Isabel Mirella Diaz Johansson
+ *  @author Jonathan Rubensson
+ */
+
 
 #include "BTService_PlayerLocationIfSeen.h"
 #include "AIController.h"

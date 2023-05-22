@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Isabel Mirella Diaz Johansson */
+
 
 #include "EnemyAICharacter.h"
 
@@ -92,9 +94,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			Manager->RemoveEnemy(this);
 		}
 		DetachFromControllerPendingDestroy();
-		GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 	}
-	//TakeDamageTriggerEvent(DamageAmount, DamageCauser->GetActorLocation(), DamageEvent, EventInstigator, DamageCauser);
 	return DamageApplied;
 }
 
@@ -109,7 +109,6 @@ void AEnemyAICharacter::Shoot()
 	{
 		Gun->Reload();
 	}
-	GEngine->AddOnScreenDebugMessage(-1,2.f, FColor::Red, FString::Printf(TEXT(" Enemy Shooting")));
 	if(CurrentMag <= 0) Gun->Reload();
 	FireEnemyTriggerEvent();
 	Cast<AEnemyAIController>(GetController())->SetAim();
@@ -146,7 +145,6 @@ void AEnemyAICharacter::InitializeController()
 		AIController->Initialize();
 	}
 }
-
 
 void AEnemyAICharacter::UnRagDoll()
 {

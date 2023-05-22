@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/** @author Isabel Mirella Diaz Johansson */
+
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -103,6 +106,7 @@ private:
 	bool bAttack;
 	bool bIdle;
 	bool bIsDead;
+	bool bIsPreparingForAttack;
 	
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
@@ -121,6 +125,9 @@ private:
 	/** Location to move towards when attacking player*/
 	FVector AttackLocation;
 
+	/** Location to move towards when preparing to player*/
+	FVector PrepareAttackLocation;
+
 	FVector RelativePositionToPLayer;
 
 	/** Location to check collision agains*/  
@@ -133,20 +140,20 @@ private:
 	/** Defines how far above colliding object drone moves to avoid collision*/
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess = true))
 	float CollisionAvoidanceOffset = 200.f;
-
-	/** Define the max distance to player before drone returns to home location */
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float MaxDistanceToPlayer = 8000.0f;
 	
-	/** Define the min height of drones attack area bounds relative to the player character */
+	/** Defines the min height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float MinHeightAbovePlayer = 80.f;
 
-	/** Define the max height of drones attack area bounds relative to the player character */
+	/** Defines the max height of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float MaxHeightAbovePlayer = 300.0f; 
+	float MaxHeightAbovePlayer = 220.0f;
 
-	/** Define the min and max distance of drones attack area bounds relative to the player character */
+	/** Defines the distance behind player drone is moving to during attack */
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
+	float DistanceBehindPlayer = 400.0f;
+
+	/** Defines the min and max distance of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float OuterBoundRadius = 700.0f;
 
@@ -181,7 +188,7 @@ private:
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double RetreatDelay = 1.1f;
+	double RetreatDelay = 1.2f;
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -225,8 +232,11 @@ private:
 	/** Updates location from which to start attack*/
 	void CalculateEngagedLocation();
 
-	/** Updates location to retreat to*/
+	/** Updates location to attack to*/
 	void CalculateAttackLocation();
+
+	/** Updates location to retreat to*/
+	void CalculatePrepareAttackLocation();
 
 	/** Generate new relative position to player*/
 	void GenerateNewRelativePosition();
@@ -244,7 +254,7 @@ private:
 	bool CollisionOnPathToTarget(FVector NewLocation);
 
 	/** Calculates and returns closest location that avoids collision */
-	FVector GetAdjustedLocation(FVector GoalLocation);
+	FVector GetAdjustedLocation();
 	
 	/** Performs a ray casts, returns true if generated target location isnt inside a colliding object. Aka that movement to the point is possible */
 	bool IsTargetLocationValid(FVector NewLocation) const;
