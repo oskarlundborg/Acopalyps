@@ -86,9 +86,10 @@ void AAcopalypsCharacter::Tick(float DeltaTime)
 		GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 24, CrouchInterpTime));
 	} else if ( !bIsCrouching )
 	{
-		if( CurrentCapsuleHeight < 98 )
+		if( CurrentCapsuleHeight < 96 )
 		{
 			GetCapsuleComponent()->SetCapsuleHalfHeight(FMath::Lerp(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), 122, CrouchInterpTime));
+			if(GetCapsuleComponent()->GetScaledCapsuleHalfHeight() > 96) GetCapsuleComponent()->SetCapsuleHalfHeight(96);
 		}
 	}
 	if( bRequestStopCrouching )
