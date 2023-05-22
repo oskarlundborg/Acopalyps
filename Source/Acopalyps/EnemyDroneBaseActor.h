@@ -244,6 +244,9 @@ private:
 	/** Checks if drone location is in range to initiate attack*/
 	bool IsWithinAttackArea() const;
 
+	/** Checks if drone location is too close to player aka within inner bounds*/
+	bool IsWithinPlayerInnerBounds(const FVector& LocationToCheck) const;
+
 	/** Calculates if drone should attack or follow player*/
 	void CheckAttackPotential();
 
