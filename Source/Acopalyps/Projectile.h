@@ -55,4 +55,8 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		bool bDrawDebugSphere;
+
+	FTimerDelegate DestructionDelegate;
+	UPROPERTY()
+		FTimerHandle DestructionTimer;
 };

@@ -5,36 +5,26 @@
 #include "AcopalypsSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
-void UAcopalypsPlatformGameInstance::SaveGame()
+void UAcopalypsPlatformGameInstance::SaveGame(TArray<AActor*>& InActors)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Saving game..."));
-	if( UGameplayStatics::SaveGameToSlot(
-			SaveGameObject,
-			SaveGameSlotName,
-			0
-			)
-		)
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, TEXT("Saving..."));
+	SaveGameObject = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	if( SaveGameObject != nullptr )
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Save success!"));
-	} else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("Error: Save failed."));
-	}
-	ensure(SaveGameObject);
+		SaveGameObject->SaveGameInstance(GetWorld()->GetFirstPlayerController()->GetPawnOrSpectator(), InActors);
+		if( SaveGameObject->IsValidLowLevel() )
+		{
+			UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("default"), 0);
+			GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game saved."));
+		}
+	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("Error: Unable to save.")); }
 }
 
 void UAcopalypsPlatformGameInstance::LoadGame()
 {
-	USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(SaveGameSlotName, 0);
-	ensure(LoadedGame);
-	SaveGameObject = Cast<UAcopalypsSaveGame>(LoadedGame);
-	ensure(SaveGameObject);
-	
-	if( !SaveGameObject )
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("Error: No saved game found."));
-	} else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Loading..."));
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, TEXT("Loaading..."));
+	if( UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0)) ) {
+		SaveGame->LoadGameInstance(GetWorld()->GetFirstPlayerController()->GetCharacter());
+		GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game loaded."));
+	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("Error: No game to load.")); }
 }

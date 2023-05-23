@@ -79,6 +79,7 @@ public:
 
 	void SetFilter(TSubclassOf<UNavigationQueryFilter> FilterToSet);
 
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	ACombatManager* Manager;
 
 	// Gun variables
@@ -87,12 +88,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		AGun* Gun;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	int32 CurrentMag = 1000;
-	int32 MaxMagSize = 1000;
-
 	UPROPERTY(EditAnywhere)
-	int32 AmmoCapacity = 99999999;//10000;
-	int32 MaxAmmoCapacity = 99999999;//10000;
-
+	int32 MaxMagSize = 1000;
 };

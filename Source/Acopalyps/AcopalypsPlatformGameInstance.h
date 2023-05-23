@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AcopalypsSaveGame.h"
 #include "Kismet/BlueprintPlatformLibrary.h"
 #include "AcopalypsPlatformGameInstance.generated.h"
 
@@ -16,12 +17,14 @@ class ACOPALYPS_API UAcopalypsPlatformGameInstance : public UPlatformGameInstanc
 
 public:
 	UPROPERTY(BlueprintReadOnly)
-	FString SaveGameSlotName = TEXT("Test");
+	FString SaveGameSlotName = TEXT("default");
 	UPROPERTY(BlueprintReadWrite, Category=Settings)
 	class UAcopalypsSaveGame* SaveGameObject;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UAcopalypsSaveGame> SaveGameClass = UAcopalypsSaveGame::StaticClass();
 
 	UFUNCTION(BlueprintCallable, Category=GameManager)
 	void LoadGame();
 	UFUNCTION(BlueprintCallable, Category=GameManager)
-	void SaveGame();
+	void SaveGame(TArray<AActor*>& InActors);
 };

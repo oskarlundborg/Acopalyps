@@ -212,9 +212,9 @@ public:
 		{ Regular,   { nullptr,	100, .3f  } },
 		{ Bouncing,  { nullptr,	150, 0.1f } },
 		{ Rapid,     { nullptr,	50,  0.f  } },
-		{ Explosive, { nullptr,	0, 2.5f } },
+		{ Explosive, { nullptr,	0,   2.5f } },
 		{ Flare,     { nullptr,	200, 2.f  } },
-		{ Shotgun,   { nullptr,	300, 0.8f  } },
+		{ Shotgun,   { nullptr,	300, 0.8f } },
 	}; // Choose class in editor
 
 	UFUNCTION(BlueprintCallable)

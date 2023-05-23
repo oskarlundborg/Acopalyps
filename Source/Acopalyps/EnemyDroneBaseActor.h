@@ -22,7 +22,7 @@ public:
 	ACombatManager* CombatManager;
 
 	UPROPERTY(VisibleAnywhere, Category=Health)
-	class UHealthComponent* HealthComponent;
+	TSoftObjectPtr<class UHealthComponent> HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	class USphereComponent* SphereColliderComponent;

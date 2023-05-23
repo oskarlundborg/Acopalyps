@@ -16,13 +16,12 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
-UCLASS(config=Game, NonTransient)
+UCLASS(config=Game)
 class AAcopalypsCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 	/** Timer handle for all timers*/
-	UPROPERTY(SaveGame)
 	FTimerHandle TimeTimerHandle;
 	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
@@ -83,7 +82,7 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* LoadAction;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess=true), SaveGame)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess=true))
 	float MouseSensitivity = 0.6;
 
 	public:
@@ -92,6 +91,8 @@ class AAcopalypsCharacter : public ACharacter
 	UFUNCTION()
 	void Respawn();
 
+	UPROPERTY(VisibleAnywhere)
+	FVector SpawnPosition;
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
 
@@ -146,7 +147,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
-	void Save(FString SaveName);
+	void Save();
 	UFUNCTION(BlueprintCallable)
 	void Load();
 
@@ -227,7 +228,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsDead;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<struct FLevelID> LoadedLevels;
 
 	UFUNCTION(BlueprintCallable)

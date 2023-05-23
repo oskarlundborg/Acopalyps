@@ -9,11 +9,7 @@
 #include "AcopalypsPrototypeGameModeBase.h"
 #include "AcopalypsSaveGame.h"
 #include "EnemyAICharacter.h"
-#include "LevelEditor.h"
 #include "LevelSpawner.h"
-#include "LevelStreamerSubsystem.h"
-#include "Engine/LevelStreaming.h"
-#include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AcopalypsPlatformGameInstance.h"
 #include "Kismet/GameplayStatics.h" 
@@ -73,11 +69,7 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	TMap<int, ULevelStreamingDynamic*> CurrentlyStreamedLevels = GetWorld()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LevelMap;
-	for( TTuple<int, ULevelStreamingDynamic*> Level : CurrentlyStreamedLevels )
-	{
-		LoadedLevels.Add({Level.Key, TSoftObjectPtr<UWorld>(GetWorld())});
-	}
+	SpawnPosition = GetActorLocation();
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -129,19 +121,20 @@ void AAcopalypsCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		//Reset Level
 		EnhancedInputComponent->BindAction(ResetLevelAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::ResetLevel);
 		//Save & Load
-		EnhancedInputComponent->BindAction<AAcopalypsCharacter, FString>(SaveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Save, "quick_save");
-		EnhancedInputComponent->BindAction<AAcopalypsCharacter, FString>(LoadAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Load, "quick_save");
+		EnhancedInputComponent->BindAction(SaveAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Save);
+		EnhancedInputComponent->BindAction(LoadAction, ETriggerEvent::Triggered, this, &AAcopalypsCharacter::Load);
 	}
 }
 
 void AAcopalypsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
+	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
 	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
 	HealthComponent->RefillHealth();
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
-	Load("checkpoint");
+	Load();
 	SpawnTriggerEvent();
 }
 
@@ -302,25 +295,34 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return 0;
 }
 
-void AAcopalypsCharacter::Save(FString SaveName)
+void AAcopalypsCharacter::Save()
 {
-	OnSave(SaveName);
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
-	TArray<AActor*> AllActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-	SaveGame->SaveGameInstance(this, AllActors);
-	UGameplayStatics::SaveGameToSlot(SaveGame, SaveName, 0);
+	//TArray<AActor*> AllActors;
+	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->SaveGame(AllActors);
+	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	if( SaveGame )
+	{
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		SaveGame->SaveGameInstance(this, AllActors);
+		if( SaveGame->IsValidLowLevel() )
+		{
+			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
+			UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
+		}
+	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
 }
 
-void AAcopalypsCharacter::Load(FString SaveName)
+void AAcopalypsCharacter::Load()
 {
-	OnLoad(SaveName);
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveName, 0));
-	if( SaveGame != nullptr ) {
+	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->LoadGame();
+	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	if( SaveGame ) {
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 		SaveGame->LoadGameInstance(this);
-	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("No Game To Load...")); }
+	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No Game To Load...")); }
 }
 
 void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad)
