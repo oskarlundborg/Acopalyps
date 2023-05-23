@@ -98,21 +98,21 @@ bool AExplosiveObject::ExplosionTrace(TArray<FOverlapResult>& Overlaps) const
 	FVector Location;
 	FRotator Rotation;
 	OwnerController->GetPlayerViewPoint(Location, Rotation);
-	FVector End = Location + Rotation.Vector() * 240;
+	FVector End = Location + Rotation.Vector() * ExplosionRadius;
 	
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
 	Params.AddIgnoredActor(OwnerController);
 
 	
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 240, 10, FColor::Red, true, 5);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 10, FColor::Red, true, 5);
 	
 	return GetWorld()->OverlapMultiByChannel(
 		Overlaps,
 		GetActorLocation(),
 		FQuat::Identity,
 		ECollisionChannel::ECC_GameTraceChannel1,
-		FCollisionShape::MakeSphere(240),
+		FCollisionShape::MakeSphere(ExplosionRadius),
 		Params
 		);
 }
