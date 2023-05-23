@@ -39,6 +39,7 @@ struct FProjectileInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Delay;
 
+	UPROPERTY(BlueprintReadOnly)
 	FTimerHandle TimerHandle = FTimerHandle();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bCanFire = true;
