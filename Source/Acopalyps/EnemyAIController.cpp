@@ -27,7 +27,7 @@ void AEnemyAIController::SetAim()
 				Player->GetActorLocation()
 				);
 	}
-	GetCharacter()->SetActorRotation(AimRotation);
+	GetCharacter()->SetActorRotation(FRotator(AimRotation.Pitch, AimRotation.Yaw, 0));
 }
 
 void AEnemyAIController::Initialize()
