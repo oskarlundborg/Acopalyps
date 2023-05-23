@@ -11,6 +11,7 @@
 #include "EnemyAICharacter.h"
 #include "LevelSpawner.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AcopalypsPlatformGameInstance.h"
 #include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,9 +19,6 @@
 
 AAcopalypsCharacter::AAcopalypsCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
-	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -68,7 +66,6 @@ void AAcopalypsCharacter::BeginPlay()
 			AttachmentRules,
 			FName(TEXT("GripPoint"))
 			);
-		SetHasRifle(true);
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
@@ -205,6 +202,8 @@ void AAcopalypsCharacter::EndCrouch()
 	{
 		return;
 	}
+	CharacterMovementComponent->BrakingFrictionFactor = 2.f;
+	CharacterMovementComponent->BrakingDecelerationWalking = 0.f;
 	bIsCrouching = false;
 	CharacterMovementComponent->MaxWalkSpeed = WalkingMovementSpeed;
 }
@@ -215,7 +214,6 @@ void AAcopalypsCharacter::StartSlide(bool SlowMotion)
 	SlideTriggerEvent();
 	CharacterMovementComponent->BrakingFrictionFactor = 0.075f;
 	CharacterMovementComponent->BrakingDecelerationWalking = 0.f;
-	Controller->SetIgnoreMoveInput(true);
 	if(  CharacterMovementComponent->IsMovingOnGround() )
 	{
 		if( CharacterMovementComponent->GetAnalogInputModifier() == 0 )
@@ -228,7 +226,7 @@ void AAcopalypsCharacter::StartSlide(bool SlowMotion)
 		} else
 		{
 			LaunchCharacter(
-				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength * 1.3,
+				CharacterMovementComponent->GetLastInputVector().GetSafeNormal() * SlideStrength,
 				true,
 				false
 				);
@@ -244,9 +242,8 @@ void AAcopalypsCharacter::StartSlide(bool SlowMotion)
 void AAcopalypsCharacter::EndSlide()
 {
 	bIsSliding = false;
-	CharacterMovementComponent->BrakingFrictionFactor = 2.f;
+	CharacterMovementComponent->BrakingFrictionFactor = .3f;
 	CharacterMovementComponent->BrakingDecelerationWalking = 2048.f;
-	Controller->SetIgnoreMoveInput(false);
 	if( bRequestStopCrouching )
 	{
 		EndCrouch();
@@ -255,10 +252,7 @@ void AAcopalypsCharacter::EndSlide()
 
 void AAcopalypsCharacter::Jump()
 {
-	if( !bIsSliding )
-	{
-		Super::Jump();
-	}
+	Super::Jump();
 }
 
 void AAcopalypsCharacter::Look(const FInputActionValue& Value)
@@ -301,29 +295,34 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return 0;
 }
 
-void AAcopalypsCharacter::SetHasRifle(bool bNewHasRifle)
-{
-	bHasRifle = bNewHasRifle;
-}
-
 void AAcopalypsCharacter::Save()
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
-	TArray<AActor*> AllActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-	SaveGame->SaveGameInstance(GetWorld(), AllActors);
-	UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
-	//UE_LOG(LogTemp, Display, TEXT("%s"), *SaveGame->PlayerInstance.Transform.ToString())
+	//TArray<AActor*> AllActors;
+	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->SaveGame(AllActors);
+	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	if( SaveGame )
+	{
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		SaveGame->SaveGameInstance(GetWorld(), AllActors);
+		if( SaveGame->IsValidLowLevel() )
+		{
+			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
+			UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
+		}
+	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
 }
 
 void AAcopalypsCharacter::Load()
 {
-	UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
-	if( SaveGame != nullptr ) {
+	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->LoadGame();
+	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
+	if( SaveGame ) {
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 		SaveGame->LoadGameInstance(GetWorld(), AllActors);
-	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("No Game To Load...")); }
+	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No Game To Load...")); }
 }
 
 void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad)

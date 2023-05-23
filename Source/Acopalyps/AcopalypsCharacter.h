@@ -22,7 +22,6 @@ class AAcopalypsCharacter : public ACharacter
 	GENERATED_BODY()
 
 	/** Timer handle for all timers*/
-	FTimerHandle TimerHandle;
 	FTimerHandle TimeTimerHandle;
 	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
@@ -89,6 +88,7 @@ class AAcopalypsCharacter : public ACharacter
 	public:
 	AAcopalypsCharacter();
 
+	UFUNCTION()
 	void Respawn();
 
 	UPROPERTY(VisibleAnywhere)
@@ -113,14 +113,6 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> AmmoStationClass;
-
-	/** Bool for AnimBP to switch to another animation set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
-
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void CrouchTriggerEvent();
@@ -176,6 +168,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
+	UPROPERTY(VisibleAnywhere)
+	UAcopalypsSaveGame* SaveGame;
 
 public:
 	/** Returns Mesh1P subobject **/
@@ -205,7 +199,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
 	float CrouchMovementSpeed = 400.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
-	float CrouchSpeed = 4.f;
+	float CrouchSpeed = 6.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
 	float CrouchInterpTime;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement|Crouch")
@@ -214,9 +208,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Movement|Slide")
 	bool bIsSliding;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
-	float SlideStrength = 900.f;
+	float SlideStrength = 1100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement|Slide")
-	float SlideTime = 1.2f;
+	float SlideTime = .8f;
 	UPROPERTY()
 	FTimerHandle SlideHandle;
 	
