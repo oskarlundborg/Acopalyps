@@ -18,6 +18,7 @@ UBTTask_MoveToAndShoot::UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectI
 	NodeName = TEXT("MoveAndShoot");
 	
 	AcceptableRadius = UKismetMathLibrary::RandomFloatInRange(AcceptableRadiusMin, AcceptableRadiusMax);
+
 	
 }
 
@@ -34,9 +35,7 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &
 	UCharacterMovementComponent* PlayerMovementComponent = Cast<UCharacterMovementComponent>(OwnerComp.GetAIOwner()->GetPawn()->GetMovementComponent());
 	if (PlayerMovementComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Yay has movementcomponent"));
 		PlayerMovementComponent->MaxWalkSpeed = UKismetMathLibrary::RandomFloatInRange(MinSpeedInterval, MaxSpeedInterval);
-		UE_LOG(LogTemp, Warning, TEXT("Speed %f"), PlayerMovementComponent->MaxWalkSpeed);
 	}
 	
 
