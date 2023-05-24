@@ -2,6 +2,7 @@
 
 /** @author Isabel Mirella Diaz Johansson */
 
+/** @author Isabel Mirella Diaz Johansson */
 
 #pragma once
 
@@ -151,7 +152,7 @@ private:
 
 	/** Defines the distance behind player drone is moving to during attack */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	float DistanceBehindPlayer = 400.0f;
+	float DistanceBehindPlayer = 300.0f;
 
 	/** Defines the min and max distance of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -188,7 +189,7 @@ private:
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double RetreatDelay = 1.2f;
+	double RetreatDelay = 1.7f;
 
 	/** Time delay before retreat*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
@@ -200,7 +201,7 @@ private:
 
 	/** Time delay before destroying drone*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double DestructionDelay = 2.f;
+	double DestructionDelay = 0.7f;
 
 	/* Looping timer handles*/
 	FTimerHandle UpdateEngagedLocationTimerHandle;
@@ -253,8 +254,8 @@ private:
 	/** Adjusts movement depending on collision*/
 	void AdjustMovementForCollision();
 	
-	/** Performs a sweep trace, returns if colliding object found between target location and current location to avoid collision*/
-	bool CollisionOnPathToTarget(FVector NewLocation);
+	/** Performs a ray casts, returns true if colliding object found between target location and chosen location to sweep from to avoid collision*/
+	bool CollisionOnPathToTarget(FVector SweepStartLocation, FVector NewLocation);
 
 	/** Calculates and returns closest location that avoids collision */
 	FVector GetAdjustedLocation();
