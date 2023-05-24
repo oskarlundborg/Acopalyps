@@ -39,8 +39,15 @@ public:
 	 */
 	bool HitTraceAtPLayerSuccess() const;
 
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<UNavigationQueryFilter>> SubclassQueryFilters;
+	
+	TSubclassOf<UNavigationQueryFilter> EnemyFilterClass;
+
 protected:
 	void BeginPlay() override;
+
+	void OnPossess(APawn* InPawn) override;
 
 private:
 	
@@ -49,5 +56,7 @@ private:
 	/** Behavior tree to control behavior */
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* BehaviorTree;
+
+	
 	
 };

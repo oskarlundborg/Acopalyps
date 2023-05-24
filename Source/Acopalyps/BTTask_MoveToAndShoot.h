@@ -49,6 +49,8 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &ownerComp, uint8 *nodeMemory);
 
+	virtual EBTNodeResult::Type PerformMoveTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
 	/** Shoots at player for a random amount of time before continuing running*/
 	void Shoot();
 

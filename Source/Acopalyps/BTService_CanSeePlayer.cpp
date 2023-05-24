@@ -40,6 +40,9 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	
 	if (OwnerComp.GetAIOwner()->LineOfSightTo(PlayerPawn)) 
 	{
+		DrawDebugLine(EnemyAICharacter->GetWorld(), EnemyAICharacter->GetPawnViewLocation(), PlayerPawn->GetPawnViewLocation(), FColor::Red, false, 0.1f );
+		DrawDebugLine(EnemyAICharacter->GetWorld(), EnemyAICharacter->GetPawnViewLocation(), PlayerPawn->GetPawnViewLocation(), FColor::Red, false, 0.1f );
+
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
 	}
 	else
@@ -51,6 +54,7 @@ void UBTService_CanSeePlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 				ACoverPoint* Cover = Cast<ACoverPoint>(OwnerController->GetBlackboardComponent()->GetValueAsObject("Cover"));
 				if(Cover)
 				{
+					DrawDebugSphere(EnemyAICharacter->GetWorld(), Cover->GetActorLocation(), 30.f, 20, FColor::Red, false, 0.1f);
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Cover->HasLineOfSightToPlayer());
 				}
 			}

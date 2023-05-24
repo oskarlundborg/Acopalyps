@@ -10,6 +10,9 @@
 #include "GameFramework/Character.h"
 #include "EnemyAICharacter.generated.h"
 
+class UNavigationQueryFilter;
+class UBoxComponent;
+class USphereComponent;
 class ACombatManager;
 UCLASS()
 class ACOPALYPS_API AEnemyAICharacter : public ACharacter
@@ -19,6 +22,10 @@ class ACOPALYPS_API AEnemyAICharacter : public ACharacter
 	/** Pawn mesh: 3st person view */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* CharacterMesh;
+
+	/** Box collider component that has a higher cost for avoidance*/
+	UPROPERTY(EditAnywhere, Category=Avoidance)
+	UBoxComponent* BoxAvoidance;
 	
 public:
 	// Sets default values for this character's properties
@@ -69,6 +76,8 @@ public:
 	void UnRagDoll();
 
 	void InitializeController();
+
+	void SetFilter(TSubclassOf<UNavigationQueryFilter> FilterToSet);
 
 	ACombatManager* Manager;
 
