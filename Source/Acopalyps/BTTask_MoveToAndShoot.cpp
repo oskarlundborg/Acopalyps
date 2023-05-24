@@ -5,6 +5,7 @@
 #include "BTTask_MoveToAndShoot.h"
 
 #include "EnemyAIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "EnemyDroneBaseActor.h"
 #include "MathUtil.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -17,6 +18,7 @@ UBTTask_MoveToAndShoot::UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectI
 	NodeName = TEXT("MoveAndShoot");
 	
 	AcceptableRadius = UKismetMathLibrary::RandomFloatInRange(AcceptableRadiusMin, AcceptableRadiusMax);
+	
 }
 
 EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8* NodeMemory)
@@ -28,6 +30,15 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &
 	{
 		return EBTNodeResult::Failed;
 	}
+
+	UCharacterMovementComponent* PlayerMovementComponent = Cast<UCharacterMovementComponent>(OwnerComp.GetAIOwner()->GetPawn()->GetMovementComponent());
+	if (PlayerMovementComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Yay has movementcomponent"));
+		PlayerMovementComponent->MaxWalkSpeed = UKismetMathLibrary::RandomFloatInRange(MinSpeedInterval, MaxSpeedInterval);
+		UE_LOG(LogTemp, Warning, TEXT("Speed %f"), PlayerMovementComponent->MaxWalkSpeed);
+	}
+	
 
 	if (!EnemyController->GetWorldTimerManager().IsTimerActive(ShootTimerHandle))
 	{
