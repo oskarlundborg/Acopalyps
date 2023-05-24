@@ -85,4 +85,5 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 AmmoCapacity = 99999999;//10000;
 	int32 MaxAmmoCapacity = 99999999;//10000;
+
 };

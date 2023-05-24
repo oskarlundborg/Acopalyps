@@ -13,18 +13,17 @@
 #include "CoverPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 // Sets default values
 AEnemyAICharacter::AEnemyAICharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-	
 }
 
 // Called when the game starts or when spawned

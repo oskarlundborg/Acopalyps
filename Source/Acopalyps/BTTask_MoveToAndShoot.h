@@ -34,6 +34,14 @@ public:
 	/** Acceptable maximal time before shooting*/
 	UPROPERTY(Config, Category = Shooting, EditAnywhere, meta=(ClampMin = "0.0"))
 	float AcceptableShootDurationMax = 1.f;
+
+	/** Acceptable minimal speed when moving*/
+	UPROPERTY(Config, Category = Moving, EditAnywhere, meta=(ClampMin = "0.0"))
+	float MinSpeedInterval = 600.f;
+	
+	/** Acceptable maximal speed when moving*/
+	UPROPERTY(Config, Category = Moving, EditAnywhere, meta=(ClampMin = "0.0"))
+	float MaxSpeedInterval = 900.f;
 	
 	/** Timer for shooting method*/
 	FTimerHandle ShootTimerHandle;
