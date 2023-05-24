@@ -4,6 +4,7 @@
 
 #include "EnemyAIController.h"
 #include "AcopalypsCharacter.h"
+#include "EnemyAICharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -14,6 +15,22 @@ void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+}
+
+void AEnemyAIController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	const int RandomFilterIndex = FMath::RandRange(0, SubclassQueryFilters.Num()-1);
+	EnemyFilterClass = SubclassQueryFilters[RandomFilterIndex];
+
+	DefaultNavigationFilterClass = EnemyFilterClass;
+
+	AEnemyAICharacter* MyCharacter = Cast<AEnemyAICharacter>(GetCharacter());
+	if (MyCharacter)
+	{
+		MyCharacter->SetFilter(EnemyFilterClass);
+	}
 }
 
 void AEnemyAIController::SetAim()

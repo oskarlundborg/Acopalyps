@@ -12,7 +12,9 @@
 #include "CombatManager.h"
 #include "CoverPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 // Sets default values
@@ -24,6 +26,9 @@ AEnemyAICharacter::AEnemyAICharacter()
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	BoxAvoidance = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxAvoidance"));
+	BoxAvoidance->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -92,6 +97,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			Manager->RemoveEnemy(this);
 		}
+		BoxAvoidance->DestroyComponent();
 		DetachFromControllerPendingDestroy();
 	}
 	return DamageApplied;
@@ -144,6 +150,13 @@ void AEnemyAICharacter::InitializeController()
 		AIController->Initialize();
 	}
 }
+
+
+void AEnemyAICharacter::SetFilter(TSubclassOf<UNavigationQueryFilter> FilterToSet)
+{
+	BoxAvoidance->SetAreaClassOverride(FilterToSet.GetDefaultObject()->Areas[0].AreaClass);
+}
+
 
 void AEnemyAICharacter::UnRagDoll()
 {
