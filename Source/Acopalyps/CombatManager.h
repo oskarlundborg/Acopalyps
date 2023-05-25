@@ -109,6 +109,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* ManagementZone;
-	
+
+	UPROPERTY(VisibleAnywhere)
 	int ActiveEnemiesCount = 0;
 };
