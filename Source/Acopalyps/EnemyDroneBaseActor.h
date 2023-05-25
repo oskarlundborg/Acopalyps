@@ -139,7 +139,7 @@ private:
 	FRotator PlayerRotation;
 
 	/** Defines how far above colliding object drone moves to avoid collision*/
-	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float CollisionAvoidanceOffset = 200.f;
 	
 	/** Defines the min height of drones attack area bounds relative to the player character */
