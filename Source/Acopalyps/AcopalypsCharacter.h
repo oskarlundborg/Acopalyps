@@ -104,7 +104,7 @@ protected:
 	virtual void BeginPlay();
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category=Health)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Health)
 	class UHealthComponent* HealthComponent;
 	
 	/** Look Input Action */
