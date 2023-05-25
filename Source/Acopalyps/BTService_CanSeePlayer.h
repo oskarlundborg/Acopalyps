@@ -27,7 +27,8 @@ protected:
 
 	UPROPERTY()
 	class AEnemyAICharacter* EnemyAICharacter;
-
+	
 	UPROPERTY()
 	APawn* PlayerPawn;
+
 };

@@ -1,7 +1,7 @@
 
 // Fill out your copyright notice in the Description page of Project Settings.
 
-/** @author Jonathan Rubensson */
+/** @author Isabel Mirella Diaz Johansson */
 
 #pragma once
 
@@ -45,9 +45,9 @@ public:
 	TSubclassOf<UNavigationQueryFilter> EnemyFilterClass;
 
 protected:
-	void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-	void OnPossess(APawn* InPawn) override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 private:
 	
