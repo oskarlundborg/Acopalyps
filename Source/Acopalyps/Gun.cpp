@@ -80,7 +80,7 @@ void AGun::PrimaryFire()
 {
 	const AMMO_TYPES AmmoToFire = CurrentAmmoType; // For TimerHandle to handle same ammo when switching mid delay
 	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
-	if( Projectiles.Find(AmmoToFire)->bCanFire )
+	if( Projectiles.Find(AmmoToFire)->bCanFire && bCanReload)
 	{
 		Fire(AmmoToFire);
 		ToggleCanFirePrimary(AmmoToFire);
@@ -98,7 +98,7 @@ void AGun::AlternateFire()
 {
 	AMMO_TYPES AmmoToFire = CurrentAlternateAmmoType; // For TimerHandle to handle same ammo when switching mid delay
 	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
-	if( Projectiles.Find(AmmoToFire)->bCanFire )
+	if( Projectiles.Find(AmmoToFire)->bCanFire && bCanReload)
 	{
 		Fire(AmmoToFire);
 		ToggleCanFireAlternate(AmmoToFire);
@@ -116,7 +116,7 @@ void AGun::FlareFire()
 {
 	AMMO_TYPES AmmoToFire = Flare;
 	UE_LOG(LogTemp, Display, TEXT("Ammo: %d, CanFire: %i"), AmmoToFire, Projectiles.Find(AmmoToFire)->bCanFire)
-	if( Projectiles.Find(AmmoToFire)->bCanFire )
+	if( Projectiles.Find(AmmoToFire)->bCanFire && bCanReload)
 	{
 		Fire(AmmoToFire);
 		ToggleCanFireAlternate(AmmoToFire);
