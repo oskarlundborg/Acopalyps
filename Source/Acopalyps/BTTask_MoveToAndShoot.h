@@ -47,8 +47,10 @@ public:
 	FTimerHandle ShootTimerHandle;
 
 protected:
-	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &ownerComp, uint8 *nodeMemory);
+	/** Overriding MoveTos ExecuteTask to allow pseudorandom shooting between given interval*/
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &ownerComp, uint8 *nodeMemory) override;
 
+	/** Overriding MoveTos PerformMoveTask to account for navqueryfilters*/
 	virtual EBTNodeResult::Type PerformMoveTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	/** Shoots at player for a random amount of time before continuing running*/

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-/** @author Jonathan Rubensson */
+/** @author Isabel Mirella Diaz Johansson */
 
 #include "EnemyAIController.h"
 #include "AcopalypsCharacter.h"
@@ -21,6 +21,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
+	// kanske göra en mer random metod? Coin flip??
 	const int RandomFilterIndex = FMath::RandRange(0, SubclassQueryFilters.Num()-1);
 	EnemyFilterClass = SubclassQueryFilters[RandomFilterIndex];
 

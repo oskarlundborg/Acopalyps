@@ -254,13 +254,13 @@ private:
 	/** Adjusts movement depending on collision*/
 	void AdjustMovementForCollision();
 	
-	/** Performs a ray casts, returns true if colliding object found between target location and chosen location to sweep from to avoid collision*/
+	/** Performs a sphere trace for objects, returns true if colliding object found between target location and chosen location to sweep from to avoid collision*/
 	bool CollisionOnPathToTarget(FVector SweepStartLocation, FVector NewLocation);
 
 	/** Calculates and returns closest location that avoids collision */
 	FVector GetAdjustedLocation();
 	
-	/** Performs a ray casts, returns true if generated target location isnt inside a colliding object. Aka that movement to the point is possible */
+	/** Performs a line trace, returns true if generated target location isnt inside a colliding object. Aka that movement to the point is possible */
 	bool IsTargetLocationValid(FVector NewLocation) const;
 
 	/** Runs when drone is in range of player to start attack */
