@@ -12,6 +12,7 @@
 #include "LevelSpawner.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AcopalypsPlatformGameInstance.h"
+#include "SerializationSaveGame.h"
 #include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -300,16 +301,16 @@ void AAcopalypsCharacter::Save()
 	//TArray<AActor*> AllActors;
 	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->SaveGame(AllActors);
-	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
-	if( SaveGame )
+	if( USerializationSaveGame* Save = Cast<USerializationSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass)) )
 	{
-		TArray<AActor*> AllActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->SaveGameInstance(GetWorld(), AllActors);
-		if( SaveGame->IsValidLowLevel() )
+		//TArray<AActor*> AllActors;
+		//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		//SaveGame->SaveGameInstance(GetWorld(), AllActors);
+		Save->Save(this);
+		if( IsValid(Save) )
 		{
-			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
-			UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
+			//UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
+			UGameplayStatics::SaveGameToSlot(Save, TEXT("default"), 0);
 		}
 	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
 }
@@ -317,12 +318,12 @@ void AAcopalypsCharacter::Save()
 void AAcopalypsCharacter::Load()
 {
 	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->LoadGame();
-	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
-	if( SaveGame ) {
-		TArray<AActor*> AllActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->LoadGameInstance(GetWorld(), AllActors);
-	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No Game To Load...")); }
+	if( USerializationSaveGame* Save = Cast<USerializationSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0)) ) {
+		//TArray<AActor*> AllActors;
+		//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+		//SaveGame->LoadGameInstance(GetWorld(), AllActors);
+		Save->Load(this);
+	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No valid save to load...")); }
 }
 
 void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad)

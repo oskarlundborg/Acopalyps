@@ -422,4 +422,3 @@ float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& D
 	}
 	return DamageApplied;
 }
-

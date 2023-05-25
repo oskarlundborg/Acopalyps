@@ -8,6 +8,7 @@
 #include "InputActionValue.h"
 #include "AcopalypsCharacter.generated.h"
 
+class USerializationSaveGame;
 class UAcopalypsSaveGame;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -167,7 +168,7 @@ protected:
 	// End of APawn interface
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
+	TSubclassOf<class USaveGame> SaveGameClass;
 	UPROPERTY(VisibleAnywhere)
 	UAcopalypsSaveGame* SaveGame;
 
