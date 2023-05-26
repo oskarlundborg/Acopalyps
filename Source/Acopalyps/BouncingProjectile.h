@@ -20,6 +20,7 @@ class ACOPALYPS_API ABouncingProjectile : public AProjectile
 	int32 Bounces = 1;
 
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	virtual USphereComponent* GetCollisionComp() const override;
 
