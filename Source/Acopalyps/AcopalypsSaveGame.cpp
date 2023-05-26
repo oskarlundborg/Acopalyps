@@ -9,6 +9,7 @@
 #include "EnemyAIController.h"
 #include "EnemyDroneBaseActor.h"
 #include "LevelStreamerSubsystem.h"
+#include "Engine/LevelStreamingDynamic.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
 
@@ -26,6 +27,15 @@ void UAcopalypsSaveGame::SaveGameInstance(const UWorld* World, TArray<AActor*> A
 		const auto ActorClass = Actor->GetClass();
 		UE_LOG(LogTemp, Display, TEXT("Actor Class: %s"), *Actor->GetClass()->GetName())
 		
+		//ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
+		//SubLevels.Empty();
+		//for( auto [ ID, LevelStreamingDynamic ] : LevelStreamSubsystem->LevelMap )
+		//{
+		//	SubLevels.Add({
+		//		.ID = ID,
+		//		.LevelPtr = LevelStreamingDynamic->GetWorldAsset(),
+		//	});
+		//}
 		// Save player specific data
 		if( ActorClass == PlayerClass )
 		{
@@ -118,11 +128,11 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
 	TArray<int> LevelKeys;
 	// Unload all loaded levels
-	LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys);
-	for( int i = 0; i < LevelKeys.Num(); i++ )
-	{
-		LevelStreamSubsystem->UnloadLevel(LevelKeys[i]);
-	}
+	//LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys);
+	//for( int i = 0; i < LevelKeys.Num(); i++ )
+	//{
+	//	LevelStreamSubsystem->UnloadLevel(LevelKeys[i]);
+	//}
 	// Load all levels from save
 	for( int i = 0; i < SubLevels.Num(); i++ )
 	{
@@ -133,10 +143,10 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 	// Set for deletion.
 	DestroySceneActors(Actors);
 	
-	for (int i = 0; i < SubLevels.Num(); i++)
-	{
-		Actors.Last()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LoadLevel(SubLevels[i]);
-	}
+	//for (int i = 0; i < SubLevels.Num(); i++)
+	//{
+	//	Actors.Last()->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>()->LoadLevel(SubLevels[i]);
+	//}
 	// Recreate saved state.
 	for( const FActorInstance Actor : ActorsInWorld )
 	{
