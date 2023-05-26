@@ -6,11 +6,11 @@
 #include "LevelSpawner.h"
 #include "AcopalypsCharacter.h"
 #include "EnemyAICharacter.h"
+#include "EnemyAIController.h"
 #include "EnemyDroneBaseActor.h"
 #include "LevelStreamerSubsystem.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 class ULevelStreamerSubsystem;
 
@@ -115,6 +115,20 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 	//{
 	//	UGameplayStatics::OpenLevel(World, WorldName, false);
 	//}
+	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
+	TArray<int> LevelKeys;
+	// Unload all loaded levels
+	LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys);
+	for( int i = 0; i < LevelKeys.Num(); i++ )
+	{
+		LevelStreamSubsystem->UnloadLevel(LevelKeys[i]);
+	}
+	// Load all levels from save
+	for( int i = 0; i < SubLevels.Num(); i++ )
+	{
+		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
+		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
+	}
 	
 	// Set for deletion.
 	DestroySceneActors(Actors);
@@ -138,6 +152,7 @@ void UAcopalypsSaveGame::LoadGameInstance(UWorld* World, TArray<AActor*>& Actors
 				);
 			Enemy->HealthComponent->SetHealth(Actor.Health);
 			Enemy->Gun->CurrentMag = Actor.GunMag;
+			Cast<AEnemyAIController>(Enemy->GetController())->Initialize();
 			UE_LOG(LogTemp, Display, TEXT("###########################################"))
 			UE_LOG(LogTemp, Display, TEXT("## Enemy Loaded ###########################"))
 			UE_LOG(LogTemp, Display, TEXT("Class: %s"), *Actor.Class->GetName())
