@@ -64,8 +64,14 @@ void AProjectile::OnHit(
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr )
 	{
-		UGameplayStatics::ApplyPointDamage(HitActor, Damage, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
-		const AActor* ConstHitActor = HitActor;
+		if( Hit.BoneName == "head" )
+		{
+			UGameplayStatics::ApplyPointDamage(HitActor, Damage * 10, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		}
+		else
+		{
+			UGameplayStatics::ApplyPointDamage(HitActor, Damage, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		}
 		if( bDrawDebugSphere )
 		{
 			DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
