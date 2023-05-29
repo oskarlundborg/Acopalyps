@@ -27,8 +27,8 @@ AEnemyAICharacter::AEnemyAICharacter()
 	CharacterMesh = GetMesh();
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
-	BoxAvoidance = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxAvoidance"));
-	BoxAvoidance->SetupAttachment(RootComponent);
+	//BoxAvoidance = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxAvoidance"));
+	//BoxAvoidance->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -97,7 +97,7 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			Manager->RemoveEnemy(this);
 		}
-		BoxAvoidance->DestroyComponent();
+		//BoxAvoidance->DestroyComponent();
 		DetachFromControllerPendingDestroy();
 	}
 	return DamageApplied;
@@ -154,7 +154,7 @@ void AEnemyAICharacter::InitializeController()
 
 void AEnemyAICharacter::SetFilter(TSubclassOf<UNavigationQueryFilter> FilterToSet)
 {
-	BoxAvoidance->SetAreaClassOverride(FilterToSet.GetDefaultObject()->Areas[0].AreaClass);
+	//BoxAvoidance->SetAreaClassOverride(FilterToSet.GetDefaultObject()->Areas[0].AreaClass);
 }
 
 
