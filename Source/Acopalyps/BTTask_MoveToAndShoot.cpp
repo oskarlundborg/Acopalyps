@@ -155,7 +155,7 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::PerformMoveTask(UBehaviorTreeCompone
 
 void UBTTask_MoveToAndShoot::Shoot() 
 {
-	if (EnemyController && EnemyController->LineOfSightTo(UGameplayStatics::GetPlayerCharacter(this, 0)))
+	if (EnemyController && UGameplayStatics::GetPlayerCharacter(this, 0) && EnemyController->LineOfSightTo(UGameplayStatics::GetPlayerCharacter(this, 0)))
 	{
 		Cast<AEnemyAICharacter>(EnemyController->GetPawn())->Shoot();
 	}

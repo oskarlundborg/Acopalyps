@@ -53,12 +53,10 @@ void ASpawnZone::HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn, double D
 			GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, Delay, false);
 		}
 	}
-	/**
 	else
 	{
 		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnZone::Spawn, Delay, false);
 	}
-	*/	
 }
 
 void ASpawnZone::Spawn()

@@ -49,7 +49,8 @@ void ACombatManager::Tick(float DeltaTime)
 
 void ACombatManager::StartCombatMode()
 {
-	if(GetWorldTimerManager().TimerExists(RecurringSpawnCheckTimerHandle)) return;
+	if(bCombatStarted) return;
+	bCombatStarted = true;
 	for(AEnemyAICharacter* Enemy : ManagedEnemies)
 	{
 		if(Enemy) Enemy->InitializeController();
@@ -83,9 +84,9 @@ void ACombatManager::RunSpawnWave()
 				UGameplayStatics::PlaySound2D(GetWorld(), CurrentWave.StartSoundWave, CurrentWave.VolumeMultiplyer, CurrentWave.PitchMultiplyer, 0.1f);
 			}	
 			SpawnZone->HandleWave(CurrentWave.NumberOfBasicEnemies, CurrentWave.NumberOfDrones, CurrentWave.DelayInSecondsForWaveAfterCriteriaReached);
+			return;
 		}
 	}
-	
 }
 
 

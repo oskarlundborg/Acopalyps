@@ -84,6 +84,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
 	void StartCombatMode();
 
+	UPROPERTY(VisibleAnywhere)
+	int ActiveEnemiesCount = 0;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bCombatStarted = false;
+
 private:
 
 	void RunSpawnWave();
@@ -109,7 +115,5 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* ManagementZone;
-
-	UPROPERTY(VisibleAnywhere)
-	int ActiveEnemiesCount = 0;
+	
 };
