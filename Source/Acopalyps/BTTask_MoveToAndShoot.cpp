@@ -62,7 +62,7 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::PerformMoveTask(UBehaviorTreeCompone
 	FBTMoveToTaskMemory* MyMemory = CastInstanceNodeMemory<FBTMoveToTaskMemory>(NodeMemory);
 	AAIController* MyController = OwnerComp.GetAIOwner();
 
-	const float AcceptableRadiusResolved = AcceptableRadius;
+	const float AcceptableRadiusResolved = UKismetMathLibrary::RandomFloatInRange(AcceptableRadiusMin, AcceptableRadiusMax);
 	const bool AllowPartialPath = false;
 
 	EBTNodeResult::Type NodeResult = EBTNodeResult::Failed;
