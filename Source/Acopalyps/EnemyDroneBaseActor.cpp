@@ -151,8 +151,6 @@ void AEnemyDroneBaseActor::CalculateAttackLocation()
 	{
 		AttackLocation = PlayerLocation;
 	}
-	
-	DrawDebugSphere(GetWorld(), AttackLocation, 20.f, 30, FColor::Red, false,0.2f);
 }
 
 void AEnemyDroneBaseActor::CalculatePrepareAttackLocation()

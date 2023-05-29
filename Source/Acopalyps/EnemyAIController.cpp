@@ -10,6 +10,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Navigation/CrowdFollowingComponent.h"
+
+AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
+{
+	
+}
 
 void AEnemyAIController::BeginPlay()
 {
@@ -22,6 +28,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	// kanske göra en mer random metod? Coin flip??
+	/*
 	const int RandomFilterIndex = FMath::RandRange(0, SubclassQueryFilters.Num()-1);
 	EnemyFilterClass = SubclassQueryFilters[RandomFilterIndex];
 
@@ -32,6 +39,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	{
 		MyCharacter->SetFilter(EnemyFilterClass);
 	}
+	*/
 }
 
 void AEnemyAIController::SetAim()
@@ -59,6 +67,7 @@ void AEnemyAIController::Initialize()
 	GetBlackboardComponent()->SetValueAsObject(TEXT("Player"), UGameplayStatics::GetPlayerCharacter(this, 0));
 	SetIsRagdoll(false);
 }
+
 
 void AEnemyAIController::Tick(float DeltaSeconds)
 {

@@ -21,6 +21,9 @@ class ACOPALYPS_API AEnemyAIController : public AAIController
 	
 
 public:
+
+	AEnemyAIController(const FObjectInitializer& ObjectInitializer);
+
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Method to set if character is in rag-doll-mode in Blackboard
