@@ -52,7 +52,7 @@ void ACombatManager::StartCombatMode()
 	if(GetWorldTimerManager().TimerExists(RecurringSpawnCheckTimerHandle)) return;
 	for(AEnemyAICharacter* Enemy : ManagedEnemies)
 	{
-		Enemy->InitializeController();
+		if(Enemy) Enemy->InitializeController();
 	}
 	GetWorldTimerManager().SetTimer(RecurringSpawnCheckTimerHandle, this, &ACombatManager::RunSpawnWave, 1.f, true);
 	for(ACombatTrigger* Trigger : CombatTriggers)
