@@ -146,7 +146,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Load();
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int NumberOfActiveCombats = 0;
 	
 protected:
