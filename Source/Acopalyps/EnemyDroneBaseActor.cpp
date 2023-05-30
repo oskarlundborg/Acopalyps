@@ -59,6 +59,7 @@ void AEnemyDroneBaseActor::BeginPlay()
 	bAttack = false;
 }
 
+/** Starts looping timers*/
 void AEnemyDroneBaseActor::StartTimers()
 {
 	GetWorldTimerManager().SetTimer(UpdateCurrentObjectiveTimerHandle, this, &AEnemyDroneBaseActor::UpdateCurrentObjective, UpdateCurrentObjectiveDelay, true, 0.1f); // 0.2f;
@@ -79,7 +80,7 @@ void AEnemyDroneBaseActor::Tick(float DeltaTime)
 	}
 }
 
-/** Moves actor towards a location */
+/** Moves actor towards a location in world*/
 void AEnemyDroneBaseActor::MoveTowardsLocation(float DeltaTime)
 {
 	OnDroneMovement();
@@ -105,9 +106,9 @@ void AEnemyDroneBaseActor::MoveTowardsLocation(float DeltaTime)
 	SetActorLocation(NewLocation);
 }
 
+/** Decides which location to move towards based on states*/
 void AEnemyDroneBaseActor::UpdateCurrentObjective()
 {
-	
 	if (!bAttack)
 	{
 		CalculateEngagedLocation();
@@ -141,6 +142,7 @@ void AEnemyDroneBaseActor::CalculateEngagedLocation()
 	if (DebugAssist) DrawDebugSphere(GetWorld(), EngagedLocation, 20.f, 30, FColor::Purple, false,0.2f);
 }
 
+/** Updates location to move towards during attack*/
 void AEnemyDroneBaseActor::CalculateAttackLocation()
 {
 	FVector DirectionToPlayer = PlayerLocation - GetActorLocation();
@@ -153,6 +155,7 @@ void AEnemyDroneBaseActor::CalculateAttackLocation()
 	}
 }
 
+/** Updates location to move towards during retreat*/
 void AEnemyDroneBaseActor::CalculatePrepareAttackLocation()
 {
 	if (GetActorLocation().Z != PlayerLocation.Z)
@@ -161,6 +164,7 @@ void AEnemyDroneBaseActor::CalculatePrepareAttackLocation()
 	}
 }
 
+/** Generate new relative position to player*/
 void AEnemyDroneBaseActor::GenerateNewRelativePosition()
 { 
 	RelativePositionToPLayer = FVector(UKismetMathLibrary::RandomUnitVector()) * UKismetMathLibrary::RandomFloatInRange(InnerBoundRadius, OuterBoundRadius);
@@ -175,6 +179,7 @@ void AEnemyDroneBaseActor::CheckAttackPotential()
 	}
 }
 
+/** Adjusts movement depending on collision*/
 void AEnemyDroneBaseActor::AdjustMovementForCollision()
 {
 	if (CollisionOnPathToTarget(GetActorLocation(),CurrentTargetLocation))
@@ -183,7 +188,7 @@ void AEnemyDroneBaseActor::AdjustMovementForCollision()
 	}
 }
 
-/** Performs a ray casts, returns true if colliding object found between target location and chosen location to sweep from to avoid collision*/
+/** Performs a sphere trace, returns true if colliding object found between target location and chosen location to sweep from to avoid collision*/
 bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector SweepStartLocation, FVector NewLocation)
 {
 	FHitResult HitResult;
@@ -197,7 +202,7 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector SweepStartLocation, F
 	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3)); // Enemy
-	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel9)); // Drone
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel9)); // Drone
 
 	TArray<AActor*> IgnoreActors = TArray<AActor*>();
 	IgnoreActors.Add(this);
@@ -223,6 +228,7 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector SweepStartLocation, F
 	return false;
 }
 
+/** Calculates and returns closest location that avoids collision */
 FVector AEnemyDroneBaseActor::GetAdjustedLocation() 
 {
 	float AvoidingOffset;
@@ -271,7 +277,7 @@ FVector AEnemyDroneBaseActor::GetAdjustedLocation()
 	return AdjustedLocation;
 }
 
-/** Performs a ray casts, returns true if target location is inside a colliding object. Aka that movement to the point is impossible */
+/** Performs a line trace, returns if location is viable, and that movement to the point is possible */
 bool AEnemyDroneBaseActor::IsTargetLocationValid(FVector NewLocation) const
 {
 	FHitResult HitResult;
@@ -317,16 +323,19 @@ void AEnemyDroneBaseActor::Retreat()
 	GetWorldTimerManager().SetTimer(ResumeTimerHandle, this, &AEnemyDroneBaseActor::Resume, 0.1f, false, ResumeDelay);
 }
 
+/** Resumes drone to idle behavior*/
 void AEnemyDroneBaseActor::Resume()
 {
 	bIdle = true;
 }
 
+/** Sets drone speed to initial speed*/
 void AEnemyDroneBaseActor::ResumeInitialSpeed()
 {
 	TargetSpeed = InitialSpeed;
 }
 
+/** Runs when drone dies*/
 void AEnemyDroneBaseActor::DoDeath()
 {
 	OnDeathEvent();
@@ -346,6 +355,7 @@ void AEnemyDroneBaseActor::DoDeath()
 	if(CombatManager) CombatManager->RemoveDrone(this);
 }
 
+/** Destroys drone after a some time*/
 void AEnemyDroneBaseActor::DestroyDrone()
 {
 	Destroy();
@@ -357,11 +367,13 @@ bool AEnemyDroneBaseActor::IsWithinAttackArea() const
 	return (GetActorLocation() - BoundCenterPosition).Length() < OuterBoundRadius && (GetActorLocation() - BoundCenterPosition).Length() > InnerBoundRadius;
 }
 
+/** Checks if drone location is too close to player aka within inner bounds */
 bool AEnemyDroneBaseActor::IsWithinPlayerInnerBounds(const FVector& LocationToCheck) const
 {
 	return (LocationToCheck - BoundCenterPosition).Length() < InnerBoundRadius;
 }
 
+/** Called when drone starts overlapping something */
 void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                           UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -375,6 +387,7 @@ void AEnemyDroneBaseActor::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 	}
 }
 
+/** Called when drone dies and hits ground */
 void AEnemyDroneBaseActor::OnDeathGroundHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
@@ -389,16 +402,19 @@ void AEnemyDroneBaseActor::OnDeathGroundHit(UPrimitiveComponent* HitComponent, A
 	}
 }
 
+/** Returns if actor is dead */
 bool AEnemyDroneBaseActor::IsDead() const
 {
 	return HealthComponent->IsDead();
 }
 
+/** Returns actors remaining health */
 float AEnemyDroneBaseActor::GetHealthPercent() const
 {
 	return HealthComponent->GetHealthPercent();
 }
 
+/** Called upon when object channel weapon collider collides with drone */
 float AEnemyDroneBaseActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
