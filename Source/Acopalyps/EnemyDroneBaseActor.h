@@ -2,8 +2,6 @@
 
 /** @author Isabel Mirella Diaz Johansson */
 
-/** @author Isabel Mirella Diaz Johansson */
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -67,15 +65,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeathCrashEvent();
 	
-	/** Returns if actor is dead */
+	/** Returns if actor is dead
+	 * @return true if drone is dead, false if not dead
+	 */
 	UFUNCTION(BlueprintPure)
 	bool IsDead() const;
 
-	/** Returns if actor is dead */
+	/** Returns actors remaining health
+	 *  @return health percent in float
+	 */
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const;
 
-	/** Called upon when object channel weapon collider collides with enemy char */
+	/** Called upon when object channel weapon collider collides with drone*/
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 	UPROPERTY(EditAnywhere)
@@ -101,9 +103,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
 private:
-	
+
+	/** boolean states*/
 	bool bAttack;
 	bool bIdle;
 	bool bIsDead;
@@ -111,7 +113,8 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	class AAcopalypsCharacter* PlayerCharacter;
-	
+
+	/** Current direction drone is moving in*/
 	FVector Direction;
 
 	/** Location the player currently moves towards*/
@@ -126,12 +129,13 @@ private:
 	/** Location to move towards when attacking player*/
 	FVector AttackLocation;
 
-	/** Location to move towards when preparing to player*/
+	/** Location to move towards when preparing to attack player*/
 	FVector PrepareAttackLocation;
 
+	/** Location to track while moving towards player, located withing assigned bounds*/
 	FVector RelativePositionToPLayer;
 
-	/** Location to check collision agains*/  
+	/** Location to check collision towards*/  
 	FVector CollisionCheckLocation;
 
 	/** Player character location and rotation*/
@@ -154,35 +158,31 @@ private:
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float DistanceBehindPlayer = 300.0f;
 
-	/** Defines the min and max distance of drones attack area bounds relative to the player character */
+	/** Defines max distance of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float OuterBoundRadius = 700.0f;
 
+	/** Defines min distance of drones attack area bounds relative to the player character */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float InnerBoundRadius = 300.0f;
 
+	/** Defines radius of drones hitbox*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	float DroneRadius = 50.0f;
 
-	/** Attack area center */
+	/** Attack area center, same as player character location */
 	FVector BoundCenterPosition;
 
-	/** Time delays for tick functions*/
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double UpdateEngagedLocationDelay = 0.2f;
-
+	//=============== Time delays for tick functions =================//
+	/** Defines how often to check if drone is within outer bounds and should prepare to attack*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double CheckAttackPotentialDelay = 0.2f;
 
+	/** Defines how often check if drone is not attacking, and then recalculate engaged location*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double UpdateCurrentObjectiveDelay = 0.2f;
 
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double CheckCollisionDelay = 0.2f;
-
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double CheckPlayerDistanceDelay= 1.f;
-
+	//=============== Time delays for one shot fuction calls =================//
 	/** Time delay before attack */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double AttackDelay = 1.7f;
@@ -191,7 +191,7 @@ private:
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double RetreatDelay = 1.7f;
 
-	/** Time delay before retreat*/
+	/** Time delay before resuming idle behaviour*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
 	double ResumeDelay = 1.5f;
 
@@ -204,11 +204,8 @@ private:
 	double DestructionDelay = 1.f;
 
 	/* Looping timer handles*/
-	FTimerHandle UpdateEngagedLocationTimerHandle;
 	FTimerHandle CheckAttackBoundsTimerHandle;
 	FTimerHandle UpdateCurrentObjectiveTimerHandle;
-	FTimerHandle CheckPlayerDistanceTimerHandle;
-	FTimerHandle CheckCollisionTimerHandle;
 
 	/* One-shot timer handles*/
 	FTimerHandle SaveHomeLocationTimerHandle;
@@ -221,7 +218,7 @@ private:
 	/** Closest colliding object between drone and target location*/
 	FHitResult SweepHitResult;
 	
-	/** Starts timers*/
+	/** Starts looping timers*/
 	void StartTimers();
 	
 	/** Moves actor towards a location in world*/
@@ -233,19 +230,24 @@ private:
 	/** Updates location from which to start attack*/
 	void CalculateEngagedLocation();
 
-	/** Updates location to attack to*/
+	/** Updates location to move towards during attack*/
 	void CalculateAttackLocation();
 
-	/** Updates location to retreat to*/
+	/** Updates location to move towards during retreat*/
 	void CalculatePrepareAttackLocation();
 
 	/** Generate new relative position to player*/
 	void GenerateNewRelativePosition();
 
-	/** Checks if drone location is in range to initiate attack*/
+	/** Checks if drone location is in range to initiate attack
+	 * @return true if location is within outer bounds
+	 */
 	bool IsWithinAttackArea() const;
-
-	/** Checks if drone location is too close to player aka within inner bounds*/
+	
+	/** Checks if drone location is too close to player aka within inner bounds
+	 * @param LocationToCheck location to check
+	 * @return true if location is within inner bounds
+	 */
 	bool IsWithinPlayerInnerBounds(const FVector& LocationToCheck) const;
 
 	/** Calculates if drone should attack or follow player*/
@@ -253,14 +255,23 @@ private:
 
 	/** Adjusts movement depending on collision*/
 	void AdjustMovementForCollision();
-	
-	/** Performs a sphere trace for objects, returns true if colliding object found between target location and chosen location to sweep from to avoid collision*/
+
+	/** Performs a sphere trace for objects, checking for collision with certain object types 
+	 * @param SweepStartLocation location from whitch to start sweep from
+	 * @param NewLocation location to sweep towards
+	 * @return true if colliding object found between target location and chosen location to sweep from to avoid collision
+	 */
 	bool CollisionOnPathToTarget(FVector SweepStartLocation, FVector NewLocation);
 
-	/** Calculates and returns closest location that avoids collision */
+	/** Calculates and returns closest location that avoids collision
+	 * @return new, adjusted location to move towards to avoid detected collision
+	 */
 	FVector GetAdjustedLocation();
-	
-	/** Performs a line trace, returns true if generated target location isnt inside a colliding object. Aka that movement to the point is possible */
+
+	/** Performs a line trace, returns if location is viable, and that movement to the point is possible
+	 * @param NewLocation location to check 
+	 * @return true if generated location isnt inside a colliding object
+	 */
 	bool IsTargetLocationValid(FVector NewLocation) const;
 
 	/** Runs when drone is in range of player to start attack */
