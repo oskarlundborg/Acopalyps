@@ -134,6 +134,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void SpawnTriggerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DeathEvent();
 	
 	/** Called upon when object channel weapon collider collides with enemy char */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -142,6 +145,9 @@ public:
 	void Save();
 	UFUNCTION(BlueprintCallable)
 	void Load();
+
+	UPROPERTY(BlueprintReadOnly)
+	int NumberOfActiveCombats = 0;
 	
 protected:
 	/** Called for movement input */
