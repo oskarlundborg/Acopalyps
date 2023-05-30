@@ -272,7 +272,6 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		DamageApplied = FMath::Min(HealthComponent->GetHealth(), DamageApplied);
 		HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageApplied);
-		UE_LOG(LogTemp, Display, TEXT("health: %f"), HealthComponent->GetHealth());
 
 		const AActor* ConstDamageCauser = DamageCauser;
 		TakeDamageTriggerEvent(DamageAmount, ConstDamageCauser);
@@ -283,11 +282,11 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			{
 				PrototypeGameModeBase->PawnKilled(this);
 			}
+			NumberOfActiveCombats = 0;
 			//DetachFromControllerPendingDestroy();
 			DisableInput(Cast<APlayerController>(GetController()));
 			//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
 			GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &AAcopalypsCharacter::Respawn, 1);
-			GEngine->AddOnScreenDebugMessage(-1,6.f, FColor::Yellow, FString::Printf(TEXT(" Died: %s "), *GetName()));
 			bIsDead = true;
 		}
 	return DamageApplied;
