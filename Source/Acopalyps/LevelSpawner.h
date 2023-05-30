@@ -19,6 +19,11 @@ struct FLevelID
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UWorld> LevelPtr;
+
+	bool operator==(const FLevelID& Other) const
+	{
+		return ID == Other.ID;
+	}
 };
 
 

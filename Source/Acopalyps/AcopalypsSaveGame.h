@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AcopalypsCharacter.h"
 #include "GameFramework/SaveGame.h"
 #include "AcopalypsSaveGame.generated.h"
 
@@ -49,49 +50,20 @@ class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 	
 public:
 	UFUNCTION()
-	void SaveGameInstance(const UWorld* World, TArray<AActor*> Actors);
+	void SaveGameInstance(const AAcopalypsCharacter* Player, TArray<AActor*> Actors);
 	UFUNCTION()
-	void LoadGameInstance(UWorld* World, TArray<AActor*>& Actors);
-
-	UFUNCTION()
-	void DestroySceneActors(TArray<AActor*>& Actors);
+	void LoadGameInstance(AAcopalypsCharacter* Player, TArray<AActor*>& Actors);
 	
 	UPROPERTY(VisibleAnywhere)
-	FString SlotName;
-	UPROPERTY(VisibleAnywhere)
-	uint32 UserIndex;
-
-	// World Info
-	UPROPERTY(VisibleAnywhere, Category=World)
-	FName WorldName;
+	FDateTime Timestamp;
 	
 	// Player Info
 	UPROPERTY(EditDefaultsOnly, Category="Instances")
 	FActorInstance PlayerInstance;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AAcopalypsCharacter> PlayerClass;
-
-	// Enemies In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FActorInstance> EnemiesInWorld;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyAICharacter> EnemyClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyDroneBaseActor> EnemyDroneClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AStaticMeshActor> StaticMeshClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> ResupplyStationClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> AmmoPickupClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TArray<TSubclassOf<AActor>> ClassesToDelete;
+	TArray<UClass*> ClassFilter;
 	
-	// Actors In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FActorInstance> ActorsInWorld;
 	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
-	TArray<struct FLevelID> SubLevels;
+	TArray<FLevelID> SubLevels;
 };

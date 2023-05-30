@@ -91,8 +91,6 @@ class AAcopalypsCharacter : public ACharacter
 	UFUNCTION()
 	void Respawn();
 
-	UPROPERTY(VisibleAnywhere)
-	FVector SpawnPosition;
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
 
@@ -101,7 +99,7 @@ class AAcopalypsCharacter : public ACharacter
 
 	virtual void Tick(float DeltaTime) override;
 protected:
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Health)
@@ -227,5 +225,5 @@ public:
 	TArray<struct FLevelID> LoadedLevels;
 
 	UFUNCTION(BlueprintCallable)
-	void SetLoadedLevels(TArray<FLevelID> LevelsToLoad);
+	void SetLoadedLevels(TArray<FLevelID> LevelsToLoad, TArray<int> LevelsToUnload);
 };

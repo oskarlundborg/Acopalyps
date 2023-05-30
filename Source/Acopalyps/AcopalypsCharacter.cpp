@@ -69,7 +69,7 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	SpawnPosition = GetActorLocation();
+	Save();
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -305,7 +305,7 @@ void AAcopalypsCharacter::Save()
 	{
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->SaveGameInstance(GetWorld(), AllActors);
+		SaveGame->SaveGameInstance(this, AllActors);
 		if( SaveGame->IsValidLowLevel() )
 		{
 			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
@@ -321,12 +321,24 @@ void AAcopalypsCharacter::Load()
 	if( SaveGame ) {
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->LoadGameInstance(GetWorld(), AllActors);
+		SaveGame->LoadGameInstance(this, AllActors);
 	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No Game To Load...")); }
 }
 
-void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad)
+void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad, TArray<int> LevelsToUnload)
 {
-	LoadedLevels.Empty();
-	LoadedLevels = LevelsToLoad;
+	for( auto ID : LevelsToUnload )
+	{
+		for( auto Lvl : LoadedLevels )
+		{
+			if( Lvl.ID == ID )
+			{
+				LoadedLevels.Remove(Lvl);
+			}
+		}
+	}
+	for( auto Lvl : LevelsToLoad )
+	{
+		LoadedLevels.Add(Lvl);
+	}
 }
