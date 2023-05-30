@@ -39,7 +39,7 @@ struct FProjectileInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Delay;
 
-	UPROPERTY(VisibleAnywhere, SaveGame)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame)
 	FTimerHandle TimerHandle = FTimerHandle();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame)

@@ -59,7 +59,10 @@ void ACombatManager::StartCombatMode()
 	GetWorldTimerManager().SetTimer(RecurringSpawnCheckTimerHandle, this, &ACombatManager::RunSpawnWave, 1.f, true);
 	for(ACombatTrigger* Trigger : CombatTriggers)
 	{
-		Trigger->TriggerBox->Deactivate();
+		if( Trigger != nullptr )
+		{
+			Trigger->TriggerBox->Deactivate();
+		}
 	}
 	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 	if(Player) Player->NumberOfActiveCombats++;

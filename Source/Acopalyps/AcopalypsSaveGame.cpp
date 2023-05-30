@@ -266,6 +266,10 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref) const
 			}
 		}
 		Actor->FinishSpawning(Ref.Transform);
+		if( ACombatManager* CombatManager = Cast<ACombatManager>(Actor) )
+		{
+			CombatManager->ResetCombat();
+		}
 	}
 }
 
