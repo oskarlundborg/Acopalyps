@@ -5,6 +5,7 @@
 
 #include "CombatManager.h"
 
+#include "AcopalypsCharacter.h"
 #include "AIController.h"
 #include "CombatTrigger.h"
 #include "EnemyAICharacter.h"
@@ -60,6 +61,8 @@ void ACombatManager::StartCombatMode()
 	{
 		Trigger->TriggerBox->Deactivate();
 	}
+	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	if(Player) Player->NumberOfActiveCombats++;
 	StartOfCombat();
 }
 
@@ -145,6 +148,8 @@ void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
 	if(WavesQueue.IsEmpty() && ActiveEnemiesCount == 0)
 	{
 		EndOfCombat();
+		AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+		if(Player) Player->NumberOfActiveCombats--;
 	}
 }
 
@@ -161,5 +166,7 @@ void ACombatManager::RemoveDrone(AEnemyDroneBaseActor* DroneToRemove)
 	if(WavesQueue.IsEmpty() && ActiveEnemiesCount == 0)
 	{
 		EndOfCombat();
+		AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+		if(Player) Player->NumberOfActiveCombats--;
 	}
 }

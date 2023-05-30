@@ -201,7 +201,7 @@ private:
 
 	/** Time delay before destroying drone*/
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = true))
-	double DestructionDelay = 0.7f;
+	double DestructionDelay = 1.f;
 
 	/* Looping timer handles*/
 	FTimerHandle UpdateEngagedLocationTimerHandle;

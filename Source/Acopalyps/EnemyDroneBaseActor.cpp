@@ -197,6 +197,7 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector SweepStartLocation, F
 	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3)); // Enemy
+	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel9)); // Drone
 
 	TArray<AActor*> IgnoreActors = TArray<AActor*>();
 	IgnoreActors.Add(this);
@@ -285,7 +286,6 @@ bool AEnemyDroneBaseActor::IsTargetLocationValid(FVector NewLocation) const
 void AEnemyDroneBaseActor::PrepareForAttack()
 {
 	OnPrepareForAttackEvent();
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("PreparedFAttack")));
 	bIdle = false;
 	bIsPreparingForAttack = true;
 	CalculatePrepareAttackLocation();
@@ -305,7 +305,6 @@ void AEnemyDroneBaseActor::Attack()
 	CurrentTargetLocation = AttackLocation;
 	CurrentSpeed = AttackSpeed;
 	TargetSpeed = AttackSpeed;
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Attack")));
 	GetWorldTimerManager().SetTimer(RetreatTimerHandle, this, &AEnemyDroneBaseActor::Retreat, 0.1f, false, RetreatDelay);
 }
 
@@ -314,14 +313,12 @@ void AEnemyDroneBaseActor::Retreat()
 {
 	OnRetreatEvent();
 	TargetSpeed = InitialSpeed;
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("REtreat")));
 	bAttack = false;
 	GetWorldTimerManager().SetTimer(ResumeTimerHandle, this, &AEnemyDroneBaseActor::Resume, 0.1f, false, ResumeDelay);
 }
 
 void AEnemyDroneBaseActor::Resume()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("REsume")));
 	bIdle = true;
 }
 
