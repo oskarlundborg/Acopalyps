@@ -90,6 +90,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bCombatStarted = false;
 
+	void ResetCombat();
+
 private:
 
 	void RunSpawnWave();
