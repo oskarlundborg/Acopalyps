@@ -197,7 +197,7 @@ bool AEnemyDroneBaseActor::CollisionOnPathToTarget(FVector SweepStartLocation, F
 	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3)); // Enemy
-	//ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel9)); // Drone
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel9)); // Drone
 
 	TArray<AActor*> IgnoreActors = TArray<AActor*>();
 	IgnoreActors.Add(this);
