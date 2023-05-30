@@ -67,6 +67,22 @@ void ACombatManager::StartCombatMode()
 }
 
 
+void ACombatManager::ResetCombat()
+{
+	WavesQueue.Empty();
+	for (FCombatWave Wave : CombatWaves)
+	{
+		WavesQueue.Enqueue(Wave);
+	}
+	ActiveEnemiesCount = 0;
+	bCombatStarted = false;
+	SpawnZones.Empty();
+	ManagedEnemies.Empty();
+	ManagedDrones.Empty();
+	CombatTriggers.Empty();
+	GatherOverlappingActors();
+}
+
 void ACombatManager::RunSpawnWave()
 {
 	if(WavesQueue.IsEmpty())
