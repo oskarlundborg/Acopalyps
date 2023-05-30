@@ -283,6 +283,7 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 				PrototypeGameModeBase->PawnKilled(this);
 			}
 			NumberOfActiveCombats = 0;
+			DeathEvent();
 			//DetachFromControllerPendingDestroy();
 			DisableInput(Cast<APlayerController>(GetController()));
 			//GetCapsuleComponent()->SetCollisionProfileName("NoCollision");
