@@ -21,8 +21,10 @@ class ACOPALYPS_API AAcopalypsPrototypeGameModeBase : public AGameModeBase
 public:
 	virtual void RestartPlayer(AController* NewPlayer) override;
 	
-	/** Run when a pawn is killed, enemy or player*/
-	void PawnKilled(APawn* PawnKilled);
+	/** Run when a pawn is killed, enemy or player
+	 * @param PawnKilled pointer to the pawn that has died
+	 */
+	void PawnKilled(APawn* PawnKilled) const;
 
 	/** Run when initializing game*/
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
@@ -30,11 +32,17 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	/** Ends game depending on who won - enemy or player*/
+	/** Ends game depending on who won - enemy or player
+	 * @param bPlayerWon true if player is the one that won the game
+	 */
 	void EndGame(bool bPlayerWon);
 
+	/* Saves level bound data */
 	void SaveLevelData();
 
+	/** Checks if player character is dead
+	 * @param  Character pointer to the character that has died
+	 */
 	UFUNCTION()
 	virtual void PlayerDied(ACharacter* Character);
 private:
