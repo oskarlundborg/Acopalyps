@@ -87,6 +87,7 @@ void ACombatManager::ResetCombat()
 	ManagedDrones.Empty();
 	CombatTriggers.Empty();
 	GatherOverlappingActors();
+	GetWorldTimerManager().ClearTimer(RecurringSpawnCheckTimerHandle);
 }
 
 void ACombatManager::RunSpawnWave()
