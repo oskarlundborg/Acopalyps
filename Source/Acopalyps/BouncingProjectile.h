@@ -25,4 +25,8 @@ class ACOPALYPS_API ABouncingProjectile : public AProjectile
 	virtual USphereComponent* GetCollisionComp() const override;
 
 	virtual UProjectileMovementComponent* GetProjectileMovement() const override;
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void EnemyOverlapEvent(AActor* OtherActor);
 };
