@@ -34,6 +34,7 @@ void ABouncingProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
 	if(OtherActor != nullptr && !OtherActor->ActorHasTag(TEXT("Player")))
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, GetWorld()->GetFirstPlayerController(), this,nullptr);
+		EnemyOverlapEvent(OtherActor);
 		if( bDrawDebugSphere )
 		{
 			DrawDebugSphere(GetWorld(),GetActorLocation(),10,10,FColor::Purple,true,5);
