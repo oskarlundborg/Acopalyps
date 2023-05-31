@@ -133,6 +133,8 @@ void UAcopalypsSaveGame::LoadGame(AAcopalypsCharacter* Player)
 	Player->GetMovementComponent()->Velocity = PlayerRef.Velocity;
 	Player->Gun->CurrentMag = PlayerRef.GunMag;
 	Player->HealthComponent->SetHealth(PlayerRef.Health);
+	Player->Gun->CurrentAmmoType = PlayerRef.EquippedAmmoType;
+	Player->Gun->CurrentAlternateAmmoType = PlayerRef.EquippedAltAmmoType;
 	
 	// Destroy all saved actor instances in world.
 	TArray<AActor*> Actors;
@@ -161,7 +163,7 @@ void UAcopalypsSaveGame::LoadGame(AAcopalypsCharacter* Player)
 
 void UAcopalypsSaveGame::UnloadInstance(const UWorld* World, AActor* Actor) const
 {
-	if( Actor->GetClass() == MissionTriggerClass )
+	if( TriggerClasses.Contains(Actor->GetClass()) )
 	{
 		Actor->Reset();
 	}
@@ -231,30 +233,30 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref) const
 		//			//FSaveGameArchive CompArchive = FSaveGameArchive(CompMemReader);
 		//			//Comp->Serialize(CompArchive);
 
-					if( USceneComponent* SceneComponent = Cast<USceneComponent>(Comp) )
-					{
-						SceneComponent->SetRelativeTransform(
-							CompRef.Transform,
-							false,
-							nullptr,
-							ETeleportType::TeleportPhysics
-							);
-						UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Comp);
-						if( PrimitiveComponent != nullptr && PrimitiveComponent->IsAnySimulatingPhysics() )
-						{
-							PrimitiveComponent->SetPhysicsLinearVelocity(CompRef.Velocity);
-							PrimitiveComponent->SetPhysicsAngularVelocityInDegrees(CompRef.AngularVelocity);
-							PrimitiveComponent->GetBodyInstance()->UpdateMassProperties();
-						}
-					}
-					if( UMovementComponent* MovementComponent = Cast<UMovementComponent>(Comp) )
-					{
-						MovementComponent->Velocity = CompRef.Velocity;
-						MovementComponent->UpdateComponentVelocity();
-					}
-				}
-			}
-		}
+		//			if( USceneComponent* SceneComponent = Cast<USceneComponent>(Comp) )
+		//			{
+		//				SceneComponent->SetRelativeTransform(
+		//					CompRef.Transform,
+		//					false,
+		//					nullptr,
+		//					ETeleportType::TeleportPhysics
+		//					);
+		//				UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Comp);
+		//				if( PrimitiveComponent != nullptr && PrimitiveComponent->IsAnySimulatingPhysics() )
+		//				{
+		//					PrimitiveComponent->SetPhysicsLinearVelocity(CompRef.Velocity);
+		//					PrimitiveComponent->SetPhysicsAngularVelocityInDegrees(CompRef.AngularVelocity);
+		//					PrimitiveComponent->GetBodyInstance()->UpdateMassProperties();
+		//				}
+		//			}
+		//			if( UMovementComponent* MovementComponent = Cast<UMovementComponent>(Comp) )
+		//			{
+		//				MovementComponent->Velocity = CompRef.Velocity;
+		//				MovementComponent->UpdateComponentVelocity();
+		//			}
+		//		}
+		//	}
+		//}
 		Actor->FinishSpawning(Ref.Transform);
 		if( AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor) )
 		{

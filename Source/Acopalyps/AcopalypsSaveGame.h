@@ -65,6 +65,7 @@ struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
 		: FObjectAndNameAsStringProxyArchive(InInnerArchive,true)
 	{
 		ArIsSaveGame = true;
+		//ArNoDelta = true;
 	}
 };
 
@@ -105,7 +106,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGun> EnemyGunClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AActor> MissionTriggerClass;
+	TArray<UClass*> TriggerClasses;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<FInstanceRef> Instances;

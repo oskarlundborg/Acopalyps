@@ -129,8 +129,8 @@ void AAcopalypsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
 	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
-	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
-	HealthComponent->RefillHealth();
+	//UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
+	//HealthComponent->RefillHealth();
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
 	Load();
