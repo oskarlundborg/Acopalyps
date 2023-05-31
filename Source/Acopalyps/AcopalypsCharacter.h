@@ -91,10 +91,12 @@ class AAcopalypsCharacter : public ACharacter
 	UFUNCTION()
 	void Respawn();
 
-	UPROPERTY(VisibleAnywhere)
-	FVector SpawnPosition;
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
+	
+	UPROPERTY()
+	FTimerHandle PauseOverlapTimer;
+	FTimerDelegate PauseOverlapDelegate;
 
 	UFUNCTION()
 	void ResetLevel();
@@ -136,6 +138,11 @@ public:
 	void SpawnTriggerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void OnSave(const FString& SaveName);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLoad();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void DeathEvent();
 	
 	/** Called upon when object channel weapon collider collides with enemy char */
@@ -174,10 +181,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
-	UPROPERTY(VisibleAnywhere)
-	UAcopalypsSaveGame* SaveGame;
 
 public:
+	UPROPERTY(VisibleAnywhere)
+	UAcopalypsSaveGame* SaveGame;
+	
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/

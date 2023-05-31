@@ -120,6 +120,7 @@ void AEnemyAICharacter::Shoot()
 	Gun->Fire(Rapid);
 	FireEnemyTriggerEvent();
 }
+
 float AEnemyAICharacter::GetHealthPercent() const
 {
 	return HealthComponent->GetHealthPercent();

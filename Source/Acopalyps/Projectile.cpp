@@ -49,7 +49,6 @@ void AProjectile::BeginPlay()
 	{
 		DrawDebugSphere(GetWorld(), GetActorLocation(),10,10,FColor::Red,true,5);
 	}
-	CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
 }
 
 void AProjectile::OnHit(
@@ -64,7 +63,7 @@ void AProjectile::OnHit(
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr )
 	{
-		if( Hit.BoneName == "head" )
+		if( Hit.BoneName == "head" || Hit.BoneName == "neck" )
 		{
 			UGameplayStatics::ApplyPointDamage(HitActor, Damage * 10, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		}
@@ -77,5 +76,7 @@ void AProjectile::OnHit(
 			DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
 		}
 	}
-	Destroy();
+	DestructionDelegate.BindLambda([this]{ Destroy(); });
+	SetActorEnableCollision(false);
+	GetWorldTimerManager().SetTimer(DestructionTimer, DestructionDelegate, 5, false);
 }

@@ -11,7 +11,6 @@
 #include "EnemyAICharacter.h"
 #include "LevelSpawner.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "AcopalypsPlatformGameInstance.h"
 #include "Kismet/GameplayStatics.h" 
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,7 +68,7 @@ void AAcopalypsCharacter::BeginPlay()
 		Gun->SetOwner(this);
 		Gun->AttachWeaponInputs(this);
 	}
-	SpawnPosition = GetActorLocation();
+	Save();
 }
 
 void AAcopalypsCharacter::Tick(float DeltaTime)
@@ -130,8 +129,8 @@ void AAcopalypsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Display, TEXT("Calling respawn"))
 	//Cast<UAcopalypsPlatformGameInstance>(GetWorld()->GetGameInstance())->LoadGame();
-	UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
-	HealthComponent->RefillHealth();
+	//UGameplayStatics::GetGameMode(this)->RestartPlayer(GetController());
+	//HealthComponent->RefillHealth();
 	EnableInput(Cast<APlayerController>(GetController()));
 	bIsDead = false;
 	Load();
@@ -297,32 +296,34 @@ float AAcopalypsCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 
 void AAcopalypsCharacter::Save()
 {
-	//TArray<AActor*> AllActors;
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->SaveGame(AllActors);
-	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	if( !SaveGame )
+	{
+		SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	}
 	if( SaveGame )
 	{
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->SaveGameInstance(GetWorld(), AllActors);
-		if( SaveGame->IsValidLowLevel() )
+		SaveGame->SaveGame(this, AllActors);
+		if( IsValid(SaveGame) )
 		{
 			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
 			UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
 		}
-	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
+	} else { if( GEngine ) GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
 }
 
 void AAcopalypsCharacter::Load()
 {
-	//Cast<UAcopalypsPlatformGameInstance>(GetGameInstance())->LoadGame();
 	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
 	if( SaveGame ) {
+		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+		PauseOverlapDelegate.BindLambda([this]{ GetCapsuleComponent()->SetGenerateOverlapEvents(true); });
+		GetWorldTimerManager().SetTimer(PauseOverlapTimer, PauseOverlapDelegate, 4, false);
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
-		SaveGame->LoadGameInstance(GetWorld(), AllActors);
-	} else { GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No Game To Load...")); }
+		SaveGame->LoadGame(this);
+	} else { if( GEngine ) GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: No Game To Load...")); }
 }
 
 void AAcopalypsCharacter::SetLoadedLevels(TArray<FLevelID> LevelsToLoad)

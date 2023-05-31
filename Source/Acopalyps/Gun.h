@@ -39,9 +39,10 @@ struct FProjectileInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Delay;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame)
 	FTimerHandle TimerHandle = FTimerHandle();
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame)
 	bool bCanFire = true;
 };
 
@@ -197,12 +198,12 @@ public:
 	UFUNCTION()
 	void Reload();
 
-	TArray<AMMO_TYPES> AmmoTypes = {Regular, Rapid, Bouncing};
-	TArray<AMMO_TYPES> AlternateAmmoTypes = {Explosive, Shotgun};
+	TArray<AMMO_TYPES> AmmoTypes = { Regular, Rapid, Bouncing };
+	TArray<AMMO_TYPES> AlternateAmmoTypes = { Explosive, Shotgun };
 	/** Equiped Ammo Type */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, SaveGame)
 	TEnumAsByte<AMMO_TYPES> CurrentAmmoType = Regular;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, SaveGame)
 	TEnumAsByte<AMMO_TYPES> CurrentAlternateAmmoType = Explosive;
 
 	UPROPERTY(EditDefaultsOnly, Category="Ammo")
@@ -211,22 +212,18 @@ public:
 		{ Regular,   { nullptr,	100, .3f  } },
 		{ Bouncing,  { nullptr,	150, 0.1f } },
 		{ Rapid,     { nullptr,	50,  0.f  } },
-		{ Explosive, { nullptr,	0, 2.5f } },
+		{ Explosive, { nullptr,	0,   2.5f } },
 		{ Flare,     { nullptr,	200, 2.f  } },
-		{ Shotgun,   { nullptr,	300, 0.8f  } },
+		{ Shotgun,   { nullptr,	300, 0.8f } },
 	}; // Choose class in editor
 
 	UFUNCTION(BlueprintCallable)
 	FProjectileInfo GetProjectileInfoByKey(AMMO_TYPES AmmoType) { return *Projectiles.Find(AmmoType); }
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=WeaponProperties)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=WeaponProperties, SaveGame)
 	int32 CurrentMag = 1000;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=WeaponProperties)
 	int32 MaxMagSize = 1000;
-
-	UPROPERTY(BlueprintReadWrite)
-	int32 AmmoCapacity = 2147483647;
-	int32 MaxAmmoCapacity = 2147483647;
 
 	UPROPERTY(BlueprintReadWrite)
 	FTimerHandle ReloadTimerHandle;
@@ -234,23 +231,16 @@ public:
 	float ReloadTime = 1.5;
 	
 	UFUNCTION(BlueprintCallable, Category=Delay)
-	void ToggleCanFirePrimary(AMMO_TYPES AmmoType)
-	{
-		Projectiles.Find(AmmoType)->bCanFire ^= true;
-		if( Projectiles.Find(AmmoType)->bCanFire == true ) OnCanFire(AmmoType);
+	void ToggleCanFirePrimary(const AMMO_TYPES AmmoType) {
+		if( (Projectiles.Find(AmmoType)->bCanFire ^= true) == true ) OnCanFire(AmmoType);
 	}
 	FTimerDelegate CanFirePrimaryDelegate;
 	
 	UFUNCTION(BlueprintCallable, Category=Delay)
-	void ToggleCanFireAlternate(AMMO_TYPES AmmoType)
-	{
-		Projectiles.Find(AmmoType)->bCanFire ^= true;
-		if( Projectiles.Find(AmmoType)->bCanFire == true ) OnCanFire(AmmoType);
+	void ToggleCanFireAlternate(const AMMO_TYPES AmmoType) {
+		if( (Projectiles.Find(AmmoType)->bCanFire ^= true) == true ) OnCanFire(AmmoType);
 	}
 	FTimerDelegate CanFireAlternateDelegate;
-
-	UFUNCTION(BlueprintCallable)
-	void RefillAllAmmo() { AmmoCapacity = MaxAmmoCapacity; }
 
 protected:
 	/** Ends gameplay for this component. */

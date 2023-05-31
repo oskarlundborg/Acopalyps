@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Containers/Queue.h"
+#include "Templates/Tuple.h"
 #include "CombatManager.generated.h"
 
 class ACombatTrigger;
@@ -84,7 +85,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category= "Enemy Spawn Wave", meta=(AllowPrivateAccess = true))
 	void StartCombatMode();
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	int ActiveEnemiesCount = 0;
 
 	UPROPERTY(VisibleAnywhere)
@@ -96,26 +97,26 @@ private:
 
 	void RunSpawnWave();
 
+	UPROPERTY(SaveGame)
 	FTimerHandle RecurringSpawnCheckTimerHandle;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	TArray<AEnemyAICharacter*> ManagedEnemies = TArray<AEnemyAICharacter*>();
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	TArray<AEnemyDroneBaseActor*> ManagedDrones = TArray<AEnemyDroneBaseActor*>();
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	TArray<ASpawnZone*> SpawnZones = TArray<ASpawnZone*>();
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	TArray<ACombatTrigger*> CombatTriggers = TArray<ACombatTrigger*>();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	TArray<FCombatWave> CombatWaves = TArray<FCombatWave>();
 
 	TQueue<FCombatWave> WavesQueue = TQueue<FCombatWave>();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	UBoxComponent* ManagementZone;
-	
 };

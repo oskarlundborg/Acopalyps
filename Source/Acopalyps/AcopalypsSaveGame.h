@@ -3,40 +3,70 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Gun.h"
+#include "LevelSpawner.h"
 #include "GameFramework/SaveGame.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "AcopalypsSaveGame.generated.h"
 
+class ACombatManager;
 class AEnemyDroneBaseActor;
-class ASkeletalMeshActor;
-class AProjectile;
-class AStaticMeshActor;
-class AAcopalypsCharacter;
 class AEnemyAICharacter;
-
+class AStaticMeshActor;
 
 USTRUCT()
-struct FActorInstance
+struct ACOPALYPS_API FInstanceRef
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category=ActorInfo)
-	TSubclassOf<AActor> Class;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	// Actor ref for after first load
+	UPROPERTY(VisibleAnywhere)
+	AActor* SpawnedActor;
+
+	// General information for actor instance
+	UPROPERTY(VisibleAnywhere)
+	UClass* Class;
+	UPROPERTY(VisibleAnywhere)
+	FName Name;
+	UPROPERTY(VisibleAnywhere)
 	FTransform Transform;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	FRotator Rotation;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	FVector Velocity;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	bool bIsDead;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UPROPERTY(VisibleAnywhere)
+	TArray<uint8> Data; // Serialization data that does not want to work :))
+						// Would have made everything much easier...
+	// Components for actor
+	TArray<FInstanceRef> Components;
+
+	// Character specific properties
+	UPROPERTY(VisibleAnywhere)
 	float Health;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UPROPERTY(VisibleAnywhere)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere)
+	FRotator ControllerRotation;
+	UPROPERTY(VisibleAnywhere)
 	int32 GunMag;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
+	UPROPERTY(VisibleAnywhere)
+	TEnumAsByte<AMMO_TYPES> EquippedAmmoType;
+	UPROPERTY(VisibleAnywhere)
+	TEnumAsByte<AMMO_TYPES> EquippedAltAmmoType;
+
+	// Misc
+	UPROPERTY(VisibleAnywhere)
 	UStaticMesh* Mesh;
-	UPROPERTY(VisibleAnywhere, Category=ActorInfo)
-	UStaticMeshComponent* MeshComp;
+	UPROPERTY(VisibleAnywhere)
+	FVector Velocity;
+	UPROPERTY(VisibleAnywhere)
+	FVector AngularVelocity;
+};
+
+struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
+{
+	FSaveGameArchive(FArchive& InInnerArchive) 
+		: FObjectAndNameAsStringProxyArchive(InInnerArchive,true)
+	{
+		ArIsSaveGame = true;
+		//ArNoDelta = true;
+	}
 };
 
 /**
@@ -46,52 +76,42 @@ UCLASS()
 class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 {
 	GENERATED_BODY()
+
+	//UAcopalypsSaveGame() {};
 	
 public:
 	UFUNCTION()
-	void SaveGameInstance(const UWorld* World, TArray<AActor*> Actors);
+	void SaveGame(AAcopalypsCharacter* Player, TArray<AActor*>& InActors);
+	
 	UFUNCTION()
-	void LoadGameInstance(UWorld* World, TArray<AActor*>& Actors);
+	void LoadGame(AAcopalypsCharacter* Player);
+	
+private:
+	UFUNCTION()
+	void UnloadInstance(const UWorld* World, AActor* Actor) const;
+	UFUNCTION()
+	void LoadInstance(UWorld* World, FInstanceRef& Ref) const;
+	UFUNCTION()
+	void FinishLoadingInstance(FInstanceRef& Ref) const;
+	
+	UFUNCTION()
+	bool AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const;
 
-	UFUNCTION()
-	void DestroySceneActors(TArray<AActor*>& Actors);
+	UPROPERTY(VisibleAnywhere)
+	FDateTime Timestamp; // Unused as of now
 	
 	UPROPERTY(VisibleAnywhere)
-	FString SlotName;
+	FInstanceRef PlayerRef;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGun> EnemyGunClass;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UClass*> TriggerClasses;
+
 	UPROPERTY(VisibleAnywhere)
-	uint32 UserIndex;
-
-	// World Info
-	UPROPERTY(VisibleAnywhere, Category=World)
-	FName WorldName;
-	
-	// Player Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	FActorInstance PlayerInstance;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AAcopalypsCharacter> PlayerClass;
-
-	// Enemies In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FActorInstance> EnemiesInWorld;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyAICharacter> EnemyClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AEnemyDroneBaseActor> EnemyDroneClass;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AStaticMeshActor> StaticMeshClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> ResupplyStationClass;
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TSubclassOf<AActor> AmmoPickupClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="Classes")
-	TArray<TSubclassOf<AActor>> ClassesToDelete;
-	
-	// Actors In World Info
-	UPROPERTY(EditDefaultsOnly, Category="Instances")
-	TArray<FActorInstance> ActorsInWorld;
-	UPROPERTY(VisibleAnywhere, Category=LevelInfo)
-	TArray<struct FLevelID> SubLevels;
+	TArray<FInstanceRef> Instances;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<AActor>> SavedClasses;
+	UPROPERTY(VisibleAnywhere)
+	TArray<FLevelID> SubLevels;
 };

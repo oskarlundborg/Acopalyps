@@ -60,11 +60,11 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 				Overlap.GetComponent()->AddImpulseAtLocation(GetActorLocation() + GetVelocity().Size() * 20.f, GetActorLocation());
 				ExplostionOverlapActorEvent(Overlap.GetActor());
 			}
-			
 		}
-		
 	}
-	Destroy();
+	DestructionDelegate.BindLambda([this]{ Destroy(); });
+	SetActorEnableCollision(false);
+	GetWorldTimerManager().SetTimer(DestructionTimer, DestructionDelegate, 5, false);
 }
 
 bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)

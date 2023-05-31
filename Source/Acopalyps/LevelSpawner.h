@@ -32,10 +32,10 @@ public:
 	// Sets default values for this actor's properties
 	ALevelSpawner();
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	TArray<FLevelID> SubLevelsToLoad;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	TArray<int> SubLevelsToUnload;
 
 protected:
