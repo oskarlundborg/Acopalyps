@@ -3,11 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyAICharacter.h"
-#include "EnemyDroneBaseActor.h"
 #include "Gun.h"
 #include "LevelSpawner.h"
-#include "Engine/StaticMeshActor.h"
 #include "GameFramework/SaveGame.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "AcopalypsSaveGame.generated.h"
@@ -43,6 +40,8 @@ struct ACOPALYPS_API FInstanceRef
 	UPROPERTY(VisibleAnywhere)
 	float Health;
 	UPROPERTY(VisibleAnywhere)
+	bool bIsDead;
+	UPROPERTY(VisibleAnywhere)
 	FRotator ControllerRotation;
 	UPROPERTY(VisibleAnywhere)
 	int32 GunMag;
@@ -76,14 +75,16 @@ UCLASS()
 class ACOPALYPS_API UAcopalypsSaveGame : public USaveGame
 {
 	GENERATED_BODY()
+
+	//UAcopalypsSaveGame() {};
 	
 public:
 	UFUNCTION()
-	void SaveGameInstance(APawn* Player, TArray<AActor*>& InActors);
+	void SaveGame(AAcopalypsCharacter* Player, TArray<AActor*>& InActors);
 	
-	UFUNCTION(meta=(WorldContext=WorldContextObject))
-	void LoadGameInstance(const UObject* WorldContextObject);
-
+	UFUNCTION()
+	void LoadGame(AAcopalypsCharacter* Player);
+	
 private:
 	UFUNCTION()
 	void UnloadInstance(const UWorld* World, AActor* Actor) const;
@@ -96,13 +97,16 @@ private:
 	bool AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const;
 
 	UPROPERTY(VisibleAnywhere)
-	FDateTime Timestamp;
-	UPROPERTY(VisibleAnywhere)
-	FString WorldName;
+	FDateTime Timestamp; // Unused as of now
 	
 	UPROPERTY(VisibleAnywhere)
 	FInstanceRef PlayerRef;
 	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGun> EnemyGunClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> MissionTriggerClass;
+
 	UPROPERTY(VisibleAnywhere)
 	TArray<FInstanceRef> Instances;
 	UPROPERTY(EditDefaultsOnly)

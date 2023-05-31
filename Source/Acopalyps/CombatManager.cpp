@@ -72,7 +72,10 @@ void ACombatManager::StartCombatMode()
 
 void ACombatManager::ResetCombat()
 {
-	WavesQueue.Empty();
+	if( !WavesQueue.IsEmpty() )
+	{
+		WavesQueue.Empty();
+	}
 	for (FCombatWave Wave : CombatWaves)
 	{
 		WavesQueue.Enqueue(Wave);

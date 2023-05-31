@@ -2,6 +2,8 @@
 
 
 #include "AcopalypsPlatformGameInstance.h"
+
+#include "AcopalypsCharacter.h"
 #include "AcopalypsSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -11,7 +13,7 @@ void UAcopalypsPlatformGameInstance::SaveGame(TArray<AActor*>& InActors)
 	SaveGameObject = Cast<UAcopalypsSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
 	if( SaveGameObject != nullptr )
 	{
-		SaveGameObject->SaveGameInstance(GetWorld()->GetFirstPlayerController()->GetPawnOrSpectator(), InActors);
+		SaveGameObject->SaveGame(Cast<AAcopalypsCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter()), InActors);
 		if( SaveGameObject->IsValidLowLevel() )
 		{
 			UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("default"), 0);
@@ -24,7 +26,7 @@ void UAcopalypsPlatformGameInstance::LoadGame()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, TEXT("Loaading..."));
 	if( UAcopalypsSaveGame* SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0)) ) {
-		SaveGame->LoadGameInstance(GetWorld()->GetFirstPlayerController()->GetCharacter());
+		SaveGame->LoadGame(Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)));
 		GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Green, TEXT("Game loaded."));
 	} else { GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, TEXT("Error: No game to load.")); }
 }

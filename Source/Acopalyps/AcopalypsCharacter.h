@@ -91,10 +91,12 @@ class AAcopalypsCharacter : public ACharacter
 	UFUNCTION()
 	void Respawn();
 
-	UPROPERTY(VisibleAnywhere)
-	FVector SpawnPosition;
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
+	
+	UPROPERTY()
+	FTimerHandle PauseOverlapTimer;
+	FTimerDelegate PauseOverlapDelegate;
 
 	UFUNCTION()
 	void ResetLevel();
@@ -179,10 +181,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAcopalypsSaveGame> SaveGameClass;
-	UPROPERTY(VisibleAnywhere)
-	UAcopalypsSaveGame* SaveGame;
 
 public:
+	UPROPERTY(VisibleAnywhere)
+	UAcopalypsSaveGame* SaveGame;
+	
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/

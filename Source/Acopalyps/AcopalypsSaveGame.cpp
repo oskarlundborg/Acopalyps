@@ -4,6 +4,7 @@
 #include "AcopalypsSaveGame.h"
 
 #include "AcopalypsCharacter.h"
+#include "CombatTrigger.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
 #include "HealthComponent.h"
@@ -16,11 +17,8 @@
 class ULevelStreamingDynamic;
 class ULevelStreamerSubsystem;
 
-void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InActors)
+void UAcopalypsSaveGame::SaveGame(AAcopalypsCharacter* Player, TArray<AActor*>& InActors)
 {
-	//WorldName = _Player->GetWorld()->GetName();
-	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(_Player);
-	
 	AddInstanceRef(Player, PlayerRef);
 	PlayerRef.ControllerRotation = Player->GetController()->GetControlRotation();
 	PlayerRef.GunMag = Player->Gun->CurrentMag;
@@ -32,10 +30,8 @@ void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InAct
 
 	for( AActor* Actor : InActors )
 	{
-		//UE_LOG(LogTemp, Display, TEXT("Actor: %s"), *Actor->GetFName().ToString())
-		if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
+		if( SavedClasses.Contains(Actor->GetClass()) )
 		{
-			//UE_LOG(LogTemp, Display, TEXT("Saved: %s"), *Actor->GetFName().ToString())
 			if( AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor))
 			{
 				if( Enemy->IsDead() ) continue;
@@ -47,8 +43,7 @@ void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InAct
 			FInstanceRef Ref;
 			if( AddInstanceRef(Actor, Ref) )
 			{
-				const int Index = Instances.Emplace();
-				Instances[Index] = Ref;
+				Instances[Instances.Emplace()] = Ref;
 			}
 		}
 	}
@@ -56,6 +51,7 @@ void UAcopalypsSaveGame::SaveGameInstance(APawn* _Player, TArray<AActor*>& InAct
 
 bool UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 {
+	if( Actor->GetClass() == EnemyGunClass ) return false;
 	FMemoryWriter MemWriter = FMemoryWriter(Ref.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemWriter);
 
@@ -66,11 +62,13 @@ bool UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 	if( AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor))
 	{
 		Ref.Health = Enemy->HealthComponent->GetHealth();
+		Ref.bIsDead = Enemy->IsDead();
 		Enemy->Serialize(Archive);
 	}
 	else if( AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor))
 	{
 		Ref.Health = Drone->HealthComponent->GetHealth();
+		Ref.bIsDead = Drone->IsDead();
 		Drone->Serialize(Archive);
 	}
 	else if( const AStaticMeshActor* StaticMesh = Cast<AStaticMeshActor>(Actor))
@@ -114,22 +112,19 @@ bool UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 	return true;
 }
 
-void UAcopalypsSaveGame::LoadGameInstance(const UObject* WorldContextObject)
+void UAcopalypsSaveGame::LoadGame(AAcopalypsCharacter* Player)
 {
-	UWorld* World = WorldContextObject->GetWorld();
-	//if( WorldName != World->GetName() )
-	//{
-	//	UGameplayStatics::LoadStreamLevel(
-	//		WorldContextObject,
-	//		FName(WorldName),
-	//		true,
-	//		true,
-	//		FLatentActionInfo(/*0, GetUniqueID(), TEXT("LoadGameInstance"), this*/)
-	//		);
-	//}
+	UWorld* World = Player->GetWorld();
+	
+	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
+	// Load all levels from save
+	for( int i = 0; i < SubLevels.Num(); i++ )
+	{
+		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
+		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
+	}
 	
 	// Set player status
-	AAcopalypsCharacter* Player = Cast<AAcopalypsCharacter>(UGameplayStatics::GetPlayerCharacter(World, 0));
 	FMemoryReader MemReader = FMemoryReader(PlayerRef.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemReader);
 	Player->Serialize(Archive);
@@ -139,20 +134,6 @@ void UAcopalypsSaveGame::LoadGameInstance(const UObject* WorldContextObject)
 	Player->Gun->CurrentMag = PlayerRef.GunMag;
 	Player->HealthComponent->SetHealth(PlayerRef.Health);
 	
-	ULevelStreamerSubsystem* LevelStreamSubsystem = World->GetGameInstance()->GetSubsystem<ULevelStreamerSubsystem>();
-	TArray<int> LevelKeys;
-	// Unload all loaded levels
-	LevelStreamSubsystem->LevelMap.GetKeys(LevelKeys);
-	for( int i = 0; i < LevelKeys.Num(); i++ )
-	{
-		LevelStreamSubsystem->UnloadLevel(LevelKeys[i]);
-	}
-	// Load all levels from save
-	for( int i = 0; i < SubLevels.Num(); i++ )
-	{
-		UE_LOG(LogTemp, Display, TEXT("%i"), SubLevels[i].ID )
-		LevelStreamSubsystem->LoadLevel(SubLevels[i]);
-	}
 	// Destroy all saved actor instances in world.
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), Actors);
@@ -165,30 +146,39 @@ void UAcopalypsSaveGame::LoadGameInstance(const UObject* WorldContextObject)
 	for( FInstanceRef& Ref : Instances )
 	{
 		LoadInstance(World, Ref);
-		UE_LOG(LogTemp, Display, TEXT("Load: %s"), *Ref.Class->GetFName().ToString() )
 	}
 	for( FInstanceRef& Ref : Instances )
 	{
 		FinishLoadingInstance(Ref);
-		UE_LOG(LogTemp, Display, TEXT("Finish loading: %s"), *Ref.Class->GetFName().ToString() )
+	}
+	TArray<AActor*> CombatManagers;
+	UGameplayStatics::GetAllActorsOfClass(World, ACombatManager::StaticClass(), CombatManagers);
+	for( AActor* Manager : CombatManagers )
+	{
+		if( auto CombatManager = Cast<ACombatManager>(Manager) ) CombatManager->ResetCombat();
 	}
 }
 
 void UAcopalypsSaveGame::UnloadInstance(const UWorld* World, AActor* Actor) const
 {
-	if( SavedClasses.Find(Actor->GetClass()) != INDEX_NONE )
+	if( Actor->GetClass() == MissionTriggerClass )
 	{
+		Actor->Reset();
+	}
+	if( SavedClasses.Contains(Actor->GetClass()) && Actor->IsValidLowLevel() )
+	{
+		if( const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor) )
+		{
+			Enemy->Gun->Owner = nullptr;
+		}
 		if( const AStaticMeshActor* StaticMesh = Cast<AStaticMeshActor>(Actor) )
 		{
 			if( StaticMesh->IsRootComponentMovable() && StaticMesh->Owner == nullptr )
 			{
-				World->GetTimerManager().ClearAllTimersForObject(Actor);
 				Actor->Destroy();
 			}
 			return;
 		}
-		UE_LOG(LogTemp, Display, TEXT("Destroying: %s"), *Actor->GetFName().ToString())
-		World->GetTimerManager().ClearAllTimersForObject(Actor);
 		Actor->Destroy();
 	}
 }
@@ -200,7 +190,7 @@ void UAcopalypsSaveGame::LoadInstance(UWorld* World, FInstanceRef& Ref) const
 		Ref.Transform,
 		nullptr,
 		nullptr,
-		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
 		);
 
 	if( const AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor))
@@ -228,18 +218,18 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref) const
 	AActor* Actor = Ref.SpawnedActor;
 	if( Actor != nullptr )
 	{
-		TArray<UActorComponent*> Comps = TArray<UActorComponent*>();
-		Actor->GetComponents(Comps);
-		for( FInstanceRef& CompRef : Ref.Components )
-		{
-			for( UActorComponent* Comp : Comps )
-			{
-				if( Comp->GetFName() == CompRef.Name )
-				{
-					UE_LOG(LogTemp, Display, TEXT("%s: %s"), *Actor->GetFName().ToString(),*Comp->GetFName().ToString() )
-					//FMemoryReader CompMemReader = FMemoryReader(CompRef.Data, true);
-					//FSaveGameArchive CompArchive = FSaveGameArchive(CompMemReader);
-					//Comp->Serialize(CompArchive);
+		//TArray<UActorComponent*> Comps = TArray<UActorComponent*>();
+		//Actor->GetComponents(Comps);
+		//for( FInstanceRef& CompRef : Ref.Components )
+		//{
+		//	for( UActorComponent* Comp : Comps )
+		//	{
+		//		if( Comp->GetFName() == CompRef.Name )
+		//		{
+		//			//UE_LOG(LogTemp, Display, TEXT("%s: %s"), *Actor->GetFName().ToString(),*Comp->GetFName().ToString() )
+		//			//FMemoryReader CompMemReader = FMemoryReader(CompRef.Data, true);
+		//			//FSaveGameArchive CompArchive = FSaveGameArchive(CompMemReader);
+		//			//Comp->Serialize(CompArchive);
 
 					if( USceneComponent* SceneComponent = Cast<USceneComponent>(Comp) )
 					{
@@ -266,9 +256,9 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref) const
 			}
 		}
 		Actor->FinishSpawning(Ref.Transform);
-		if( ACombatManager* CombatManager = Cast<ACombatManager>(Actor) )
+		if( AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor) )
 		{
-			CombatManager->ResetCombat();
+			Enemy->InitializeController();
 		}
 	}
 }

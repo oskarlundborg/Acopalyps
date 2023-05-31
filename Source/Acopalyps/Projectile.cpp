@@ -63,7 +63,7 @@ void AProjectile::OnHit(
 	AActor* HitActor = Hit.GetActor();
 	if(HitActor != nullptr )
 	{
-		if( Hit.BoneName == "head" )
+		if( Hit.BoneName == "head" || Hit.BoneName == "neck" )
 		{
 			UGameplayStatics::ApplyPointDamage(HitActor, Damage * 10, Hit.Location, Hit, GetWorld()->GetFirstPlayerController(), this,nullptr);
 		}
