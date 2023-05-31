@@ -21,8 +21,8 @@ public:
 	UPROPERTY()
 	ACombatManager* CombatManager;
 
-	UPROPERTY(VisibleAnywhere, Category=Health)
-	TSoftObjectPtr<class UHealthComponent> HealthComponent;
+	UPROPERTY(EditAnywhere, Category=Health)
+	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	class USphereComponent* SphereColliderComponent;
