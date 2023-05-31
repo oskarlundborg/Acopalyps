@@ -195,7 +195,7 @@ public:
 	void EmptyMagFireAttemptEvent();
 
 	/** Reloading */
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Reload();
 
 	TArray<AMMO_TYPES> AmmoTypes = { Regular, Rapid, Bouncing };
