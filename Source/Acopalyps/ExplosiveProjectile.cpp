@@ -62,9 +62,9 @@ void AExplosiveProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			}
 		}
 	}
-	DestructionDelegate.BindLambda([this]{ Destroy(); });
+	DestructionDelegate.BindLambda([this]{ if( this->IsValidLowLevel() ) Destroy(); });
 	SetActorEnableCollision(false);
-	GetWorldTimerManager().SetTimer(DestructionTimer, DestructionDelegate, 5, false);
+	GetWorldTimerManager().SetTimer(DestructionTimer, DestructionDelegate, 2, false);
 }
 
 bool AExplosiveProjectile::ExplosionTrace(TArray<FOverlapResult>& Overlaps)
