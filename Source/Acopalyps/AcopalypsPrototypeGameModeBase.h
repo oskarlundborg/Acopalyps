@@ -24,6 +24,9 @@ public:
 	/** Run when a pawn is killed, enemy or player*/
 	void PawnKilled(APawn* PawnKilled);
 
+	/** Run when initializing game*/
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -38,9 +41,5 @@ private:
 	UPROPERTY()
 	FOnPlayerDiedSignature OnPlayerDied;
 	
-	//TArray<AActor*> ActorDestroyed;
-	//TMap<AActor*, FCompressedTransform> ActorsMove;
-	//TMap<AActor*, FCompressedTransform> ActorsSpawned;
-
-	//FVector SpawnPoint;
+	
 };
