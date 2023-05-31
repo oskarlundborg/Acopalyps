@@ -4,13 +4,11 @@
 #include "AcopalypsSaveGame.h"
 
 #include "AcopalypsCharacter.h"
-#include "CombatTrigger.h"
 #include "EnemyAICharacter.h"
 #include "EnemyDroneBaseActor.h"
 #include "HealthComponent.h"
 #include "LevelSpawner.h" // Needed but grayed out by rider for whatever reason lol
 #include "LevelStreamerSubsystem.h"
-#include "Engine/StaticMeshActor.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -30,7 +28,7 @@ void UAcopalypsSaveGame::SaveGame(AAcopalypsCharacter* Player, TArray<AActor*>& 
 
 	for( AActor* Actor : InActors )
 	{
-		if( SavedClasses.Contains(Actor->GetClass()) )
+		if( Actor->IsValidLowLevel() && SavedClasses.Contains(Actor->GetClass()) )
 		{
 			if( AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor))
 			{
@@ -70,11 +68,6 @@ bool UAcopalypsSaveGame::AddInstanceRef(AActor* Actor, FInstanceRef& Ref) const
 		Ref.Health = Drone->HealthComponent->GetHealth();
 		Ref.bIsDead = Drone->IsDead();
 		Drone->Serialize(Archive);
-	}
-	else if( const AStaticMeshActor* StaticMesh = Cast<AStaticMeshActor>(Actor))
-	{
-		if( !StaticMesh->IsRootComponentMovable() ) return false;
-		Ref.Mesh = StaticMesh->GetStaticMeshComponent()->GetStaticMesh();
 	}
 	Actor->Serialize(Archive);
 
@@ -173,14 +166,6 @@ void UAcopalypsSaveGame::UnloadInstance(const UWorld* World, AActor* Actor) cons
 		{
 			Enemy->Gun->Owner = nullptr;
 		}
-		if( const AStaticMeshActor* StaticMesh = Cast<AStaticMeshActor>(Actor) )
-		{
-			if( StaticMesh->IsRootComponentMovable() && StaticMesh->Owner == nullptr )
-			{
-				Actor->Destroy();
-			}
-			return;
-		}
 		Actor->Destroy();
 	}
 }
@@ -202,11 +187,6 @@ void UAcopalypsSaveGame::LoadInstance(UWorld* World, FInstanceRef& Ref) const
 	else if( const AEnemyDroneBaseActor* Drone = Cast<AEnemyDroneBaseActor>(Actor))
 	{
 		Drone->HealthComponent->SetHealth(Ref.Health);
-	}
-	else if( const AStaticMeshActor* StaticMesh = Cast<AStaticMeshActor>(Actor))
-	{
-		if( !StaticMesh->IsRootComponentMovable() ) return;
-		StaticMesh->GetStaticMeshComponent()->SetStaticMesh(Ref.Mesh);
 	}
 	FMemoryReader MemReader = FMemoryReader(Ref.Data, true);
 	FSaveGameArchive Archive = FSaveGameArchive(MemReader);

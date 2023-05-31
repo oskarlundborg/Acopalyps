@@ -12,7 +12,6 @@
 class ACombatManager;
 class AEnemyDroneBaseActor;
 class AEnemyAICharacter;
-class AStaticMeshActor;
 
 USTRUCT()
 struct ACOPALYPS_API FInstanceRef
@@ -52,8 +51,6 @@ struct ACOPALYPS_API FInstanceRef
 
 	// Misc
 	UPROPERTY(VisibleAnywhere)
-	UStaticMesh* Mesh;
-	UPROPERTY(VisibleAnywhere)
 	FVector Velocity;
 	UPROPERTY(VisibleAnywhere)
 	FVector AngularVelocity;
@@ -74,7 +71,6 @@ struct ACOPALYPS_API FInstanceRef
 		Ar << Object.GunMag;
 		Ar << Object.EquippedAmmoType;
 		Ar << Object.EquippedAltAmmoType;
-		Ar << Object.Mesh;
 		Ar << Object.Velocity;
 		Ar << Object.AngularVelocity;
 		
