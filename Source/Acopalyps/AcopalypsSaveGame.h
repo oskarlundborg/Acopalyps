@@ -57,6 +57,29 @@ struct ACOPALYPS_API FInstanceRef
 	FVector Velocity;
 	UPROPERTY(VisibleAnywhere)
 	FVector AngularVelocity;
+
+	friend FArchive& operator<<(FArchive& Ar, FInstanceRef& Object)
+	{
+		Ar << Object.Data;
+		Ar << Object.Transform;
+		Ar << Object.SpawnedActor;
+		Ar << Object.Class;
+		Ar << Object.Name;
+		Ar << Object.Transform;
+		Ar << Object.Data;
+		Ar << Object.Components;
+		Ar << Object.Health;
+		Ar << Object.bIsDead;
+		Ar << Object.ControllerRotation;
+		Ar << Object.GunMag;
+		Ar << Object.EquippedAmmoType;
+		Ar << Object.EquippedAltAmmoType;
+		Ar << Object.Mesh;
+		Ar << Object.Velocity;
+		Ar << Object.AngularVelocity;
+		
+		return Ar;
+	}
 };
 
 struct FSaveGameArchive : public FObjectAndNameAsStringProxyArchive
