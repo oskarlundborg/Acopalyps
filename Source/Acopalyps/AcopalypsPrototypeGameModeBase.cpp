@@ -7,6 +7,7 @@
 #include "AcopalypsCharacter.h"
 #include "AcopalypsSaveGame.h"
 #include "EngineUtils.h"
+#include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 
 void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled)
@@ -17,13 +18,18 @@ void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled)
 	if (PlayerController)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Player Killed"))
-		//RestartPlayer(PlayerController);
 		UGameplayStatics::GetGameMode(this)->RestartPlayer(PlayerController);
-		//RestartPlayer(PlayerController);
-		//EndGame(false);
 	}
+}
 
-	// loop through all enemies and check if all enemies are dead
+void AAcopalypsPrototypeGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::Fullscreen);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(70);
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(true);
+	UGameUserSettings::GetGameUserSettings()->ApplyHardwareBenchmarkResults();
 }
 
 void AAcopalypsPrototypeGameModeBase::BeginPlay()
