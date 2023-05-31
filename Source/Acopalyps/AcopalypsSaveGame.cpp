@@ -238,10 +238,12 @@ void UAcopalypsSaveGame::FinishLoadingInstance(FInstanceRef& Ref) const
 		//	}
 		//}
 		Actor->FinishSpawning(Ref.Transform);
+		/**
 		if( AEnemyAICharacter* Enemy = Cast<AEnemyAICharacter>(Actor) )
 		{
 			Enemy->InitializeController();
 		}
+		*/
 	}
 }
 

@@ -33,6 +33,9 @@ public:
 
 	ACombatManager* Manager = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bTriggerUsed = false;
+
 private:
 	UFUNCTION(BlueprintCallable,meta=(AllowPrivateAccess = true))
 	void StartCombat();
