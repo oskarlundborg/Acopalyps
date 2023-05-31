@@ -10,14 +10,13 @@
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 
-void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled)
+void AAcopalypsPrototypeGameModeBase::PawnKilled(APawn* PawnKilled) const 
 {
 	// if pawn killed has playerController as controller it is the player
 	APlayerController* PlayerController = Cast<APlayerController>(PawnKilled->GetController());
 	//ensure(PlayerController);
 	if (PlayerController)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Player Killed"))
 		UGameplayStatics::GetGameMode(this)->RestartPlayer(PlayerController);
 	}
 }
@@ -45,13 +44,11 @@ void AAcopalypsPrototypeGameModeBase::BeginPlay()
 
 void AAcopalypsPrototypeGameModeBase::RestartPlayer(AController* NewPlayer)
 {
-	UE_LOG(LogTemp, Display, TEXT("Calling RestartPlayer"))
 	Super::RestartPlayer(NewPlayer);
 }
 
 void AAcopalypsPrototypeGameModeBase::PlayerDied(ACharacter* Character)
 {
-	UE_LOG(LogTemp, Display, TEXT("Calling PlayerDied"))
 	if( AController* CharacterController = Character->GetController() )
 	{
 		RestartPlayer(CharacterController);
