@@ -76,7 +76,7 @@ void AProjectile::OnHit(
 			DrawDebugSphere(GetWorld(),Hit.Location,10,10,FColor::Cyan,true,5);
 		}
 	}
-	DestructionDelegate.BindLambda([this]{ Destroy(); });
+	DestructionDelegate.BindLambda([this]{ if( this->IsValidLowLevel() ) Destroy(); });
 	SetActorEnableCollision(false);
 	GetWorldTimerManager().SetTimer(DestructionTimer, DestructionDelegate, 5, false);
 }
