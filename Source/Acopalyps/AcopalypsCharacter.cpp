@@ -307,7 +307,7 @@ void AAcopalypsCharacter::Save()
 		SaveGame->SaveGame(this, AllActors);
 		if( IsValid(SaveGame) )
 		{
-			UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
+			//UGameplayStatics::DeleteGameInSlot(TEXT("default"), 0);
 			UGameplayStatics::SaveGameToSlot(SaveGame, TEXT("default"), 0);
 		}
 	} else { if( GEngine ) GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Red, TEXT("Error: Unable to save...")); }
