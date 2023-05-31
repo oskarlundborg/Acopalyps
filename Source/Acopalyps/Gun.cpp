@@ -217,9 +217,14 @@ void AGun::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AGun::Reload()
 {
-	ReloadCompletedEvent();
-	CurrentMag = MaxMagSize;
-	bCanReload=true;
+	if(bCanReload == false)
+	{
+		ReloadCompletedEvent();
+		CurrentMag = MaxMagSize;
+		bCanReload=true;
+	}
+	
+	
 }
 
 void AGun::AttemptReload()
