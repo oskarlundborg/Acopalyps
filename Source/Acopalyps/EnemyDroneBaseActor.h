@@ -224,7 +224,6 @@ private:
 	FTimerHandle UpdateCurrentObjectiveTimerHandle;
 
 	/* One-shot timer handles*/
-	FTimerHandle SaveHomeLocationTimerHandle;
 	UPROPERTY(SaveGame)
 	FTimerHandle AttackTimerHandle;
 	UPROPERTY(SaveGame)

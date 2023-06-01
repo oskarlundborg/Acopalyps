@@ -361,6 +361,14 @@ void AEnemyDroneBaseActor::DoDeath()
 /** Destroys drone after a some time*/
 void AEnemyDroneBaseActor::DestroyDrone()
 {
+	GetWorldTimerManager().ClearTimer(CheckAttackBoundsTimerHandle);
+	GetWorldTimerManager().ClearTimer(UpdateCurrentObjectiveTimerHandle);
+	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorldTimerManager().ClearTimer(RetreatTimerHandle);
+	GetWorldTimerManager().ClearTimer(ResumeTimerHandle);
+	GetWorldTimerManager().ClearTimer(ResumeSpeedHandle);
+	GetWorldTimerManager().ClearTimer(DestructionTimerHandle);
+	
 	Destroy();
 }
 
