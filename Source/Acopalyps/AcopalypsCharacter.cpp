@@ -1,4 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+/**
+ @author: Gin Lindelöw
+*/
 
 #include "AcopalypsCharacter.h"
 #include "Animation/AnimInstance.h"
@@ -320,9 +323,9 @@ void AAcopalypsCharacter::Load()
 {
 	SaveGame = Cast<UAcopalypsSaveGame>(UGameplayStatics::LoadGameFromSlot("default", 0));
 	if( SaveGame ) {
-		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-		PauseOverlapDelegate.BindLambda([this]{ GetCapsuleComponent()->SetGenerateOverlapEvents(true); });
-		GetWorldTimerManager().SetTimer(PauseOverlapTimer, PauseOverlapDelegate, 4, false);
+		//GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+		//PauseOverlapDelegate.BindLambda([this]{ GetCapsuleComponent()->SetGenerateOverlapEvents(true); });
+		//GetWorldTimerManager().SetTimer(PauseOverlapTimer, PauseOverlapDelegate, 4, false);
 		TArray<AActor*> AllActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
 		SaveGame->LoadGame(this);

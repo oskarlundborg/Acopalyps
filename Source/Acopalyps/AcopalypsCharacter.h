@@ -1,4 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+/**
+ @author: Gin Lindelöw
+*/
 
 #pragma once
 
@@ -94,9 +97,9 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
 	
-	UPROPERTY()
-	FTimerHandle PauseOverlapTimer;
-	FTimerDelegate PauseOverlapDelegate;
+	//UPROPERTY()
+	//FTimerHandle PauseOverlapTimer;
+	//FTimerDelegate PauseOverlapDelegate;
 
 	UFUNCTION()
 	void ResetLevel();

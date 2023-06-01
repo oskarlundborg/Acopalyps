@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+ @author: Joakim Pettersson
+*/
 
 #include "ExplosiveObject.h"
 #include "Engine/EngineTypes.h"
