@@ -27,7 +27,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Method to set if character is in rag-doll-mode in Blackboard
-	 * @param true or false depending on if collision preset should be ragdoll or not
+	 * @param val true or false depending on if collision preset should be ragdoll or not
 	 */
 	void SetIsRagdoll(bool val);
 
@@ -42,6 +42,7 @@ public:
 	 */
 	bool HitTraceAtPLayerSuccess() const;
 
+	/** ========= Filters currently not in use, but can be used for crowd avoidance*/
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<UNavigationQueryFilter>> SubclassQueryFilters;
 	
@@ -59,7 +60,5 @@ private:
 	/** Behavior tree to control behavior */
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* BehaviorTree;
-
-	
 	
 };
