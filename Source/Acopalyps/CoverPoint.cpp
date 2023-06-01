@@ -35,11 +35,13 @@ void ACoverPoint::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+/** Method calculating distance to player actor */
 float ACoverPoint::DistanceToPlayer() const
 {
 	return FVector::Dist(GetActorLocation(), PlayerCharacter->GetActorLocation());
 }
 
+/** Performs a line trace to check if enemy can see player from cover point location*/ 
 bool ACoverPoint::HasLineOfSightToPlayer() const
 {
 	FHitResult HitResult;

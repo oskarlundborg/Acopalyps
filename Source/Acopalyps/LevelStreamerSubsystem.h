@@ -27,7 +27,6 @@ public:
 	/** Unload level and remove level with id to LevelMap */
 	void UnloadLevel(int IDToUnload);
 	
-
 	/** Map with key levelID, value instanced level */
 	TMap<int, class ULevelStreamingDynamic*> LevelMap;
 	

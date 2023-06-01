@@ -37,17 +37,15 @@ void ACombatManager::BeginPlay()
 	{
 		WavesQueue.Enqueue(Wave);
 	}
-	//TODO Remove the following call before merging
-	//StartCombatMode();
 }
 
 // Called every frame
 void ACombatManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
+/** At combat start method runs to start enemy combat behaviour, and triggers potential triggers for combat related functions*/
 void ACombatManager::StartCombatMode()
 {
 	if(bCombatStarted) return;
@@ -69,7 +67,7 @@ void ACombatManager::StartCombatMode()
 	StartOfCombat();
 }
 
-
+/** Resets all collections and information about progress in a combat, to enable starting combat from beginning again*/
 void ACombatManager::ResetCombat()
 {
 	if( !WavesQueue.IsEmpty() )
@@ -94,6 +92,7 @@ void ACombatManager::ResetCombat()
 	}
 }
 
+/** Initiates next combat wave in queue if queue not empty and combat requirements are met */
 void ACombatManager::RunSpawnWave()
 {
 	if(WavesQueue.IsEmpty())
@@ -119,6 +118,7 @@ void ACombatManager::RunSpawnWave()
 	}
 }
 
+/** Runs to populate collections with pointers to enemies, spawnzones and combattriggers that Management Zone component is overlapping */
 void ACombatManager::GatherOverlappingActors()
 {
 	// populate array with all overlapping zones
@@ -161,12 +161,14 @@ void ACombatManager::GatherOverlappingActors()
 	}
 }
 
+/** Adds enemy pointer that is placed or is spawned within combat bounds to collection */
 void ACombatManager::AddEnemy(AEnemyAICharacter* Enemy)
 {
 	ManagedEnemies.Add(Enemy);
 	Enemy->Manager = this;
 }
 
+/** Removes pointer to enemy from managers collection, and if queue is empty and no active enemies left calls to end combat */
 void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
 {
 	ManagedEnemies.Remove(EnemyToRemove);
@@ -179,12 +181,14 @@ void ACombatManager::RemoveEnemy(AEnemyAICharacter* EnemyToRemove)
 	}
 }
 
+/** Adds drone pointer that is spawned within combat bounds to collection  */
 void ACombatManager::AddDrone(AEnemyDroneBaseActor* Drone)
 {
 	ManagedDrones.Add(Drone);
 	Drone->CombatManager = this;
 }
 
+/** Removes pointer to drone from managers collection, and if queue is empty and no active enemies left calls to end combat */
 void ACombatManager::RemoveDrone(AEnemyDroneBaseActor* DroneToRemove)
 {
 	ManagedDrones.Remove(DroneToRemove);
