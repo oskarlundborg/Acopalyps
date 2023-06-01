@@ -154,6 +154,8 @@ void AAcopalypsCharacter::Move(const FInputActionValue& Value)
 
 void AAcopalypsCharacter::SlowDownTime()
 {
+	if(bTimeSlowed) return;
+	bTimeSlowed = true;
 	SlowTimeTriggerEvent();
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4);
 	GetWorldTimerManager().SetTimer(TimeTimerHandle, this, &AAcopalypsCharacter::ResumeTime, SlideTime, false);
@@ -163,6 +165,7 @@ void AAcopalypsCharacter::SlowDownTime()
 
 void AAcopalypsCharacter::ResumeTime()
 {
+	bTimeSlowed = false;
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 	CustomTimeDilation = 1.f;
 	Gun->CustomTimeDilation = 1.f;

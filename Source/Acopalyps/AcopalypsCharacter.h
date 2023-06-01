@@ -171,6 +171,7 @@ protected:
 
 	void SlowDownTime();
 	void ResumeTime();
+	bool bTimeSlowed = false;
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
