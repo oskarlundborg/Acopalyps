@@ -12,7 +12,6 @@
 #include "CombatManager.h"
 #include "CoverPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
@@ -26,9 +25,6 @@ AEnemyAICharacter::AEnemyAICharacter()
 	// Set mesh to enemy mesh, and sets collision presets
 	CharacterMesh = GetMesh();
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-	//BoxAvoidance = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxAvoidance"));
-	//BoxAvoidance->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -41,7 +37,6 @@ void AEnemyAICharacter::BeginPlay()
 		SpawnDefaultController();
 	}
 	
-	
 	if( GunClass != nullptr )
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
@@ -49,8 +44,6 @@ void AEnemyAICharacter::BeginPlay()
 		Gun->AttachToComponent(GetMesh(), AttachmentRules, TEXT("GunSocket"));
 		Gun->SetOwner(this);
 		Gun->SetActorRelativeRotation(FRotator(0, -90, 0));
-		//Gun->SetActorRelativeRotation(GetActorForwardVector().Rotation());
-		
 	}
 }
 
@@ -58,7 +51,6 @@ void AEnemyAICharacter::BeginPlay()
 void AEnemyAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -97,17 +89,18 @@ float AEnemyAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		{
 			Manager->RemoveEnemy(this);
 		}
-		//BoxAvoidance->DestroyComponent();
 		DetachFromControllerPendingDestroy();
 	}
 	return DamageApplied;
 }
 
+/** Checks health components state, if character is dead */
 bool AEnemyAICharacter::IsDead() const
 {
 	return HealthComponent->IsDead();
 }
 
+/** Runs when character shoots towards player character, decided in Behavior tree*/
 void AEnemyAICharacter::Shoot()
 {
 	if( Gun->CurrentMag <= 0 )
@@ -121,16 +114,19 @@ void AEnemyAICharacter::Shoot()
 	FireEnemyTriggerEvent();
 }
 
+/** Gets health components current health in percent */
 float AEnemyAICharacter::GetHealthPercent() const
 {
 	return HealthComponent->GetHealthPercent();
 }
 
+/** Sets physics and collision of actor to rag-doll-settings, without adding force */
 void AEnemyAICharacter::RagDoll()
 {
 	RagDoll(FVector::ZeroVector);
 }
 
+/** Sets physics and collision of actor to rag-doll-settings, and applies force on physics body */
 void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 {
 	GetMesh()->SetSimulatePhysics(true);
@@ -141,6 +137,7 @@ void AEnemyAICharacter::RagDoll(FVector ForceDirection)
 	GetWorldTimerManager().SetTimer(RagDollTimerHandle, this, &AEnemyAICharacter::UnRagDoll, 3.f, false, 1.f);
 }
 
+/** Initializes EnemyAIController */
 void AEnemyAICharacter::InitializeController()
 {
 	if(bIsInitialized) return;
@@ -152,13 +149,7 @@ void AEnemyAICharacter::InitializeController()
 	}
 }
 
-
-void AEnemyAICharacter::SetFilter(TSubclassOf<UNavigationQueryFilter> FilterToSet)
-{
-	//BoxAvoidance->SetAreaClassOverride(FilterToSet.GetDefaultObject()->Areas[0].AreaClass);
-}
-
-
+/** Resets physics and collision presets to idle after ragdoll-method call*/
 void AEnemyAICharacter::UnRagDoll()
 {
 	if(IsDead()) return;

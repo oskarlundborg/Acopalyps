@@ -34,6 +34,7 @@ void ASpawnPoint::Tick(float DeltaTime)
 
 }
 
+/** Spawns walking character */
 AEnemyAICharacter* ASpawnPoint::Spawn()
 {
 	AEnemyAICharacter* EnemyAICharacter = nullptr;
@@ -44,6 +45,7 @@ AEnemyAICharacter* ASpawnPoint::Spawn()
 	return EnemyAICharacter;
 }
 
+/** Spawns drone */
 AEnemyDroneBaseActor* ASpawnPoint::SpawnDrone()
 {
 	AEnemyDroneBaseActor* Drone = nullptr;
@@ -54,6 +56,7 @@ AEnemyDroneBaseActor* ASpawnPoint::SpawnDrone()
 	return Drone;
 }
 
+/** Checks if player can see spawn point location */
 bool ASpawnPoint::IsVisibleToPlayer()
 {
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);

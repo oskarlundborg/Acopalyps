@@ -29,6 +29,7 @@ void ALevelSpawner::BeginPlay()
 	
 }
 
+/** Trigger for loading/unloading levels*/
 void ALevelSpawner::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

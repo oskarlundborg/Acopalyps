@@ -14,6 +14,7 @@ void ULevelStreamerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 }
 
+/** Load level and add level with id to LevelMap*/
 void ULevelStreamerSubsystem::LoadLevel(FLevelID SubLevelToLoad)
 {
 	bool bIsSuccess;
@@ -30,7 +31,7 @@ void ULevelStreamerSubsystem::LoadLevel(FLevelID SubLevelToLoad)
 	}
 }
 
-
+/** Unload level and remove level with id to LevelMap */
 void ULevelStreamerSubsystem::UnloadLevel(int IDToUnload)
 {
 	if (LevelMap.Contains(IDToUnload))

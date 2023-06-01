@@ -25,6 +25,7 @@ UBTTask_MoveToAndShoot::UBTTask_MoveToAndShoot(const FObjectInitializer& ObjectI
 	AcceptableRadius = UKismetMathLibrary::RandomFloatInRange(AcceptableRadiusMin, AcceptableRadiusMax);
 }
 
+/** Overriding MoveTos ExecuteTask to allow pseudorandom shooting between given interval*/
 EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type SuperResult = Super::ExecuteTask(OwnerComp, NodeMemory);
@@ -56,6 +57,7 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::ExecuteTask(UBehaviorTreeComponent &
 	return SuperResult;
 }
 
+/** Overriding MoveTos PerformMoveTask to account for navqueryfilters*/
 EBTNodeResult::Type UBTTask_MoveToAndShoot::PerformMoveTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent();
@@ -153,6 +155,7 @@ EBTNodeResult::Type UBTTask_MoveToAndShoot::PerformMoveTask(UBehaviorTreeCompone
 	return NodeResult;
 }
 
+/** Shoots at player for a random amount of time before continuing running*/
 void UBTTask_MoveToAndShoot::Shoot() 
 {
 	if( auto Player = UGameplayStatics::GetPlayerCharacter(this, 0) )

@@ -37,7 +37,7 @@ void ASpawnZone::Tick(float DeltaTime)
 
 }
 
-
+/** Spawns enemies with delays specified in wave struct and recieved in parameters */
 void ASpawnZone::HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn, double Delay)
 {
 	NumberOfBasicEnemiesLeftToSpawn += BasicEnemiesToSpawn;
@@ -59,6 +59,7 @@ void ASpawnZone::HandleWave(int BasicEnemiesToSpawn, int DronesToSpawn, double D
 	}
 }
 
+/** Loops array of points and spawnes specified enemies with specified delays inbetween spawnes*/
 void ASpawnZone::Spawn()
 {
 	for(ASpawnPoint* SpawnPoint : SpawnPoints)
@@ -91,7 +92,7 @@ void ASpawnZone::Spawn()
 	}
 }
 
-
+/** Runs to populate collections with pointers to spawn points Spawn zone - zone component is overlapping */
 void ASpawnZone::GatherOverlappingSpawnPoints()
 {
 	// populate array with all overlapping spawn points

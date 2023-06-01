@@ -12,10 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Navigation/CrowdFollowingComponent.h"
 
-AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
-{
-	
-}
+AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent"))){}
 
 void AEnemyAIController::BeginPlay()
 {
@@ -27,7 +24,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	// kanske göra en mer random metod? Coin flip??
+	// Can be used for crowd avoiding
 	/*
 	const int RandomFilterIndex = FMath::RandRange(0, SubclassQueryFilters.Num()-1);
 	EnemyFilterClass = SubclassQueryFilters[RandomFilterIndex];
@@ -42,6 +39,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	*/
 }
 
+/** Sets actor rotation towards player before shooting, enables shooting player when standing on lower/higher ground */
 void AEnemyAIController::SetAim()
 {
 	FRotator AimRotation;
@@ -56,6 +54,7 @@ void AEnemyAIController::SetAim()
 	GetCharacter()->SetActorRotation(FRotator(AimRotation.Pitch, AimRotation.Yaw, 0));
 }
 
+/** Runs Behavior tree if not null, and sets keys in Blackboard */
 void AEnemyAIController::Initialize()
 {
 	if(BehaviorTree)
@@ -74,11 +73,13 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
+/** Method to set if character is in rag-doll-mode in Blackboard */
 void AEnemyAIController::SetIsRagdoll(bool val)
 {
 	GetBlackboardComponent()->SetValueAsBool("IsRagdoll", val);
 }
 
+/** Single sweeps towards player whether hitresult was player character */
 bool AEnemyAIController::HitTraceAtPLayerSuccess() const
 {
 
