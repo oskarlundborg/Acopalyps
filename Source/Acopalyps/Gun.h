@@ -279,6 +279,7 @@ private:
 	void RotateAmmoTypeBackward();
 	void RotateAlternateAmmoType();
 
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	bool bCanReload = true;
 
 	void AttemptReload();
