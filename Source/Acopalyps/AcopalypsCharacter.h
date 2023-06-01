@@ -97,9 +97,9 @@ class AAcopalypsCharacter : public ACharacter
 	UPROPERTY()
 	FTimerHandle RespawnTimer;
 	
-	//UPROPERTY()
-	//FTimerHandle PauseOverlapTimer;
-	//FTimerDelegate PauseOverlapDelegate;
+	UPROPERTY()
+	FTimerHandle PauseOverlapTimer;
+	FTimerDelegate PauseOverlapDelegate;
 
 	UFUNCTION()
 	void ResetLevel();
