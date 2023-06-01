@@ -87,5 +87,5 @@ bool UBTService_FindCover::IsCoverValid(const ACoverPoint* Cover) const
 {
 	/**Checking if the dot product between the cover's forward vector and the vector from the cover to the player is
 	positive tells us if the player is in front of the cover or not */
-	return Cover->GetActorForwardVector().Dot(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation() - Cover->GetActorLocation()) > 0;
+	return Cover->GetActorForwardVector().Dot(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation() - Cover->GetActorLocation()) > 0 && Cover->HasLineOfSightToPlayer();
 }
