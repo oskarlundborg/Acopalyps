@@ -1,9 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+/**
+ @author: Gin Lindelöw
+*/
 
 #include "ExplosiveProjectile.h"
+#include "ExplosiveDamageType.h" // grayed by rider out but needed
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
-#include "ExplosiveDamageType.h"
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
 #include "Components/PrimitiveComponent.h"

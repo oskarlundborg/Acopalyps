@@ -1,4 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+/**
+ @author: Gin Lindelöw
+ @author: Joakim Pettersson
+*/
 
 #include "Gun.h"
 #include "AcopalypsCharacter.h"

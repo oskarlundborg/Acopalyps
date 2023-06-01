@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AcopalypsGameMode.h"
-#include "AcopalypsCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AAcopalypsGameMode::AAcopalypsGameMode()

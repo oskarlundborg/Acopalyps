@@ -1,10 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+ @author: Gin Lindelöw
+ @author: Joakim Pettersson
+*/
 
 #include "Projectile.h"
 
-#include "AcopalypsCharacter.h"
-#include "Gun.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
