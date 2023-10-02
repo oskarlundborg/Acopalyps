@@ -26,5 +26,8 @@
 			"Name": "HDRIBackdrop",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"Windows"
 	]
 }
